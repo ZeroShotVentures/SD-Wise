@@ -1,200 +1,64 @@
-# my-app
+# SD Wise
 
-Next.js scaffold with authentication, account management, and Postgres.
+**The company brain is bigger than its parts.**
 
-## Stack
+## The idea
 
-- [Next.js 16](https://nextjs.org) (App Router) with React 19 and Tailwind CSS 4
-- [Better Auth](https://www.better-auth.com) for email/password sign-in (sign-up disabled)
-- [Prisma 7](https://www.prisma.io) on PostgreSQL (via `@prisma/adapter-pg`)
-- [t3-env](https://env.t3.gg) + [Zod](https://zod.dev) for typed, validated environment variables
-- [oxlint](https://oxc.rs/docs/guide/usage/linter) for linting, [Biome](https://biomejs.dev) for formatting and import sorting
-- [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com) for unit tests
-- [Husky](https://typicode.github.io/husky) + [lint-staged](https://github.com/lint-staged/lint-staged) for pre-commit checks
+Company knowledge doesn't really live in documents, the file system or people's heads. Each of them holds a piece. SD Wise holds all of it.
 
-## Prerequisites
+SD Wise is the company's brain: one agent that can reach every bit of information the company has, public or private. Because it sees everything, it can connect things no single document, folder or employee could, and answer questions nobody could answer before.
 
-- Node.js 24 (see `.nvmrc`)
-- pnpm 12 (version pinned in `package.json`)
-- Docker (for the local database)
+Seeing everything doesn't mean showing everything. SD Wise knows who is allowed to read what, and every answer respects that.
 
-## Getting started
+## How a question is answered
 
-```bash
-pnpm install
-pnpm db:up             # start Postgres in Docker
-pnpm db:migrate        # apply migrations
-pnpm db:seed:demo      # demo accounts, people and questions
-pnpm dev
-```
+A user asks SD Wise a question. Five subsystems handle it in turn.
 
-Open [http://localhost:3000](http://localhost:3000). `/` redirects to `/graph` when signed in and to `/sign-in` otherwise.
+1. **Connect.** Subsystem 1 searches all company knowledge, private included, and connects every relevant and useful point of knowledge to the question.
+2. **Split by rights.** Subsystem 2 checks the asker's rights on each of those points and splits them into *accessible* and *not accessible*.
+3. **Decide.** Subsystem 3 decides how to answer. There are three outcomes:
 
-### Demo accounts
-
-Sign-up is disabled. `pnpm db:seed:demo` creates the only two accounts and **deletes every other account**:
-
-| Email | Password | Person |
-| --- | --- | --- |
-| `kobe@sdwise.be` | `password123` | Kobe Verdonck, Platform lead |
-| `filip@sdwise.be` | `password123` | Filip Dierckx, Payroll operations lead |
-
-It also upserts the people from `src/lib/graph/fixtures.ts` as `Person` rows and adds a few demo questions. Re-running it is safe; `pnpm db:seed:demo --reset` also deletes every question, to start a demo from a clean inbox. Against production: `DATABASE_URL=... pnpm db:seed:demo`.
-
-Demo script: sign in as Kobe, ask "When is the payroll cut-off in December?", click **Ask Filip** and send. Sign in as Filip: the question is in his inbox with a drafted answer. Send it, and Kobe sees the answer under Inbox → Sent and as a new node in the graph.
-
-The other way round: as Filip, ask "Is there a deploy freeze over the holidays?" and click **Ask Kobe**. Kobe gets it with a drafted answer about the 14 December to 4 January freeze. Their work is linked in the graph through the year-end payroll run.
-
-### What is real and what is mocked
-
-- **Real (Postgres):** accounts, the `Person` behind each account (`user.personId`), and questions and access requests between people (`Question` table). Asking, answering, declining and approving access work across server instances.
-- **Mocked:** the knowledge graph and integrations (`src/lib/graph/fixtures.ts`). Answers and access grants from the database are layered onto the fixture graph on every read (`src/lib/graph/answers.ts`). Connecting or disconnecting an integration only lives in server memory.
-
-### Environment variables
-
-`.env.example` is committed and loaded automatically as the lowest-priority defaults, so local development works without any setup. To override a value locally, put it in `.env` (gitignored). In production, set real values in the host environment. Priority, highest first: host environment, `.env.local`, `.env`, `.env.example`. (Prisma CLI only reads `.env` and `.env.example`.)
-
-All variables are declared and validated in `src/env.ts`. The app refuses to build or start when one is missing or malformed, and prints which one. Import `env` from `@/env` instead of reading `process.env` directly.
-
-> [!IMPORTANT]
-> Never put secrets in `.env.example`. Outside production, `BETTER_AUTH_SECRET` falls back to a dev-only value; production builds and servers require a real one.
-
-| Variable | Description |
-| --- | --- |
-| `DATABASE_URL` | Postgres connection string. The default matches `docker-compose.yml`. |
-| `BETTER_AUTH_SECRET` | At least 32 characters, required in production. Generate with `openssl rand -base64 32`. |
-| `BETTER_AUTH_URL` | Base URL of the app, e.g. `http://localhost:3000`. |
-| `ADMIN_EMAILS` | Optional, comma-separated. The only way to make someone an admin: listed accounts are admins once their email is verified, everyone else is a regular user. |
-
-## Routes and auth checks
-
-| Route | Access |
-| --- | --- |
-| `/sign-in` | Public. Signed-in users are redirected to `callbackURL` (default `/graph`). |
-| `/graph`, `/inbox`, `/integrations`, `/settings` | Signed-in users with a linked `Person` (others get a 404). Grouped under `src/app/(app)` with a shared sidebar. |
-| `/admin`, `/admin/users/[id]` | Admins only. Everyone else gets a 404. See [Admin portal](#admin-portal). |
-
-Protect data on the server, not in the browser:
-
-- **`requireSession()`** from `@/lib/session` returns the session or redirects to `/sign-in`. Call it at the top of every page, Server Action and Route Handler that needs a user. `getSession()` returns `null` instead of redirecting. Both are cached per request.
-- **`requireAdmin()`** does the same and additionally 404s for non-admins. Use it for admin-only pages and Server Actions.
-- **`src/proxy.ts`** (Next.js 16's replacement for middleware) redirects signed-out visitors of `/dashboard`, `/settings` and `/admin` to `/sign-in?callbackURL=...`. It only checks that a session cookie exists, so it's a UX shortcut, not a security boundary. Add new protected paths to its `matcher`, and still call `requireSession()` in the page.
-- Don't put auth checks in layouts: they don't re-run on client navigation.
-- `callbackURL` is validated by `safeRedirect` in `src/lib/redirect.ts`, which only allows same-origin paths.
-
-## Account settings
-
-`/settings` lets users:
-
-- Change their name.
-- Change their password. This signs out their other devices.
-- See active sessions and revoke one or all other devices.
-- Delete their account after entering their password.
-
-## Admin portal
-
-Built on the Better Auth [admin plugin](https://www.better-auth.com/docs/plugins/admin). Pages read data through `auth.api.*` and the forms call `authClient.admin.*`, so every action is permission-checked by Better Auth itself. Admins get an "Admin" link in the header.
-
-`/admin` lists users (newest first, searchable by email). `/admin/users/[id]` lets an admin:
-
-- **Impersonate** the user. The admin is signed in as them for up to an hour, with a banner and a "Stop impersonating" button that returns to the admin session. Impersonation sessions are hidden from the user's own session list. Other admins can't be impersonated.
-- **Ban** them for a set time or permanently, with a reason. Banning signs them out everywhere and blocks sign-in until the ban is lifted or expires.
-- See and revoke their **sessions**.
-- Set a new **password**.
-- **Delete** them.
-
-Admins can't take these actions on their own account.
-
-### Managing admins
-
-Admins are defined only by `ADMIN_EMAILS`, a comma-separated list of addresses (in `.env` locally, or in the host environment in production). Roles can't be changed from the portal; to add or remove an admin, edit the variable and restart or redeploy.
-
-A listed user is an admin only once their email is verified. The demo accounts are created verified; for any other account, verify it by hand:
-
-```sql
-UPDATE "user" SET "emailVerified" = true WHERE email = 'admin@example.com';
-```
-
-Then restart the server so the startup sync grants the role (direct database writes skip the update hook).
-
-The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set when a user is created, re-checked on every user update (so changes apply immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
-
-To add finer-grained roles (e.g. support staff who can impersonate but not delete), define them with `createAccessControl`, pass `ac`/`roles` to both `admin()` in `src/lib/auth.ts` and `adminClient()` in `src/lib/auth-client.ts`, and extend `roleFor()` in `src/lib/admin-role.ts` to assign them.
-
-## Rate limiting
-
-Better Auth rate-limits its endpoints in production (not in development). Counters are stored in the `rateLimit` table rather than in memory, so limits hold across multiple instances and serverless invocations. Tune limits with `rateLimit` in `src/lib/auth.ts`.
-
-## Email
-
-The app sends no email and nobody can sign up: accounts come from `pnpm db:seed:demo`. There's no password reset or email change; admins can set a new password for a user from the admin portal.
-
-### Gating features
-
-Check what a user may do with `getEntitlements(userId)` from `@/lib/entitlements`:
-
-```ts
-const { user } = await requireSession();
-const { limits } = await getEntitlements(user.id);
-if (projectCount >= limits.projects) {
-  // enforce limit
-}
-```
-
-By default every signed-in user has unlimited entitlements. Adjust the policy in `src/lib/entitlements.ts` when you add plan-based limits.
-
-## Scripts
-
-| Script | Description |
-| --- | --- |
-| `pnpm dev` | Start the dev server |
-| `pnpm build` / `pnpm start` | Production build / serve |
-| `pnpm lint` | Run oxlint and check formatting with Biome |
-| `pnpm fix` | Auto-fix lint issues and format |
-| `pnpm typecheck` | Generate the Prisma client and run `tsc` |
-| `pnpm test` / `pnpm test:watch` | Run unit tests once / in watch mode |
-| `pnpm db:up` / `pnpm db:down` | Start / stop the Postgres container |
-| `pnpm db:migrate` | Create and apply a migration from schema changes (dev) |
-| `pnpm db:deploy` | Apply pending migrations (production) |
-| `pnpm db:reset` | Drop the database and re-apply all migrations |
-| `pnpm db:push` | Push the schema without a migration (prototyping only) |
-| `pnpm db:seed:demo` | Create the demo accounts (deletes all others), people and questions. `--reset` clears questions first |
-| `pnpm db:seed` | Generate AI demo knowledge (needs `AI_GATEWAY_API_KEY`; not used by the app yet) |
-| `pnpm db:studio` | Open Prisma Studio |
-| `pnpm db:generate` | Regenerate the Prisma client (also runs on install) |
-
-The pre-commit hook runs oxlint and Biome on staged files.
-
-## CI
-
-`.github/workflows/ci.yml` runs on pushes to `main` and on pull requests:
-
-- **check**: `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build`.
-- **migrations**: applies all migrations to a fresh Postgres and fails if `schema.prisma` has changes that no migration covers. Run `pnpm db:migrate` and commit the result to fix it.
-
-## Deploying
-
-1. Set the production environment variables (at least `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`).
-2. Run `pnpm db:deploy` against the production database before (or as part of) each release.
-3. Once (or before each demo): `pnpm db:seed:demo` against the production database.
-4. `pnpm build && pnpm start`, or let your host build the app.
-
-## Project structure
+   | Case | Situation | What SD Wise does |
+   | --- | --- | --- |
+   | **A** | Everything needed is accessible | **Subsystem 4** answers directly with the knowledge it has. |
+   | **B** | Some knowledge requires access | **Subsystem 5** sends a request to the person who holds it (person X), with the question and a proposed answer that would apply once access is given. If a first answer without that knowledge is already useful, the asker gets it right away. |
+   | **C** | Not accessible and clearly not authorized | **Subsystem 3** says no. |
 
 ```
-prisma/
-  schema.prisma        database schema
-  migrations/          SQL migrations
-src/
-  app/
-    (auth)/            sign-in
-    (app)/             signed-in pages: graph, inbox, integrations, settings, admin
-    api/auth/          Better Auth handler
-  components/          React components (+ colocated tests)
-  lib/                 auth, session helpers, entitlements, Prisma client
-  lib/graph/           mocked graph (fixtures), DB-backed questions (service)
-  proxy.ts             optimistic redirect for signed-out visitors
-  instrumentation.ts   syncs admin roles with ADMIN_EMAILS at startup
-  env.ts               environment schema
-  generated/prisma/    generated Prisma client (gitignored)
+question
+   │
+   ▼
+[1] connect all relevant knowledge  (sees everything, private included)
+   │
+   ▼
+[2] split by rights ──► accessible / not accessible
+   │
+   ▼
+[3] decide
+   ├── A: all accessible      ──► [4] answer
+   ├── B: access required      ──► [5] ask person X, with a drafted answer
+   │                                   (+ a first answer from what is accessible)
+   └── C: clearly not allowed  ──► no
 ```
+
+### Facts, not guesses
+
+The database holds every data point and its access rights as facts. Answers are built from those stored facts, and access decisions come from stored rights, so SD Wise can't hallucinate an answer or a permission. When a person answers a request, their answer is stored as a new fact and appears as a new node in the asker's knowledge graph.
+
+## How to test
+
+### Accounts
+
+Sign in with one of these two accounts:
+
+| User | Email | Password | Role |
+| --- | --- | --- | --- |
+| Kobe | `kobe@sdwise.be` | `password123` | Platform lead |
+| Filip | `filip@sdwise.be` | `password123` | Payroll operations lead |
+
+### Walkthrough
+
+1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*, click **Ask Filip** and send.
+2. Sign in as **Filip**. The question is in the inbox with a drafted answer; send it.
+3. Still as **Filip**, ask *"Is there a deploy freeze over the holidays?"*, click **Ask Kobe** and send.
+4. Sign in as **Kobe**. Answer from the inbox, and Filip sees the answer as a new node in his graph.

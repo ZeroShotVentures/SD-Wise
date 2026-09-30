@@ -1,0 +1,668 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SD Wise film</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --blue: #006dd8; --blue2: #3b93ff; --red: #f1002f; --yellow: #ffbe00;
+    --slate: #5a6275; --navy: #1d2830; --ink: #0f1b2d; --muted: #5f6b76;
+    --email: #2f8cff; --msg: #8b6cff; --meet: #00b39a; --doc: #ffbe00; --mind: #ff3b5c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+  body { font-family: Inter, sans-serif; -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #050b16; }
+  .scene { position: absolute; inset: 0; display: none; overflow: hidden; }
+  .abs { position: absolute; }
+  .bg-dark { position: absolute; inset: -10%; background:
+      radial-gradient(900px 700px at 72% 38%, rgba(0,109,216,.45), transparent 70%),
+      radial-gradient(1400px 900px at 30% 110%, rgba(0,70,160,.55), transparent 70%),
+      linear-gradient(160deg, #071a36 0%, #04101f 60%, #030a14 100%); }
+  .bg-blue { position: absolute; inset: -10%; background:
+      radial-gradient(1100px 800px at 70% 30%, #1e7cf0 0%, transparent 70%),
+      linear-gradient(150deg, #0a56c4 0%, #0640a0 45%, #04296e 100%); }
+  .bg-light { position: absolute; inset: -10%; background:
+      radial-gradient(1100px 800px at 50% 45%, #ffffff 0%, #f1f3f7 60%, #e6e9ef 100%); }
+  .beam { position: absolute; left: -400px; bottom: -300px; width: 2200px; height: 520px;
+      background: linear-gradient(90deg, rgba(255,255,255,.07), rgba(255,255,255,0)); transform: rotate(-14deg); }
+  .vignette { position: absolute; inset: 0; pointer-events: none; z-index: 50;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.45) 100%); }
+  .label { font-family: 'JetBrains Mono', monospace; font-size: 20px; letter-spacing: .22em; text-transform: uppercase;
+      display: flex; align-items: center; gap: 16px; }
+  .label::before { content: ''; width: 40px; height: 2px; background: currentColor; }
+  .h1 { font-weight: 700; font-size: 104px; line-height: 1.0; letter-spacing: -0.045em; }
+  .sub { font-size: 28px; line-height: 1.4; font-weight: 400; letter-spacing: -0.01em; }
+  .w { display: inline-block; white-space: pre; will-change: transform, opacity, filter; }
+  .card { position: absolute; background: #fff; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,10,30,.35), 0 2px 6px rgba(0,10,30,.15); }
+  .frag { width: 330px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .frag .ic { flex: none; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .frag .t1 { font-size: 15px; font-weight: 600; color: #1d2830; }
+  .frag .t2 { font-size: 13.5px; color: #6b7682; margin-top: 3px; line-height: 1.35; }
+  .frag .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #9aa4ae; margin-top: 6px; letter-spacing: .04em; }
+  .pill { display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; }
+  .tile { position: absolute; width: 112px; height: 112px; border-radius: 30px; background: #fff; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35); font-weight: 800; font-size: 50px; letter-spacing: -0.04em; }
+  .tile .nm { position: absolute; top: 126px; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 500; color: rgba(255,255,255,.75); letter-spacing: 0; white-space: nowrap; }
+  .gnode { position: absolute; border-radius: 50%; }
+  .gcard { position: absolute; width: 300px; padding: 16px 18px; background: #fff; border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(15,27,45,.12), 0 1px 3px rgba(15,27,45,.08); }
+  .gcard .t { font-size: 18px; font-weight: 650; color: #0f1b2d; letter-spacing: -0.01em; }
+  .gcard .s { font-size: 13px; color: #6b7682; margin-top: 4px; font-family: 'JetBrains Mono', monospace; letter-spacing: .02em; }
+  .elabel { position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: .12em;
+      padding: 6px 12px; border-radius: 999px; background: #0f1b2d; color: #fff; transform: translate(-50%, -50%); white-space: nowrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-size: 17px; font-weight: 600; }
+  .ui { position: absolute; background: #fff; border-radius: 22px; box-shadow: 0 30px 80px rgba(0,8,25,.45), 0 2px 8px rgba(0,8,25,.2); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// ---------- helpers ----------
+const W = 1920, H = 1080;
+const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const r = (t, a, b) => cl((t - a) / (b - a));
+const eo = x => 1 - Math.pow(1 - x, 4);
+const ex = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+const ei = x => x * x * x;
+const eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const back = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const $ = (root, sel) => root.querySelector(sel);
+const $$ = (root, sel) => [...root.querySelectorAll(sel)];
+function el(html) { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+function st(e, o) { for (const k in o) e.style[k] = o[k]; }
+function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+
+const ICONS = {
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  msg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  meet: '<path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  doc: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  mind: '<path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  spark: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  bell: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+};
+const icon = (n, s = 24, c = 'currentColor', w = 2) =>
+  `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`;
+const SRC = { mail: 'var(--email)', msg: 'var(--msg)', meet: 'var(--meet)', doc: 'var(--doc)', mind: 'var(--mind)' };
+
+// SD Wise logo: three slanted bars + wordmark (geometry traced from the brand logo)
+function logoSVG({ text = true, textColor = '#ffffff', gray = '#8a93ab', h = 160, id = '' } = {}) {
+  const vw = text ? 2010 : 510;
+  return `<svg ${id ? `id="${id}"` : ''} height="${h}" viewBox="0 0 ${vw} 690" style="overflow:visible">
+    <polygon class="lb lb0" points="0,348 85,348 118,537 34,537" fill="${gray}"/>
+    <polygon class="lb lb1" points="194,192 286,192 228,690 139,690" fill="#d6003a"/>
+    <polygon class="lb lb2" points="405,0 500,0 383,537 292,537" fill="#f4a600"/>
+    ${text ? `<g class="lt"><text x="492" y="537" font-family="Open Sans" font-weight="500" font-size="510" letter-spacing="-8" fill="${textColor}" textLength="1515" lengthAdjust="spacingAndGlyphs">sd wise</text></g>` : ''}
+  </svg>`;
+}
+function animLogo(root, lt, t0, { textDelay = 0.9 } = {}) {
+  $$(root, '.lb').forEach((b, i) => {
+    const x = eo(r(lt, t0 + i * 0.13, t0 + i * 0.13 + 0.7));
+    st(b, { transformBox: 'fill-box', transformOrigin: '50% 100%', transform: `scaleY(${x})`, opacity: cl(x * 3) });
+  });
+  const tg = $(root, '.lt');
+  if (tg) { const x = eo(r(lt, t0 + textDelay, t0 + textDelay + 0.9));
+    st(tg, { transform: `translateX(${(1 - x) * -120}px)`, opacity: x, filter: `blur(${(1 - x) * 10}px)` }); }
+}
+
+// word-by-word reveal
+function words(text, cls = '') {
+  return text.split(/(\s+)/).map(w => /^\s+$/.test(w) ? w : `<span class="w ${cls}">${w}</span>`).join('');
+}
+function animWords(spans, lt, t0, { stagger = 0.06, dur = 0.8, dy = 70, blur = 14, outAt = null, outDur = 0.45 } = {}) {
+  spans.forEach((s, i) => {
+    const x = eo(r(lt, t0 + i * stagger, t0 + i * stagger + dur));
+    let o = x, y = (1 - x) * dy, b = (1 - x) * blur;
+    if (outAt !== null) { const q = ei(r(lt, outAt + i * 0.025, outAt + i * 0.025 + outDur)); o *= 1 - q; y -= q * 40; b += q * 16; }
+    st(s, { opacity: o, transform: `translateY(${y}px)`, filter: b > 0.2 ? `blur(${b}px)` : 'none' });
+  });
+}
+function fadeIn(e, lt, t0, { dur = 0.7, dy = 30, blur = 10, outAt = null, outDur = 0.4, scale = 1 } = {}) {
+  const x = eo(r(lt, t0, t0 + dur));
+  let o = x, y = (1 - x) * dy, b = (1 - x) * blur, s = lerp(scale, 1, x);
+  if (outAt !== null) { const q = ei(r(lt, outAt, outAt + outDur)); o *= 1 - q; b += q * 14; y -= q * 20; }
+  st(e, { opacity: o, transform: `translateY(${y}px) scale(${s})`, filter: b > 0.2 ? `blur(${b}px)` : 'none' });
+  return x;
+}
+function sceneExit(root, lt, dur, { at, zoom = 0.08 } = {}) {
+  // soft push-in + blur on exit, like a camera move into the next beat
+  const q = ei(r(lt, at, dur));
+  st(root, { transform: `scale(${1 + q * zoom})`, filter: q > 0.01 ? `blur(${q * 18}px)` : 'none', opacity: 1 - q * 0.9 });
+}
+function stars(n, seed, color = 'rgba(255,255,255,.5)') {
+  const R = rng(seed); let s = '';
+  for (let i = 0; i < n; i++) { const z = R(); s += `<div class="abs star" data-p="${R()}" style="left:${R() * W}px;top:${R() * H}px;width:${1 + z * 2.5}px;height:${1 + z * 2.5}px;border-radius:50%;background:${color};opacity:${0.15 + z * 0.5}"></div>`; }
+  return s;
+}
+function animStars(root, lt) { $$(root, '.star').forEach((s, i) => { const p = +s.dataset.p; st(s, { transform: `translate(${Math.sin(lt * 0.3 + p * 9) * 20}px, ${-lt * (8 + p * 18)}px)` }); }); }
+
+const stage = document.getElementById('stage');
+const scenes = [];
+function scene(a, b, html, init, fn) { const e = el(`<div class="scene">${html}</div>`); stage.appendChild(e); const ctx = init ? init(e) : {}; scenes.push({ a, b, e, fn, ctx }); }
+
+// ================= S1: knowledge scattered everywhere (0 - 10) =================
+const FRAGS = [
+  ['mail', 'RE: Kras contract – pricing', 'Lotte, confirming €4.20 per payslip, quarterly…', 'OUTLOOK · LOTTE J.'],
+  ['msg', '#payroll-benelux', 'Is the Kras go-live still 1 November?', 'SLACK · BRAM D.S.'],
+  ['meet', 'Q4 payroll steering', 'Transcript · 47 min · 6 participants', 'TEAMS MEETING'],
+  ['doc', 'Onboarding_policy_v7.docx', 'Updated probation rules for new hires', 'SHAREPOINT'],
+  ['msg', 'Dario ↔ Victor', 'Fixed the Dimona export, it was the encoding', 'PRIVATE CHAT'],
+  ['mind', 'Only An knows', 'How the 2019 indexation exception works', 'IN SOMEONE’S HEAD'],
+  ['mail', 'Fwd: Audit findings FY25', 'See attached, please keep confidential', 'OUTLOOK · AUDIT'],
+  ['meet', 'Customer escalation – Brouwerij', 'Recording · decisions not written down', 'GOOGLE MEET'],
+  ['doc', 'Budget_Q4_final_FINAL.xlsx', '3 versions, nobody knows which is right', 'DRIVE'],
+  ['msg', 'who knows the SEPA cut-off?', '12 replies · thread', 'TEAMS CHAT'],
+  ['mail', 'Welcome aboard, Kobe', 'Access to the platform repos granted', 'OUTLOOK · IT'],
+  ['mind', 'Pieter remembers', 'Why we dropped the old ticketing tool', 'IN SOMEONE’S HEAD'],
+  ['meet', 'Sales kick-off 2027', 'Targets agreed verbally', 'ZOOM'],
+  ['doc', 'Payroll_legal_BE.pdf', '212 pages · last read 2024', 'SHAREPOINT'],
+  ['msg', '#platform', 'Don’t deploy on Fridays, remember March?', 'SLACK · KOBE W.'],
+  ['mail', 'Salary review – confidential', 'HR only. Do not forward.', 'OUTLOOK · HR'],
+];
+scene(0, 10, `
+  <div class="bg-dark"></div><div class="beam"></div>
+  <div class="abs" id="s1stars" style="inset:0">${stars(90, 7)}</div>
+  <div class="abs" id="s1cards" style="inset:0;perspective:1400px;perspective-origin:50% 50%;transform-style:preserve-3d"></div>
+  <div class="abs" id="s1count" style="left:0;right:0;top:64px;display:flex;justify-content:center">
+    <div class="pill mono" style="padding:10px 20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.8);font-size:18px;letter-spacing:.08em">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--red)"></span><span id="s1n">0</span>&nbsp;FRAGMENTS OF KNOWLEDGE</div></div>
+  <div class="abs" id="s1words" style="inset:0"></div>
+  <div class="vignette"></div>`,
+  e => {
+    const R = rng(42), cards = [];
+    const box = $(e, '#s1cards');
+    for (let i = 0; i < 78; i++) {
+      const f = FRAGS[i % FRAGS.length];
+      let x, y, tries = 0;
+      do { x = -120 + R() * (W + 240); y = 40 + R() * (H - 80); tries++; }
+      while (tries < 20 && Math.abs(y - 540) < 150 && Math.abs(x - 960) < 560);
+      const c = el(`<div class="card frag"><div class="ic" style="background:${SRC[f[0]]}">${icon(f[0], 20, '#fff')}</div>
+        <div><div class="t1">${f[1]}</div><div class="t2">${f[2]}</div><div class="meta">${f[3]}</div></div></div>`);
+      box.appendChild(c);
+      cards.push({ c, x: x - 165, y: y - 45, z: -900 + R() * 800, s: 0.15 + i * 0.105 + R() * 0.1, rot: (R() - .5) * 16, dr: (R() - .5) * 30 });
+    }
+    const WORDS = [['mail', 'Emails.', 0.4, 1.9], ['msg', 'Chats.', 1.9, 3.3], ['meet', 'Meetings.', 3.3, 4.7], ['doc', 'Documents.', 4.7, 6.1], ['mind', 'Minds.', 6.1, 7.5]];
+    const wb = $(e, '#s1words');
+    const ws = WORDS.map(([ic, w, a, b]) => {
+      const d = el(`<div class="abs" style="inset:0;display:flex;align-items:center;justify-content:center;gap:34px">
+        <div style="width:118px;height:118px;border-radius:30px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(0,0,0,.4)">${icon(ic, 62, SRC[ic], 2.2)}</div>
+        <div style="color:#fff;font-weight:800;font-size:176px;letter-spacing:-0.055em;text-shadow:0 10px 60px rgba(0,0,0,.5)">${w}</div></div>`);
+      wb.appendChild(d); return { d, a, b };
+    });
+    const fin = el(`<div class="abs" style="inset:0;display:flex;align-items:center;justify-content:center;text-align:center">
+      <div style="color:#fff;font-weight:800;font-size:150px;letter-spacing:-0.055em;line-height:1;text-shadow:0 10px 60px rgba(0,0,0,.6)">${words('Scattered')} ${words('everywhere.', 'yl')}</div></div>`);
+    wb.appendChild(fin);
+    $$(fin, '.yl').forEach(s => st(s, { background: 'linear-gradient(90deg,#ffbe00,#ff6a3d)', webkitBackgroundClip: 'text', color: 'transparent' }));
+    return { cards, ws, fin, finW: $$(fin, '.w') };
+  },
+  (lt, e, c) => {
+    animStars(e, lt);
+    const rush = ex(r(lt, 9.0, 10));
+    c.cards.forEach(k => {
+      const a = eo(r(lt, k.s, k.s + 1.5));
+      if (a <= 0) { k.c.style.display = 'none'; return; }
+      k.c.style.display = 'flex';
+      const z = lerp(-3200, k.z, a) + (lt - k.s) * 55 + rush * 2600;
+      const blur = cl(Math.abs(z + 250) / 180, 0, 7);
+      const fadeNear = 1 - r(z, 350, 900);
+      st(k.c, { transform: `translate3d(${k.x + Math.sin(lt * .4 + k.rot) * 12}px, ${k.y + lt * k.dr * 0.3}px, ${z}px) rotateY(${(k.x + 165 - 960) * -0.012}deg) rotateZ(${k.rot * 0.25}deg)`,
+        opacity: a * fadeNear, filter: blur > 0.4 ? `blur(${blur}px)` : 'none' });
+    });
+    $(e, '#s1n').textContent = fmt(Math.pow(r(lt, 0.2, 9.2), 1.6) * 1284506);
+    fadeIn($(e, '#s1count'), lt, 0.1, { outAt: 9.2 });
+    c.ws.forEach(({ d, a, b }) => {
+      const i = eo(r(lt, a, a + 0.45)), o = ei(r(lt, b - 0.28, b));
+      st(d, { opacity: i * (1 - o), transform: `translateY(${(1 - i) * 50 - o * 50}px) scale(${1 + o * 0.04})`, filter: `blur(${(1 - i) * 12 + o * 12}px)` });
+    });
+    animWords(c.finW, lt, 7.5, { stagger: 0.12, dur: 0.7, outAt: 9.25 });
+  });
+
+// ================= S2: the problem statement (10 - 14) =================
+scene(10, 14, `
+  <div class="bg-dark"></div>
+  <div class="abs" style="inset:0">${stars(60, 9)}</div>
+  <div class="abs" id="s2" style="inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px">
+    <div class="h1 l1" style="color:#fff;font-size:112px">${words('Your company knows everything.')}</div>
+    <div class="h1 l2" style="font-size:112px;color:rgba(255,255,255,.42)">${words('But nobody can ask it.')}</div>
+  </div><div class="vignette"></div>`,
+  e => ({ l1: $$(e, '.l1 .w'), l2: $$(e, '.l2 .w'), box: $(e, '#s2') }),
+  (lt, e, c) => {
+    animStars(e, lt + 10);
+    animWords(c.l1, lt, 0.1, { stagger: 0.08 });
+    animWords(c.l2, lt, 1.3, { stagger: 0.09 });
+    const q = ei(r(lt, 3.35, 4));
+    st(c.box, { transform: `scale(${1 - q * 0.97})`, opacity: 1 - r(lt, 3.7, 4), filter: q > 0.01 ? `blur(${q * 8}px)` : 'none' });
+  });
+
+// ================= S3: logo reveal (14 - 20) =================
+function logoScene(a, b, taglines, opts = {}) {
+  scene(a, b, `
+    <div class="bg-dark"></div><div class="beam"></div>
+    <div class="abs" style="inset:0">${stars(120, 13 + a)}</div>
+    <svg class="abs" style="inset:0" width="1920" height="1080">${[0, 1, 2, 3].map(i => `<circle class="ring" cx="960" cy="${opts.cy || 500}" r="10" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>`).join('')}</svg>
+    <div class="abs dot" style="left:952px;top:${(opts.cy || 500) - 8}px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 0 30px 10px rgba(80,160,255,.8)"></div>
+    <div class="abs flash" style="inset:0;background:radial-gradient(circle at 50% 46%, rgba(255,255,255,.9), rgba(120,180,255,.2) 40%, transparent 70%);opacity:0"></div>
+    <div class="abs lg" style="left:0;right:0;top:${(opts.cy || 500) - 150}px;display:flex;justify-content:center">${logoSVG({ h: 250 })}</div>
+    <div class="abs tag" style="left:0;right:0;top:${(opts.cy || 500) + 150}px;text-align:center;color:#fff">${taglines}</div>
+    <div class="vignette"></div>`,
+    e => ({ rings: $$(e, '.ring'), tag: $$(e, '.tag > *') }),
+    (lt, e, c) => {
+      animStars(e, lt);
+      const d = $(e, '.dot');
+      const di = eo(r(lt, 0, 0.4)), dout = r(lt, 1.6, 1.9);
+      st(d, { opacity: di * (1 - dout), transform: `scale(${di * (1 + Math.sin(lt * 12) * 0.15) * (1 + dout * 4)})` });
+      c.rings.forEach((g, i) => { const x = eo(r(lt, 0.35 + i * 0.18, 3.8 + i * 0.3)); g.setAttribute('r', 20 + x * (260 + i * 190)); g.style.opacity = (1 - x) * 0.9 + 0.1 * (1 - r(lt, 4, 5)); });
+      const f = r(lt, 1.85, 2.0) * (1 - r(lt, 2.0, 2.9));
+      $(e, '.flash').style.opacity = f;
+      animLogo(e, lt, 1.55, { textDelay: 0.55 });
+      const lg = $(e, '.lg'); const s = 1 + lt * 0.012; st(lg, { transform: `scale(${s})` });
+      c.tag.forEach((t, i) => fadeIn(t, lt, 2.9 + i * 0.45, { dy: 20 }));
+      if (opts.exit !== false) sceneExit(e, lt, b - a, { at: b - a - 0.55, zoom: 0.25 });
+      else st(e, { opacity: 1 - r(lt, b - a - 0.9, b - a - 0.05) });
+    });
+}
+logoScene(14, 20, `<div class="mono" style="font-size:22px;letter-spacing:.42em;opacity:.8">THE COMPANY BRAIN</div>`);
+
+// ================= S4: capture (20 - 28) =================
+const INTEG = [['Outlook', 'O', '#0a64c8'], ['Teams', 'T', '#5b5fc7'], ['Slack', '#', '#611f69'], ['Gmail', 'G', '#ea4335'],
+  ['Zoom', 'Z', '#2d8cff'], ['Meet', 'M', '#00897b'], ['SharePoint', 'S', '#038387'], ['Drive', 'D', '#e8a200']];
+const HUB = [1330, 520];
+scene(20, 28, `
+  <div class="bg-dark"></div><div class="beam"></div>
+  <div class="abs" style="inset:0">${stars(80, 21)}</div>
+  <svg class="abs" id="s4svg" style="inset:0" width="1920" height="1080"></svg>
+  <div class="abs" id="s4tiles" style="inset:0"></div>
+  <div class="abs hub" style="left:${HUB[0] - 95}px;top:${HUB[1] - 95}px;width:190px;height:190px;border-radius:48px;background:linear-gradient(145deg,#0f3b78,#081d3d);
+     border:1.5px solid rgba(140,190,255,.45);display:flex;align-items:center;justify-content:center;box-shadow:0 0 80px rgba(0,120,255,.55), inset 0 0 30px rgba(120,180,255,.2)">${logoSVG({ text: false, h: 108 })}</div>
+  <div class="abs" style="left:140px;top:300px;width:720px;color:#fff">
+    <div class="label lbl" style="color:var(--yellow)">01 &nbsp;/&nbsp; Capture</div>
+    <div class="h1 hd" style="margin-top:34px">${words('Capture')}<br>${words('everything.')}</div>
+    <div class="sub sb" style="margin-top:34px;color:rgba(255,255,255,.72);width:600px">Every mail, chat, meeting and document &mdash; continuously distilled into facts. Not files.</div>
+    <div class="cnt" style="margin-top:46px;display:flex;align-items:baseline;gap:16px">
+      <span class="mono n" style="font-size:54px;font-weight:500;color:#fff;letter-spacing:-.02em">0</span><span class="mono" style="font-size:17px;letter-spacing:.18em;color:rgba(255,255,255,.6)">FACTS CAPTURED</span></div>
+  </div><div class="vignette"></div>`,
+  e => {
+    const svg = $(e, '#s4svg'), tb = $(e, '#s4tiles'), tiles = [];
+    INTEG.forEach(([n, g, col], i) => {
+      const ang = -Math.PI / 2 + i * Math.PI * 2 / INTEG.length + 0.2;
+      const x = HUB[0] + Math.cos(ang) * 380, y = HUB[1] + Math.sin(ang) * 330;
+      const t = el(`<div class="tile" style="left:${x - 56}px;top:${y - 56}px;color:${col}">${g}<div class="nm">${n}</div></div>`); tb.appendChild(t);
+      svg.insertAdjacentHTML('beforeend', `<line x1="${x}" y1="${y}" x2="${HUB[0]}" y2="${HUB[1]}" stroke="rgba(130,180,255,.35)" stroke-width="1.5" stroke-dasharray="6 8"/>`);
+      const dots = [0, 1, 2].map(() => { const d = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); d.setAttribute('r', 5); d.setAttribute('fill', i % 3 === 0 ? '#ffbe00' : '#8fc3ff'); svg.appendChild(d); return d; });
+      tiles.push({ t, x, y, dots, i });
+    });
+    return { tiles, lines: $$(svg, 'line'), hd: $$(e, '.hd .w') };
+  },
+  (lt, e, c) => {
+    animStars(e, lt);
+    fadeIn($(e, '.lbl'), lt, 0.2);
+    animWords(c.hd, lt, 0.35, { stagger: 0.12 });
+    fadeIn($(e, '.sb'), lt, 1.1);
+    fadeIn($(e, '.cnt'), lt, 1.6);
+    $(e, '.n').textContent = fmt(Math.pow(r(lt, 1.7, 7.6), 1.3) * 184392);
+    const hi = back(r(lt, 0.3, 1.1));
+    st($(e, '.hub'), { transform: `scale(${hi * (1 + Math.sin(lt * 5) * 0.015)})`, opacity: cl(hi * 2) });
+    c.tiles.forEach(k => {
+      const a = back(r(lt, 0.7 + k.i * 0.12, 1.5 + k.i * 0.12));
+      const fl = Math.sin(lt * 1.3 + k.i) * 8;
+      st(k.t, { transform: `translateY(${fl}px) scale(${a})`, opacity: cl(a * 2) });
+      c.lines[k.i].style.opacity = r(lt, 1.2 + k.i * 0.1, 1.8 + k.i * 0.1);
+      k.dots.forEach((d, j) => {
+        const on = r(lt, 1.8 + k.i * 0.08, 2.2 + k.i * 0.08);
+        const p = ((lt * 0.55 + j / 3 + k.i * 0.17) % 1);
+        d.setAttribute('cx', lerp(k.x, HUB[0], eio(p))); d.setAttribute('cy', lerp(k.y, HUB[1], eio(p)));
+        d.setAttribute('opacity', on * Math.sin(p * Math.PI));
+      });
+    });
+    sceneExit(e, lt, 8, { at: 7.5 });
+  });
+
+// ================= S5: connect (28 - 36), light =================
+const GC = [ // labeled facts in the graph
+  { x: 1180, y: 250, ic: 'meet', t: 'Kras go-live moved to 1 Nov', s: 'TEAMS MEETING · 12 SEP', av: [['BD', '#006dd8'], ['LJ', '#00a58e']] },
+  { x: 1650, y: 200, ic: 'mail', t: 'Kras pricing addendum', s: 'OUTLOOK · LOTTE J.', av: [['LJ', '#00a58e']] },
+  { x: 1690, y: 560, ic: 'mail', t: 'Q4 payroll budget approved', s: 'OUTLOOK · FINANCE', av: [['LJ', '#00a58e'], ['KW', '#8b6cff']] },
+  { x: 1090, y: 600, ic: 'msg', t: 'Dimona export fix', s: 'PRIVATE CHAT · 2 PEOPLE', av: [['DA', '#f1002f'], ['VI', '#e8a200']], lock: true },
+  { x: 1450, y: 880, ic: 'doc', t: 'Onboarding policy v7', s: 'SHAREPOINT · HR', av: [['SP', '#5b5fc7']] },
+];
+const GE = [[0, 1, 'UPDATES'], [1, 2, 'DEPENDS ON'], [3, 4, 'ANSWERS'], [0, 3, 'RELATES TO'], [2, 4, null]];
+function graphField(seed, n, x0, y0, x1, y1, avoid = []) {
+  const R = rng(seed), pts = [];
+  let guard = 0;
+  while (pts.length < n && guard++ < 5000) {
+    const p = { x: x0 + R() * (x1 - x0), y: y0 + R() * (y1 - y0), s: 8 + R() * 14, k: ['mail', 'msg', 'meet', 'doc'][Math.floor(R() * 4)] };
+    if (pts.some(q => Math.hypot(q.x - p.x, q.y - p.y) < 78)) continue;
+    if (avoid.some(a => Math.abs(a.x - p.x) < 190 && Math.abs(a.y - p.y) < 75)) continue;
+    pts.push(p);
+  }
+  const edges = [];
+  pts.forEach((p, i) => {
+    const near = pts.map((q, j) => [Math.hypot(q.x - p.x, q.y - p.y), j]).filter(([d, j]) => j !== i).sort((a, b) => a[0] - b[0]).slice(0, 2);
+    near.forEach(([d, j]) => { if (!edges.some(([a, b]) => (a === j && b === i))) edges.push([i, j]); });
+  });
+  return { pts, edges };
+}
+scene(28, 36, `
+  <div class="bg-light"></div>
+  <svg class="abs" id="s5svg" style="inset:0" width="1920" height="1080"></svg>
+  <div class="abs" id="s5nodes" style="inset:0"></div>
+  <div class="abs" style="left:140px;top:320px;width:720px;color:var(--ink)">
+    <div class="label lbl" style="color:var(--blue)">02 &nbsp;/&nbsp; Connect</div>
+    <div class="h1 hd" style="margin-top:34px">${words('Connect')}<br>${words('every fact.')}</div>
+    <div class="sub sb" style="margin-top:34px;color:var(--muted);width:560px">A living graph of what your company knows &mdash; and exactly who knows it.</div>
+  </div>`,
+  e => {
+    const svg = $(e, '#s5svg'), nb = $(e, '#s5nodes');
+    const f = graphField(5, 26, 900, 90, 1860, 1000, GC);
+    const all = f.pts.concat(GC.map(g => ({ x: g.x, y: g.y, card: true })));
+    // connect each card to nearest dots
+    const extra = [];
+    GC.forEach((g, gi) => { f.pts.map((q, j) => [Math.hypot(q.x - g.x, q.y - g.y), j]).sort((a, b) => a[0] - b[0]).slice(0, 3).forEach(([d, j]) => extra.push([f.pts.length + gi, j])); });
+    const edges = f.edges.concat(extra).map(([a, b]) => ({ a: all[a], b: all[b] }));
+    edges.forEach(ed => svg.insertAdjacentHTML('beforeend', `<line class="ed" x1="${ed.a.x}" y1="${ed.a.y}" x2="${ed.b.x}" y2="${ed.b.y}" stroke="#c9d2de" stroke-width="1.5"/>`));
+    GE.forEach(([a, b]) => svg.insertAdjacentHTML('beforeend', `<line class="ce" x1="${GC[a].x}" y1="${GC[a].y}" x2="${GC[b].x}" y2="${GC[b].y}" stroke="#006dd8" stroke-width="2.5"/>`));
+    f.pts.forEach(p => nb.insertAdjacentHTML('beforeend', `<div class="gnode dt" style="left:${p.x - p.s / 2}px;top:${p.y - p.s / 2}px;width:${p.s}px;height:${p.s}px;background:${SRC[p.k]};box-shadow:0 0 0 6px color-mix(in srgb, ${SRC[p.k]} 18%, transparent)"></div>`));
+    GC.forEach(g => nb.insertAdjacentHTML('beforeend', `<div class="gcard" style="left:${g.x - 150}px;top:${g.y - 44}px">
+      <div style="display:flex;gap:12px;align-items:center"><div style="flex:none;width:34px;height:34px;border-radius:10px;background:${SRC[g.ic]};display:flex;align-items:center;justify-content:center">${icon(g.ic, 18, '#fff')}</div>
+      <div style="flex:1;min-width:0"><div class="t">${g.t}</div><div class="s">${g.s}</div></div></div>
+      <div style="display:flex;align-items:center;margin-top:12px;gap:8px">${g.av.map(([n, c], i) => `<div class="avatar av" style="width:30px;height:30px;font-size:12px;background:${c};margin-left:${i ? -10 : 0}px;border:2px solid #fff">${n}</div>`).join('')}
+      <div class="mono" style="font-size:11px;color:#8a95a1;letter-spacing:.08em;margin-left:4px">${g.lock ? icon('lock', 12, '#f1002f') + ' PRIVATE' : 'OWNERS'}</div></div></div>`));
+    GE.forEach(([a, b, lab]) => { if (lab) nb.insertAdjacentHTML('beforeend', `<div class="elabel" style="left:${(GC[a].x + GC[b].x) / 2}px;top:${(GC[a].y + GC[b].y) / 2}px">${lab}</div>`); });
+    $$(svg, 'line').forEach(l => { const L = Math.hypot(l.x2.baseVal.value - l.x1.baseVal.value, l.y2.baseVal.value - l.y1.baseVal.value); l.dataset.len = L; l.style.strokeDasharray = L; });
+    return { hd: $$(e, '.hd .w'), dots: $$(e, '.dt'), cards: $$(e, '.gcard'), ed: $$(svg, '.ed'), ce: $$(svg, '.ce'), lab: $$(e, '.elabel'), world: [svg, nb] };
+  },
+  (lt, e, c) => {
+    fadeIn($(e, '.lbl'), lt, 0.2);
+    animWords(c.hd, lt, 0.35, { stagger: 0.12 });
+    fadeIn($(e, '.sb'), lt, 1.1);
+    c.dots.forEach((d, i) => { const a = back(r(lt, 0.3 + i * 0.05, 0.9 + i * 0.05)); st(d, { transform: `scale(${a})`, opacity: cl(a) }); });
+    c.ed.forEach((l, i) => { const a = eio(r(lt, 1.0 + i * 0.03, 1.8 + i * 0.03)); l.style.strokeDashoffset = l.dataset.len * (1 - a); });
+    c.cards.forEach((d, i) => fadeIn(d, lt, 1.6 + i * 0.28, { dy: 24, scale: 0.9 }));
+    c.ce.forEach((l, i) => { const a = eio(r(lt, 3.0 + i * 0.25, 3.8 + i * 0.25)); l.style.strokeDashoffset = l.dataset.len * (1 - a); });
+    c.lab.forEach((d, i) => { const a = back(r(lt, 3.5 + i * 0.25, 4.1 + i * 0.25)); st(d, { transform: `translate(-50%,-50%) scale(${a})`, opacity: cl(a) }); });
+    const cam = 1 + lt * 0.008;
+    c.world.forEach(w => st(w, { transformOrigin: '1400px 540px', transform: `scale(${cam}) translateX(${-lt * 4}px)` }));
+    sceneExit(e, lt, 8, { at: 7.5 });
+  });
+
+// ================= S6: reason / ask (36 - 46) =================
+const Q1 = 'What did we decide on the Kras go-live?';
+const A1 = 'Go-live moved to 1 November. Kras’ HR director approved a parallel payroll run in the 12 Sep steering meeting, and Lotte confirmed the pricing addendum by mail the next day.';
+scene(36, 46, `
+  <div class="bg-dark"></div><div class="beam"></div>
+  <div class="abs" style="inset:0">${stars(70, 31)}</div>
+  <svg class="abs" id="s6svg" style="inset:0" width="1920" height="1080"></svg>
+  <div class="abs" id="s6nodes" style="inset:0"></div>
+  <div class="abs" style="left:140px;top:330px;width:700px;color:#fff">
+    <div class="label lbl" style="color:var(--yellow)">03 &nbsp;/&nbsp; Reason</div>
+    <div class="h1 hd" style="margin-top:34px">${words('Ask your')}<br>${words('company')}<br>${words('anything.')}</div>
+  </div>
+  <div class="ui ask" style="left:900px;top:150px;width:900px;height:96px;display:flex;align-items:center;gap:20px;padding:0 30px;border-radius:24px">
+    <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#006dd8,#5a3bff);display:flex;align-items:center;justify-content:center">${icon('spark', 24, '#fff')}</div>
+    <div class="q" style="font-size:29px;font-weight:500;color:#0f1b2d;letter-spacing:-.01em;flex:1;white-space:nowrap;overflow:hidden"></div>
+    <div style="width:48px;height:48px;border-radius:50%;background:#0f1b2d;display:flex;align-items:center;justify-content:center">${icon('arrow', 22, '#fff')}</div>
+  </div>
+  <div class="abs status mono" style="left:930px;top:270px;font-size:17px;letter-spacing:.12em;color:rgba(255,255,255,.75);display:flex;gap:14px;align-items:center">
+    <span class="spin" style="width:12px;height:12px;border-radius:50%;background:var(--yellow);box-shadow:0 0 16px var(--yellow)"></span><span class="stx">REASONING ACROSS 0 FACTS</span></div>
+  <div class="ui ans" style="left:940px;top:380px;width:860px;padding:34px 38px">
+    <div style="display:flex;align-items:center;gap:12px;font-size:15px;color:#6b7682" class="mono">${icon('spark', 18, '#006dd8')} <span style="letter-spacing:.14em">ANSWER</span>
+      <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:#00a58e">${icon('shield', 16, '#00a58e')} FILTERED BY YOUR ACCESS</span></div>
+    <div class="at" style="margin-top:18px;font-size:27px;line-height:1.45;color:#0f1b2d;letter-spacing:-.01em">${words(A1)}</div>
+    <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap" class="chips">
+      ${[['meet', 'Teams meeting · 12 Sep'], ['mail', 'Outlook · Lotte Janssens'], ['msg', 'Slack · #payroll-benelux']].map(([k, t]) =>
+        `<div class="pill chip" style="padding:9px 16px 9px 10px;background:#f2f5f9;border:1px solid #e3e7ec;font-size:16px;color:#33404c;font-weight:500"><span style="width:26px;height:26px;border-radius:8px;background:${SRC[k]};display:inline-flex;align-items:center;justify-content:center">${icon(k, 14, '#fff')}</span>${t}</div>`).join('')}
+    </div>
+  </div>
+  <div class="vignette"></div>`,
+  e => {
+    const svg = $(e, '#s6svg'), nb = $(e, '#s6nodes');
+    const f = graphField(11, 34, 920, 340, 1840, 1010);
+    f.edges.forEach(([a, b]) => svg.insertAdjacentHTML('beforeend', `<line x1="${f.pts[a].x}" y1="${f.pts[a].y}" x2="${f.pts[b].x}" y2="${f.pts[b].y}" stroke="rgba(140,185,255,.25)" stroke-width="1.5"/>`));
+    f.pts.forEach(p => nb.insertAdjacentHTML('beforeend', `<div class="gnode dt" style="left:${p.x - 9}px;top:${p.y - 9}px;width:18px;height:18px;background:${SRC[p.k]};opacity:.55"></div>`));
+    // a traversal path through the graph (greedy walk along edges)
+    const adj = f.pts.map(() => []); f.edges.forEach(([a, b]) => { adj[a].push(b); adj[b].push(a); });
+    const R = rng(3); let cur = f.pts.reduce((bi, p, i) => p.y < f.pts[bi].y ? i : bi, 0); const path = [cur];
+    for (let i = 0; i < 16; i++) { const nx = adj[cur].filter(j => !path.includes(j)); if (!nx.length) break; cur = nx[Math.floor(R() * nx.length)]; path.push(cur); }
+    const pl = path.map(i => f.pts[i]);
+    const hl = [];
+    for (let i = 1; i < pl.length; i++) { svg.insertAdjacentHTML('beforeend', `<line class="hl" x1="${pl[i - 1].x}" y1="${pl[i - 1].y}" x2="${pl[i].x}" y2="${pl[i].y}" stroke="#ffbe00" stroke-width="3"/>`); }
+    $$(svg, '.hl').forEach(l => { const L = Math.hypot(l.x2.baseVal.value - l.x1.baseVal.value, l.y2.baseVal.value - l.y1.baseVal.value); l.dataset.len = L; l.style.strokeDasharray = L; });
+    return { hd: $$(e, '.hd .w'), dots: $$(e, '.dt'), path, hls: $$(svg, '.hl'), at: $$(e, '.at .w'), chips: $$(e, '.chip'), world: [svg, nb] };
+  },
+  (lt, e, c) => {
+    animStars(e, lt);
+    fadeIn($(e, '.lbl'), lt, 0.2);
+    animWords(c.hd, lt, 0.35, { stagger: 0.12 });
+    fadeIn($(e, '.ask'), lt, 0.6, { dy: 40, scale: 0.96 });
+    const n = Math.floor(r(lt, 1.2, 3.0) * Q1.length);
+    $(e, '.q').innerHTML = Q1.slice(0, n) + (lt > 1.1 && lt < 3.6 && Math.floor(lt * 3) % 2 === 0 ? '<span style="color:#006dd8">|</span>' : '');
+    c.dots.forEach((d, i) => { const a = eo(r(lt, 0.4 + i * 0.03, 1.0 + i * 0.03)); st(d, { transform: `scale(${a})` }); });
+    fadeIn($(e, '.status'), lt, 3.1, { dy: 10, outAt: 5.2 });
+    $(e, '.stx').textContent = `REASONING ACROSS ${fmt(r(lt, 3.1, 4.8) * 2418)} FACTS`;
+    st($(e, '.spin'), { transform: `scale(${1 + Math.sin(lt * 14) * 0.3})` });
+    c.hls.forEach((l, i) => { const a = r(lt, 3.3 + i * 0.12, 3.45 + i * 0.12); l.style.strokeDashoffset = l.dataset.len * (1 - a); });
+    c.path.forEach((pi, i) => { const a = r(lt, 3.3 + i * 0.12, 3.4 + i * 0.12); if (a > 0) st(c.dots[pi], { background: '#ffbe00', opacity: 1, boxShadow: `0 0 ${20 * a}px ${6 * a}px rgba(255,190,0,.6)`, transform: `scale(${1 + 0.5 * a})` }); else st(c.dots[pi], { background: '', boxShadow: 'none' }); });
+    const ai = fadeIn($(e, '.ans'), lt, 5.2, { dy: 60, scale: 0.95 });
+    c.world.forEach(w => st(w, { opacity: 1 - 0.6 * ai }));
+    animWords(c.at, lt, 5.5, { stagger: 0.035, dur: 0.4, dy: 14, blur: 6 });
+    c.chips.forEach((ch, i) => fadeIn(ch, lt, 7.0 + i * 0.2, { dy: 16 }));
+    sceneExit(e, lt, 10, { at: 9.5 });
+  });
+
+// ================= S7: respect access rights (46 - 58) =================
+const qBubble = (who, col, q) => `<div style="display:flex;justify-content:flex-end;align-items:center;gap:14px">
+  <div style="background:#0f1b2d;color:#fff;font-size:24px;font-weight:500;padding:16px 22px;border-radius:20px 20px 6px 20px;letter-spacing:-.01em">${q}</div>
+  <div class="avatar" style="width:46px;height:46px;font-size:16px;background:${col}">${who}</div></div>`;
+scene(46, 58, `
+  <div class="bg-dark"></div><div class="beam"></div>
+  <div class="abs" style="inset:0">${stars(70, 41)}</div>
+  <div class="abs" style="left:140px;top:300px;width:760px;color:#fff">
+    <div class="label lbl" style="color:var(--yellow)">04 &nbsp;/&nbsp; Respect</div>
+    <div class="h1 hd" style="margin-top:34px;font-size:96px">${words('Knows everything.')}</div>
+    <div class="h1 hd2" style="font-size:96px;color:rgba(255,255,255,.45)">${words('Shares only what')}<br>${words('you may know.')}</div>
+    <div class="sub sb" style="margin-top:34px;color:rgba(255,255,255,.72);width:600px">Every answer is checked against your real access rights. Live, per fact, per person.</div>
+  </div>
+  <div class="abs p1" style="left:960px;top:120px;width:840px">
+    <div class="c1">${qBubble('TI', '#e8a200', 'What is Victor’s new salary?')}
+      <div class="ui" style="position:relative;margin-top:16px;padding:24px 28px;display:flex;gap:18px;align-items:center">
+        <div style="flex:none;width:54px;height:54px;border-radius:16px;background:#fde6ea;display:flex;align-items:center;justify-content:center">${icon('lock', 28, '#f1002f')}</div>
+        <div><div style="font-size:23px;font-weight:650;color:#0f1b2d">Restricted to HR.</div><div style="font-size:19px;color:#6b7682;margin-top:4px">It exists, but it isn’t yours to see. Nothing was revealed.</div></div></div></div>
+    <div class="c2" style="margin-top:44px">${qBubble('TI', '#e8a200', 'Has anyone fixed the Dimona export bug?')}
+      <div class="ui" style="position:relative;margin-top:16px;padding:26px 28px">
+        <div style="display:flex;gap:18px;align-items:center">
+          <div style="flex:none;width:54px;height:54px;border-radius:16px;background:#e6f0fb;display:flex;align-items:center;justify-content:center">${icon('spark', 26, '#006dd8')}</div>
+          <div><div style="font-size:23px;font-weight:650;color:#0f1b2d">Yes &mdash; it’s been solved before.</div><div style="font-size:19px;color:#6b7682;margin-top:4px">The fix lives in a private chat between Dario &amp; Victor.</div></div></div>
+        <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+          <div class="btn b1" style="background:#006dd8;color:#fff">${icon('bell', 18, '#fff')} Ask Victor to share</div>
+          <div class="mono" style="font-size:13px;color:#8a95a1;letter-spacing:.08em;display:flex;gap:6px;align-items:center">${icon('lock', 13, '#8a95a1')} CONTENT STAYS PRIVATE</div></div></div></div>
+  </div>
+  <div class="abs p2" style="left:980px;top:250px;width:800px">
+    <div class="mono" style="color:rgba(255,255,255,.7);font-size:17px;letter-spacing:.16em;display:flex;gap:12px;align-items:center">${icon('bell', 18, '#ffbe00')} VICTOR’S INBOX</div>
+    <div class="ui" style="position:relative;margin-top:18px;padding:30px 32px">
+      <div style="display:flex;gap:16px;align-items:center"><div class="avatar" style="width:52px;height:52px;font-size:18px;background:#e8a200">TI</div>
+        <div><div style="font-size:24px;font-weight:650;color:#0f1b2d">Timon is looking for the Dimona export fix</div><div style="font-size:18px;color:#6b7682;margin-top:4px">You discussed it privately with Dario on 3 March.</div></div></div>
+      <div style="margin-top:26px;display:flex;gap:12px">
+        <div class="btn" style="border:1.5px solid #e3e7ec;color:#5f6b76">Decline</div>
+        <div class="btn" style="border:1.5px solid #e3e7ec;color:#0f1b2d">${icon('users', 18, '#0f1b2d')} Share with Timon</div>
+        <div class="btn b3" style="background:#0f1b2d;color:#fff">${icon('globe', 18, '#fff')} Share with everyone</div></div>
+    </div>
+    <div class="toast pill" style="margin-top:22px;padding:16px 24px;background:#00a58e;color:#fff;font-size:21px;font-weight:600;box-shadow:0 20px 40px rgba(0,165,142,.35)">${icon('check', 22, '#fff', 3)} Added to the company brain. Next time, answered instantly.</div>
+    <div class="cursor abs" style="left:0;top:0;width:34px;height:34px"><svg width="34" height="34" viewBox="0 0 24 24"><path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#0f1b2d" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="vignette"></div>`,
+  e => ({ hd: $$(e, '.hd .w'), hd2: $$(e, '.hd2 .w') }),
+  (lt, e, c) => {
+    animStars(e, lt);
+    fadeIn($(e, '.lbl'), lt, 0.2);
+    animWords(c.hd, lt, 0.35, { stagger: 0.12 });
+    animWords(c.hd2, lt, 1.0, { stagger: 0.1 });
+    fadeIn($(e, '.sb'), lt, 1.9);
+    const p1out = eio(r(lt, 5.8, 6.5));
+    fadeIn($(e, '.c1'), lt, 0.8, { dy: 50 });
+    fadeIn($(e, '.c2'), lt, 2.9, { dy: 50 });
+    const b1 = r(lt, 4.6, 4.8) * (1 - r(lt, 5.0, 5.3));
+    st($(e, '.b1'), { transform: `scale(${1 - b1 * 0.06})`, boxShadow: `0 0 0 ${b1 * 8}px rgba(0,109,216,.35)` });
+    st($(e, '.p1'), { transform: `translateY(${-p1out * 160}px)`, opacity: 1 - p1out, filter: p1out > 0.01 ? `blur(${p1out * 10}px)` : 'none' });
+    fadeIn($(e, '.p2'), lt, 6.3, { dy: 80 });
+    // cursor travels to "Share with everyone" and clicks
+    const cu = $(e, '.cursor'), mv = eio(r(lt, 7.1, 8.1));
+    st(cu, { transform: `translate(${lerp(760, 560, mv)}px, ${lerp(330, 200, mv)}px) scale(${1 - 0.15 * (r(lt, 8.2, 8.3) * (1 - r(lt, 8.35, 8.5)))})`, opacity: r(lt, 6.9, 7.2) * (1 - r(lt, 9.4, 9.7)) });
+    const b3 = r(lt, 8.2, 8.35);
+    st($(e, '.b3'), { background: b3 > 0.5 ? '#00a58e' : '#0f1b2d', boxShadow: `0 0 0 ${b3 * (1 - r(lt, 8.4, 9)) * 10}px rgba(0,165,142,.35)` });
+    fadeIn($(e, '.toast'), lt, 8.6, { dy: 20, scale: 0.9 });
+    sceneExit(e, lt, 12, { at: 11.5 });
+  });
+
+// ================= S8: more than the sum of its parts (58 - 64) =================
+const PEOPLE = [['DA', '#f1002f'], ['VI', '#e8a200'], ['JU', '#006dd8'], ['TI', '#8b6cff'], ['SP', '#5b5fc7'], ['BD', '#00a58e'], ['LJ', '#ff6a3d'],
+  ['PC', '#2f8cff'], ['AM', '#d6003a'], ['KW', '#00897b'], ['EV', '#7a56d8'], ['RB', '#0a64c8'], ['NH', '#e8a200'], ['MG', '#00b39a']];
+scene(58, 64, `
+  <div class="bg-dark"></div><div class="beam"></div>
+  <div class="abs" style="inset:0">${stars(120, 51)}</div>
+  <svg class="abs" id="s8svg" style="inset:0" width="1920" height="1080"></svg>
+  <div class="abs" id="s8p" style="inset:0"></div>
+  <div class="abs core" style="left:860px;top:440px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(120,180,255,.9),rgba(0,109,216,.35) 45%,transparent 70%)"></div>
+  <div class="abs" id="s8w" style="inset:0"></div>
+  <div class="abs fin" style="left:0;right:0;top:370px;text-align:center;color:#fff">
+    <div class="h1 f1" style="font-size:120px">${words('More than the sum')}</div>
+    <div class="h1 f2" style="font-size:120px">${words('of its ')}${words('people.', 'yl')}</div>
+    <div class="sub f3" style="margin-top:36px;color:rgba(255,255,255,.72)">One brain that holds what no single employee, mailbox or meeting ever could.</div>
+  </div><div class="vignette"></div>`,
+  e => {
+    const R = rng(77), pb = $(e, '#s8p'), svg = $(e, '#s8svg'), ps = [];
+    PEOPLE.forEach(([n, col], i) => {
+      const ang = i / PEOPLE.length * Math.PI * 2 + R() * 0.3, rad = 340 + R() * 170;
+      const x = 960 + Math.cos(ang) * rad * 1.45, y = 540 + Math.sin(ang) * rad * 0.9;
+      const ic = ['mail', 'msg', 'meet', 'doc'][i % 4];
+      const d = el(`<div class="abs" style="left:${x - 40}px;top:${y - 40}px;width:80px;height:80px">
+        <div class="avatar" style="width:80px;height:80px;font-size:26px;background:${col};box-shadow:0 0 0 6px rgba(255,255,255,.08),0 16px 30px rgba(0,0,0,.4)">${n}</div>
+        <div style="position:absolute;right:-6px;bottom:-6px;width:34px;height:34px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center">${icon(ic, 18, SRC[ic])}</div></div>`);
+      pb.appendChild(d); ps.push({ d, x, y, i });
+    });
+    ps.forEach((p, i) => { const q = ps[(i + 3) % ps.length]; svg.insertAdjacentHTML('beforeend', `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="rgba(140,185,255,.18)" stroke-width="1.2"/>`); });
+    const WW = [['Every mind.', 0.25, 1.25], ['Every mailbox.', 1.25, 2.25], ['Every meeting.', 2.25, 3.2]].map(([w, a, b]) => {
+      const d = el(`<div class="abs" style="inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:130px;letter-spacing:-.05em">${w}</div>`);
+      $(e, '#s8w').appendChild(d); return { d, a, b };
+    });
+    $$(e, '.yl').forEach(s => st(s, { background: 'linear-gradient(90deg,#ffbe00,#ff6a3d)', webkitBackgroundClip: 'text', color: 'transparent' }));
+    return { ps, WW, svg, f1: $$(e, '.f1 .w'), f2: $$(e, '.f2 .w') };
+  },
+  (lt, e, c) => {
+    animStars(e, lt);
+    const conv = ei(r(lt, 3.0, 3.6));
+    c.ps.forEach(p => {
+      const a = back(r(lt, 0.05 + p.i * 0.08, 0.6 + p.i * 0.08));
+      const fl = Math.sin(lt * 1.4 + p.i) * 10;
+      st(p.d, { transform: `translate(${(960 - p.x) * conv}px, ${(540 - p.y) * conv + fl}px) scale(${a * (1 - conv * 0.8)})`, opacity: cl(a * 2) * (1 - r(lt, 3.4, 3.6)) });
+    });
+    c.svg.style.opacity = r(lt, 0.8, 1.6) * (1 - conv);
+    c.WW.forEach(({ d, a, b }) => { const i = eo(r(lt, a, a + 0.4)), o = ei(r(lt, b - 0.25, b)); st(d, { opacity: i * (1 - o), transform: `translateY(${(1 - i) * 40 - o * 40}px)`, filter: `blur(${(1 - i) * 10 + o * 10}px)` }); });
+    const cf = r(lt, 3.4, 3.6) * (1 - r(lt, 3.7, 4.6));
+    st($(e, '.core'), { opacity: cl(cf * 1.2), transform: `scale(${1 + r(lt, 3.4, 4.6) * 9})` });
+    animWords(c.f1, lt, 3.7, { stagger: 0.08 });
+    animWords(c.f2, lt, 4.0, { stagger: 0.1 });
+    fadeIn($(e, '.f3'), lt, 4.6);
+    sceneExit(e, lt, 6, { at: 5.55 });
+  });
+
+// ================= S9: stats (64 - 74) =================
+scene(64, 74, `
+  <div class="bg-blue"></div><div class="beam" style="opacity:1.4"></div>
+  <div class="abs" style="inset:0">${stars(60, 61, 'rgba(255,255,255,.6)')}</div>
+  <svg class="abs" style="inset:0" width="1920" height="1080"><circle cx="1350" cy="540" r="380" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1.5"/><circle cx="1350" cy="540" r="560" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1.5"/></svg>
+  <!-- stat 1 -->
+  <div class="abs st1" style="inset:0">
+    <div class="abs" style="left:170px;top:340px;color:#fff"><div class="num" style="font-weight:800;font-size:250px;letter-spacing:-.06em;line-height:1"><span class="n1">0</span><span style="font-size:130px">%</span></div>
+      <div class="sub cap" style="font-size:34px;margin-top:10px;width:720px">of company know-how lives in <b>one person’s head</b>.</div></div>
+    <svg class="abs" style="left:1150px;top:340px" width="400" height="400" viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="170" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="22"/>
+      <circle class="ring1" cx="200" cy="200" r="170" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" transform="rotate(-90 200 200)" stroke-dasharray="1068" stroke-dashoffset="1068"/>
+      <g transform="translate(152 152)">${icon('mind', 96, '#fff', 1.6).replace('<svg', '<svg x="0" y="0"')}</g></svg>
+  </div>
+  <!-- stat 2 -->
+  <div class="abs st2" style="inset:0">
+    <div class="abs" style="left:170px;top:340px;color:#fff"><div class="num" style="font-weight:800;font-size:250px;letter-spacing:-.06em;line-height:1"><span class="n2">0</span><span style="font-size:130px">h</span></div>
+      <div class="sub cap" style="font-size:34px;margin-top:10px;width:760px">a week, per employee, spent <b>searching for answers</b>.</div></div>
+    <div class="abs mono" style="left:1080px;top:420px;width:620px;color:#fff;font-size:18px;letter-spacing:.16em">
+      <div style="display:flex;justify-content:space-between;opacity:.75"><span>TODAY</span><span>9.3 H / WEEK</span></div>
+      <div style="margin-top:12px;height:30px;border-radius:8px;background:rgba(255,255,255,.18)"><div class="bar1" style="height:100%;border-radius:8px;background:rgba(255,255,255,.55);width:0"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:44px"><span>WITH SD WISE</span><span class="sec">SECONDS</span></div>
+      <div style="margin-top:12px;height:30px;border-radius:8px;background:rgba(255,255,255,.18)"><div class="bar2" style="height:100%;border-radius:8px;background:#ffbe00;width:0"></div></div>
+    </div>
+  </div>
+  <!-- stat 3 -->
+  <div class="abs st3" style="inset:0">
+    <div class="abs" style="left:170px;top:340px;color:#fff"><div class="num" style="font-weight:800;font-size:250px;letter-spacing:-.06em;line-height:1">0</div>
+      <div class="sub cap" style="font-size:34px;margin-top:10px;width:720px">access rights crossed. <b>By design.</b></div></div>
+    <div class="abs grid" style="left:1100px;top:330px;display:grid;grid-template-columns:repeat(6,82px);gap:18px">
+      ${Array.from({ length: 24 }, () => `<div class="lk" style="width:82px;height:82px;border-radius:20px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;position:relative"><span class="i1">${icon('lock', 34, '#fff')}</span><span class="i2" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0">${icon('shield', 36, '#ffbe00')}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="abs mono src" style="left:170px;bottom:60px;font-size:13px;letter-spacing:.1em;color:rgba(255,255,255,.5)">SOURCES: PANOPTO WORKPLACE KNOWLEDGE &amp; PRODUCTIVITY REPORT; MCKINSEY GLOBAL INSTITUTE.</div>
+  <div class="vignette"></div>`,
+  e => ({ lks: $$(e, '.lk') }),
+  (lt, e, c) => {
+    animStars(e, lt);
+    const blk = (sel, a, b) => { const root = $(e, sel); const i = eo(r(lt, a, a + 0.6)), o = ei(r(lt, b - 0.35, b));
+      st(root, { opacity: i * (1 - o), transform: `translateY(${(1 - i) * 60 - o * 60}px)`, filter: `blur(${(1 - i) * 14 + o * 14}px)`, display: (lt > a - 0.1 && lt < b + 0.05) ? 'block' : 'none' }); };
+    blk('.st1', 0.05, 3.35); blk('.st2', 3.35, 6.7); blk('.st3', 6.7, 10);
+    $(e, '.n1').textContent = Math.round(eo(r(lt, 0.2, 1.6)) * 42);
+    $(e, '.ring1').setAttribute('stroke-dashoffset', 1068 * (1 - 0.42 * eo(r(lt, 0.3, 1.8))));
+    $(e, '.n2').textContent = (eo(r(lt, 3.5, 4.9)) * 9.3).toFixed(1);
+    $(e, '.bar1').style.width = `${eo(r(lt, 3.8, 5.0)) * 100}%`;
+    $(e, '.bar2').style.width = `${eo(r(lt, 4.9, 5.6)) * 1.6}%`;
+    $(e, '.sec').style.opacity = r(lt, 5.0, 5.4);
+    c.lks.forEach((k, i) => { const a = back(r(lt, 6.9 + i * 0.03, 7.4 + i * 0.03)), sw = r(lt, 7.9 + i * 0.05, 8.1 + i * 0.05);
+      st(k, { transform: `scale(${a})`, opacity: cl(a), background: sw > 0.5 ? 'rgba(255,190,0,.16)' : 'rgba(255,255,255,.14)', borderColor: sw > .5 ? 'rgba(255,190,0,.6)' : 'rgba(255,255,255,.3)' });
+      $(k, '.i1').style.opacity = 1 - sw; $(k, '.i2').style.opacity = sw; });
+    fadeIn($(e, '.src'), lt, 0.5, { outAt: 9.5 });
+    sceneExit(e, lt, 10, { at: 9.55 });
+  });
+
+// ================= S10: closing line (74 - 76.5) + end card (76.5 - 83) =================
+scene(74, 76.5, `
+  <div class="bg-dark"></div>
+  <div class="abs" style="inset:0">${stars(80, 71)}</div>
+  <div class="abs" style="inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+    <div class="h1 l1" style="color:#fff;font-size:118px">${words('Knowledge that never')}</div>
+    <div class="h1 l2" style="color:#fff;font-size:118px">${words('walks out the door.')}</div>
+  </div><div class="vignette"></div>`,
+  e => ({ l1: $$(e, '.l1 .w'), l2: $$(e, '.l2 .w') }),
+  (lt, e, c) => {
+    animStars(e, lt);
+    animWords(c.l1, lt, 0.1, { stagger: 0.09, outAt: 2.05 });
+    animWords(c.l2, lt, 0.5, { stagger: 0.09, outAt: 2.05 });
+  });
+logoScene(76.5, 83, `
+  <div style="font-size:34px;font-weight:600;letter-spacing:-.01em">The company brain that knows everything &mdash; and respects everyone.</div>
+  <div style="margin-top:34px;display:flex;justify-content:center"><div class="pill mono" style="padding:14px 26px;background:#fff;color:#0f1b2d;font-size:18px;letter-spacing:.14em;font-weight:500">
+    ASK EVERYTHING. CROSS NOTHING. <span style="width:28px;height:28px;border-radius:50%;background:#006dd8;display:inline-flex;align-items:center;justify-content:center">${icon('arrow', 16, '#fff', 2.5)}</span></div></div>`,
+  { exit: false, cy: 440 });
+
+// ---------- render ----------
+window.DURATION = 83;
+window.render = function (t) {
+  for (const s of scenes) {
+    const on = t >= s.a && t < s.b;
+    s.e.style.display = on ? 'block' : 'none';
+    if (on) s.fn(t - s.a, s.e, s.ctx);
+  }
+};
+window.ready = document.fonts.ready.then(() => { window.render(0); return true; });
+const qs = new URLSearchParams(location.search); if (qs.has('t')) window.ready.then(() => window.render(+qs.get('t')));
+</script>
+</body>
+</html>

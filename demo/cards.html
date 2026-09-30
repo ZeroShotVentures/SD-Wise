@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>@font-face{font-family:Inter;src:url(inter.woff2) format("woff2");font-weight:100 900}</style>
+<style>
+:root{--navy:#111a20;--navy2:#1d2830;--blue:#006dd8;--yellow:#ffbe00;--red:#f1002f}
+*{margin:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#16283a 0%,var(--navy) 70%);font-family:Inter,sans-serif;color:#fff}
+canvas{position:absolute;inset:0}
+.wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:28px;padding:0 160px}
+.l{opacity:0;transform:translateY(24px);animation:in .7s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+@keyframes out{to{opacity:0;transform:translateY(-16px)}}
+h1{font-size:96px;font-weight:900;letter-spacing:-3px;line-height:1.02}
+h2{font-size:48px;font-weight:500;color:#b8c4cf;letter-spacing:-1px}
+.y{color:var(--yellow)} .b{color:#4da3ff}
+.tags{display:flex;gap:20px}
+.tag{font-size:30px;font-weight:600;padding:14px 28px;border-radius:999px;border:2px solid #2d3d4a;color:#d9e1e8;background:#1a2833}
+.strike{position:relative;color:#6f7d88}
+.strike:after{content:"";position:absolute;left:-6px;right:-6px;top:52%;height:6px;background:var(--red);border-radius:3px;transform:scaleX(0);transform-origin:left;animation:st .4s ease-out forwards;animation-delay:inherit}
+@keyframes st{to{transform:scaleX(1)}}
+.logo{display:flex;align-items:center;gap:26px;font-size:120px;font-weight:900;letter-spacing:-4px}
+.logo .bar{width:6px;height:110px;background:#fff;opacity:.35;border-radius:3px}
+.logo small{font-size:64px;font-weight:600;letter-spacing:-1px;opacity:.9}
+.pill{font-size:28px;font-weight:600;color:var(--navy);background:var(--yellow);padding:12px 26px;border-radius:999px}
+</style></head><body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div class="wrap" id="w"></div>
+<script>
+const scene=new URLSearchParams(location.search).get("s");
+const W=document.getElementById("w");
+const S={
+ hook:`<h1 class="l" style="animation-delay:.1s">Your company knows <span class="y">everything.</span></h1>
+       <h2 class="l" style="animation-delay:1.1s">It's just scattered across</h2>
+       <div class="tags"><span class="tag l" style="animation-delay:1.5s">💬 chats</span><span class="tag l" style="animation-delay:1.7s">✉️ inboxes</span><span class="tag l" style="animation-delay:1.9s">🎙️ meetings</span><span class="tag l" style="animation-delay:2.1s">🧠 people's heads</span></div>`,
+ meet:`<h2 class="l" style="animation-delay:.05s"><span class="strike" style="animation-delay:.05s">Not documents.</span>&nbsp; <span class="strike" style="animation-delay:.35s">Not folders.</span>&nbsp; <span class="strike" style="animation-delay:.65s">Not heads.</span></h2>
+       <div class="logo l" style="animation-delay:1.1s">sdworx<div class="bar"></div><span class="y">Wise</span></div>
+       <h2 class="l" style="animation-delay:1.6s">The company brain. <b style="color:#fff">Bigger than its parts.</b></h2>`,
+ end:`<h1 class="l" style="animation-delay:.1s">Not another RAG chatbot.</h1>
+      <h2 class="l" style="animation-delay:.9s">Ask anything. Get <b style="color:#fff">the answer</b> — or <b class="y">the person who knows.</b></h2>
+      <div class="l" style="animation-delay:1.8s;display:flex;gap:18px"><span class="pill">🔒 Private stays private</span><span class="pill" style="background:#4da3ff;color:#fff">Facts, not hallucinations</span></div>
+      <div class="logo l" style="animation-delay:2.6s;font-size:80px;margin-top:30px">sdworx<div class="bar" style="height:72px"></div><span class="y">Wise</span></div>`
+};
+W.innerHTML=S[scene]||"";
+// drifting knowledge network
+const c=document.getElementById("c").getContext("2d");
+let seed=scene.length*7;const r=()=>(seed=(seed*9301+49297)%233280)/233280;
+const cols=["#006dd8","#ffbe00","#f1002f","#4da3ff"];
+const N=Array.from({length:70},()=>({x:r()*1920,y:r()*1080,vx:(r()-.5)*.5,vy:(r()-.5)*.5,c:cols[Math.floor(r()*4)],s:2+r()*4,lock:r()<.3}));
+function f(){c.clearRect(0,0,1920,1080);
+ for(const a of N){a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>1920)a.vx*=-1;if(a.y<0||a.y>1080)a.vy*=-1}
+ for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){const a=N[i],b=N[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<200){c.strokeStyle=`rgba(120,160,200,${.18*(1-d/200)})`;c.lineWidth=1;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke()}}
+ for(const a of N){c.globalAlpha=a.lock?.25:.55;c.fillStyle=a.lock?"#8a96a0":a.c;c.beginPath();c.arc(a.x,a.y,a.s,0,7);c.fill()}
+ c.globalAlpha=1;requestAnimationFrame(f)}
+f();
+</script></body></html>

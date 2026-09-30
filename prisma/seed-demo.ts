@@ -34,12 +34,12 @@ const QUESTIONS: Prisma.QuestionCreateManyInput[] = [
     createdAt: at("2026-09-29T09:12:00Z"),
   },
   {
-    id: "q-demo-kras-pricing",
+    id: "q-demo-year-end-run",
     kind: "ACCESS",
     askerId: "p-julien",
-    recipientId: "p-bram",
+    recipientId: "p-filip",
     question: "Can I see what you know about this?",
-    nodeIds: ["n-kras-pricing"],
+    nodeIds: ["n-year-end-run"],
     createdAt: at("2026-09-29T14:40:00Z"),
   },
   {
@@ -47,8 +47,8 @@ const QUESTIONS: Prisma.QuestionCreateManyInput[] = [
     kind: "QUESTION",
     askerId: "p-victor",
     recipientId: "p-dario",
-    question: "Did we agree on a renewal discount for Kras?",
-    nodeIds: ["n-kras-renewal"],
+    question: "Is the v3 launch video still due in February?",
+    nodeIds: ["n-launch-video"],
     createdAt: at("2026-09-30T10:30:00Z"),
   },
   {

@@ -18,10 +18,9 @@ const person = (id: string) => {
 const kobe = person("p-kobe");
 const filip = person("p-filip");
 const julien = person("p-julien");
-const bram = person("p-bram");
 
-const pricingIn = (list: typeof nodes) =>
-  list.find((n) => n.id === "n-kras-pricing") as (typeof nodes)[0];
+const budgetIn = (list: typeof nodes) =>
+  list.find((n) => n.id === "n-ai-budget") as (typeof nodes)[0];
 
 const ask = (me: typeof kobe, question: string, graph = { nodes, edges }) => {
   const { hits, visited } = searchGraph(question, graph.nodes, graph.edges);
@@ -49,15 +48,15 @@ const query = (q: Partial<ResolvedQuery>): ResolvedQuery => ({
 
 describe("redaction", () => {
   it("never sends locked content to the viewer", () => {
-    const pricing = nodes.find((n) => n.id === "n-kras-pricing");
-    if (!pricing) throw new Error("fixture");
-    const view = toNodeView(pricing, julien.id);
+    const budget = nodes.find((n) => n.id === "n-ai-budget");
+    if (!budget) throw new Error("fixture");
+    const view = toNodeView(budget, julien.id);
     expect(view).toEqual(expect.objectContaining({ locked: true }));
-    expect(JSON.stringify(view)).not.toContain("€4.20");
+    expect(JSON.stringify(view)).not.toContain("€40k");
   });
 
   it("hides the meaning of edges touching a locked node", () => {
-    const edge = edges.find((e) => e.sourceId === "n-kras-pricing");
+    const edge = edges.find((e) => e.targetId === "n-ai-budget");
     if (!edge) throw new Error("fixture");
     const visible = new Set(
       nodes.filter((n) => canSee(n, julien.id)).map((n) => n.id),
@@ -68,8 +67,8 @@ describe("redaction", () => {
 
 describe("ask", () => {
   it("answers from what you own", () => {
-    const result = ask(bram, "What do we charge Kras per payslip?");
-    expect(result.answer?.text).toContain("€4.20");
+    const result = ask(kobe, "How big is the AI tooling budget?");
+    expect(result.answer?.text).toContain("€40k");
     expect(result.people).toEqual([]);
   });
 
@@ -136,13 +135,13 @@ describe("access requests", () => {
       kind: "ACCESS",
       askerId: julien.id,
       asker: julien,
-      recipientId: bram.id,
-      recipient: bram,
-      nodeIds: ["n-kras-pricing"],
+      recipientId: kobe.id,
+      recipient: kobe,
+      nodeIds: ["n-ai-budget"],
     });
     const graph = applyAnswers(nodes, edges, [approved]);
-    expect(canSee(pricingIn(graph.nodes), julien.id)).toBe(true);
-    expect(canSee(pricingIn(graph.nodes), kobe.id)).toBe(false);
-    expect(canSee(pricingIn(nodes), julien.id)).toBe(false);
+    expect(canSee(budgetIn(graph.nodes), julien.id)).toBe(true);
+    expect(canSee(budgetIn(graph.nodes), filip.id)).toBe(false);
+    expect(canSee(budgetIn(nodes), julien.id)).toBe(false);
   });
 });

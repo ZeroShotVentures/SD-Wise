@@ -8,13 +8,7 @@ const baseEnv = {
 };
 
 // Blanked before each load so values from the host (e.g. CI job env) don't leak in.
-const isolatedKeys = [
-  "BETTER_AUTH_SECRET",
-  "GOOGLE_CLIENT_ID",
-  "GOOGLE_CLIENT_SECRET",
-  "RESEND_API_KEY",
-  "ADMIN_EMAILS",
-];
+const isolatedKeys = ["BETTER_AUTH_SECRET", "ADMIN_EMAILS"];
 
 const loadEnv = async (values: Record<string, string>) => {
   for (const key of isolatedKeys) {
@@ -54,27 +48,6 @@ describe("env", () => {
   it("rejects a short auth secret", async () => {
     await expect(
       loadEnv({ ...baseEnv, BETTER_AUTH_SECRET: "short" }),
-    ).rejects.toThrow("Invalid environment variables");
-  });
-
-  it("accepts Google credentials", async () => {
-    const env = await loadEnv({
-      ...baseEnv,
-      GOOGLE_CLIENT_ID: "id",
-      GOOGLE_CLIENT_SECRET: "secret",
-    });
-    expect(env.GOOGLE_CLIENT_ID).toBe("id");
-  });
-
-  it("requires both Google credentials", async () => {
-    await expect(
-      loadEnv({ ...baseEnv, GOOGLE_CLIENT_ID: "id" }),
-    ).rejects.toThrow("Invalid environment variables");
-  });
-
-  it("rejects a malformed Resend API key", async () => {
-    await expect(
-      loadEnv({ ...baseEnv, RESEND_API_KEY: "sk_123" }),
     ).rejects.toThrow("Invalid environment variables");
   });
 

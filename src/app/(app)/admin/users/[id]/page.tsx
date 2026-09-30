@@ -26,7 +26,6 @@ const dateFormat = new Intl.DateTimeFormat("en", {
 
 const providerLabels: Record<string, string> = {
   credential: "Password",
-  google: "Google",
 };
 
 export default async function Page({

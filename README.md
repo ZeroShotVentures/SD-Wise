@@ -1,12 +1,11 @@
 # my-app
 
-Next.js scaffold with authentication, account management, Postgres, and transactional email.
+Next.js scaffold with authentication, account management, and Postgres.
 
 ## Stack
 
 - [Next.js 16](https://nextjs.org) (App Router) with React 19 and Tailwind CSS 4
-- [Better Auth](https://www.better-auth.com) for email/password and Google sign-in
-- [Resend](https://resend.com) for password reset and email verification emails
+- [Better Auth](https://www.better-auth.com) for email/password sign-in
 - [Prisma 7](https://www.prisma.io) on PostgreSQL (via `@prisma/adapter-pg`)
 - [t3-env](https://env.t3.gg) + [Zod](https://zod.dev) for typed, validated environment variables
 - [oxlint](https://oxc.rs/docs/guide/usage/linter) for linting, [Biome](https://biomejs.dev) for formatting and import sorting
@@ -44,9 +43,6 @@ All variables are declared and validated in `src/env.ts`. The app refuses to bui
 | `DATABASE_URL` | Postgres connection string. The default matches `docker-compose.yml`. |
 | `BETTER_AUTH_SECRET` | At least 32 characters, required in production. Generate with `openssl rand -base64 32`. |
 | `BETTER_AUTH_URL` | Base URL of the app, e.g. `http://localhost:3000`. |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth client. Sign in with Google is enabled when both are set. |
-| `RESEND_API_KEY` | Resend API key (`re_...`). Without it, emails are logged to the console in development and email features are disabled in production. |
-| `EMAIL_FROM` | Sender for outgoing email, e.g. `my-app <hello@example.com>`. Must use a domain verified in Resend. |
 | `ADMIN_EMAILS` | Optional, comma-separated. The only way to make someone an admin: listed accounts are admins once their email is verified, everyone else is a regular user. |
 
 ## Routes and auth checks
@@ -54,7 +50,6 @@ All variables are declared and validated in `src/env.ts`. The app refuses to bui
 | Route | Access |
 | --- | --- |
 | `/sign-in`, `/sign-up` | Public. Signed-in users are redirected to `callbackURL` (default `/dashboard`). |
-| `/forgot-password`, `/reset-password` | Public, only when email is enabled. |
 | `/dashboard`, `/settings` | Signed-in users. Grouped under `src/app/(app)` with a shared header. |
 | `/admin`, `/admin/users/[id]` | Admins only. Everyone else gets a 404. See [Admin portal](#admin-portal). |
 
@@ -71,10 +66,9 @@ Protect data on the server, not in the browser:
 `/settings` lets users:
 
 - Change their name.
-- Change their email (only when email is enabled). Verified users get a confirmation link at their *old* address before anything changes, so a hijacked session can't silently take over the account.
-- Change their password (only for users who have one). This signs out their other devices.
+- Change their password. This signs out their other devices.
 - See active sessions and revoke one or all other devices.
-- Delete their account. Password users must enter their password; Google-only users must have signed in within the last day.
+- Delete their account after entering their password.
 
 ## Admin portal
 
@@ -85,7 +79,7 @@ Built on the Better Auth [admin plugin](https://www.better-auth.com/docs/plugins
 - **Impersonate** the user. The admin is signed in as them for up to an hour, with a banner and a "Stop impersonating" button that returns to the admin session. Impersonation sessions are hidden from the user's own session list. Other admins can't be impersonated.
 - **Ban** them for a set time or permanently, with a reason. Banning signs them out everywhere and blocks sign-in until the ban is lifted or expires.
 - See and revoke their **sessions**.
-- Set a new **password**, or give a Google-only user one.
+- Set a new **password**.
 - **Delete** them.
 
 Admins can't take these actions on their own account.
@@ -94,9 +88,15 @@ Admins can't take these actions on their own account.
 
 Admins are defined only by `ADMIN_EMAILS`, a comma-separated list of addresses (in `.env` locally, or in the host environment in production). Roles can't be changed from the portal; to add or remove an admin, edit the variable and restart or redeploy.
 
-A listed user is an admin once their email is verified: Google accounts are verified on sign-up, email/password accounts once the verification link is clicked. Without `RESEND_API_KEY` in production, verification emails can't be sent, so admins need to sign in with Google there.
+A listed user is an admin only once their email is verified, so nobody can become an admin just by signing up with a listed address. The app sends no email, so verify an admin by hand after they sign up:
 
-The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set on sign-up, re-checked on every user update (so verifying or changing an email applies immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
+```sql
+UPDATE "user" SET "emailVerified" = true WHERE email = 'admin@example.com';
+```
+
+Then restart the server so the startup sync grants the role (direct database writes skip the update hook).
+
+The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set on sign-up, re-checked on every user update (so changes apply immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
 
 To add finer-grained roles (e.g. support staff who can impersonate but not delete), define them with `createAccessControl`, pass `ac`/`roles` to both `admin()` in `src/lib/auth.ts` and `adminClient()` in `src/lib/auth-client.ts`, and extend `roleFor()` in `src/lib/admin-role.ts` to assign them.
 
@@ -104,28 +104,9 @@ To add finer-grained roles (e.g. support staff who can impersonate but not delet
 
 Better Auth rate-limits its endpoints in production (not in development). Counters are stored in the `rateLimit` table rather than in memory, so limits hold across multiple instances and serverless invocations. Tune limits with `rateLimit` in `src/lib/auth.ts`.
 
-## Sign in with Google
-
-Off until `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. To set it up:
-
-1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), configure the OAuth consent screen, then create an OAuth client ID of type "Web application".
-2. Add `http://localhost:3000/api/auth/callback/google` (and `https://<your-domain>/api/auth/callback/google` for production) as an authorized redirect URI.
-3. Copy the client ID and secret into `.env`.
-
-New Google users arrive with a verified email. If an email/password user with the same address already exists, Google sign-in links to that user only once they've verified their email; until then the Google sign-in is refused, which prevents account takeover through an unverified address.
-
 ## Email
 
-Emails are sent through `sendEmail` in `src/lib/email.ts`. Better Auth uses it for:
-
-- **Password reset**: "Forgot password?" on the sign-in form leads to `/forgot-password`. The emailed link ends at `/reset-password`. Resetting revokes all existing sessions.
-- **Email verification**: sent on email/password sign-up. Verification is not required to sign in; the dashboard shows a banner with a resend button until the address is verified. To block unverified users, set `requireEmailVerification: true` in `src/lib/auth.ts`.
-
-Without `RESEND_API_KEY`, emails (including their links) are printed to the server console in development, so you can click through the flows locally. In production, email features are disabled when no key is set: there's no "Forgot password?" link and no verification emails, so reset links never end up in logs.
-
-To send real email, [verify a domain](https://resend.com/domains) in Resend, create an [API key](https://resend.com/api-keys) and set `RESEND_API_KEY` and `EMAIL_FROM`. Before a domain is verified, the default `onboarding@resend.dev` sender only delivers to your own Resend account address.
-
-Whether Google and email are enabled is read at build time, so changing them requires a rebuild/redeploy.
+The app sends no email. Signing up with email and password needs no verification: the account is usable immediately. There's no password reset or email change; admins can set a new password for a user from the admin portal.
 
 ### Gating features
 
@@ -186,7 +167,7 @@ src/
     (app)/             signed-in pages: dashboard, settings, admin
     api/auth/          Better Auth handler
   components/          React components (+ colocated tests)
-  lib/                 auth, session helpers, entitlements, email, Prisma client
+  lib/                 auth, session helpers, entitlements, Prisma client
   proxy.ts             optimistic redirect for signed-out visitors
   instrumentation.ts   syncs admin roles with ADMIN_EMAILS at startup
   env.ts               environment schema

@@ -18,10 +18,6 @@ export const env = createEnv({
         ? authSecret
         : authSecret.default("dev-only-secret-never-use-in-production"),
     BETTER_AUTH_URL: z.url(),
-    GOOGLE_CLIENT_ID: z.string().optional(),
-    GOOGLE_CLIENT_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().startsWith("re_").optional(),
-    EMAIL_FROM: z.string().min(1),
     ADMIN_EMAILS: z
       .string()
       .optional()
@@ -37,17 +33,4 @@ export const env = createEnv({
   experimental__runtimeEnv: {},
   emptyStringAsUndefined: true,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  createFinalSchema: (shape) =>
-    z.object(shape).superRefine((values, ctx) => {
-      if (!values.GOOGLE_CLIENT_ID !== !values.GOOGLE_CLIENT_SECRET) {
-        const missing = values.GOOGLE_CLIENT_ID
-          ? "GOOGLE_CLIENT_SECRET"
-          : "GOOGLE_CLIENT_ID";
-        ctx.addIssue({
-          code: "custom",
-          path: [missing],
-          message: "Set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET",
-        });
-      }
-    }),
 });

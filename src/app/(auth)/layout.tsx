@@ -1,10 +1,13 @@
+import { Brand } from "@/components/shell/brand";
+
 export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-canvas px-6">
+      <Brand tone="dark" />
       {children}
     </div>
   );

@@ -13,7 +13,7 @@ export function ImpersonateButton({ userId }: { userId: string }) {
     run(
       () => admin.impersonateUser({ userId }),
       () => {
-        router.replace("/dashboard");
+        router.replace("/graph");
         router.refresh();
       },
     );

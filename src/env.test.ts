@@ -1,0 +1,145 @@
+// @vitest-environment node
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const baseEnv = {
+  DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+  BETTER_AUTH_SECRET: "a".repeat(32),
+  BETTER_AUTH_URL: "http://localhost:3000",
+};
+
+const billingEnv = {
+  BILLING_ENABLED: "true",
+  STRIPE_SECRET_KEY: "sk_test_123",
+  STRIPE_WEBHOOK_SECRET: "whsec_123",
+  STRIPE_PRICE_BASIC_MONTHLY: "price_basic",
+  STRIPE_PRICE_PRO_MONTHLY: "price_pro",
+};
+
+// Blanked before each load so values from the host (e.g. CI job env) don't leak in.
+const isolatedKeys = [
+  "BETTER_AUTH_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "RESEND_API_KEY",
+  "BILLING_ENABLED",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "STRIPE_PRICE_BASIC_MONTHLY",
+  "STRIPE_PRICE_BASIC_ANNUAL",
+  "STRIPE_PRICE_PRO_MONTHLY",
+  "STRIPE_PRICE_PRO_ANNUAL",
+  "ADMIN_EMAILS",
+];
+
+const loadEnv = async (values: Record<string, string>) => {
+  for (const key of isolatedKeys) {
+    vi.stubEnv(key, "");
+  }
+  for (const [key, value] of Object.entries(values)) {
+    vi.stubEnv(key, value);
+  }
+  const { env } = await import("./env");
+  return env;
+};
+
+describe("env", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("disables billing by default and needs no Stripe variables", async () => {
+    const env = await loadEnv(baseEnv);
+    expect(env.BILLING_ENABLED).toBe(false);
+  });
+
+  it("parses a valid billing environment", async () => {
+    const env = await loadEnv({ ...baseEnv, ...billingEnv });
+    expect(env.BILLING_ENABLED).toBe(true);
+    expect(env.STRIPE_PRICE_PRO_MONTHLY).toBe("price_pro");
+    expect(env.STRIPE_PRICE_PRO_ANNUAL).toBeUndefined();
+  });
+
+  it("requires Stripe variables when billing is enabled", async () => {
+    await expect(
+      loadEnv({ ...baseEnv, ...billingEnv, STRIPE_SECRET_KEY: "" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("uses a dev-only auth secret outside production", async () => {
+    const { BETTER_AUTH_SECRET: _, ...withoutSecret } = baseEnv;
+    const env = await loadEnv(withoutSecret);
+    expect(env.BETTER_AUTH_SECRET).toContain("dev-only");
+  });
+
+  it("requires an auth secret in production", async () => {
+    const { BETTER_AUTH_SECRET: _, ...withoutSecret } = baseEnv;
+    await expect(
+      loadEnv({ ...withoutSecret, NODE_ENV: "production" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("rejects a short auth secret", async () => {
+    await expect(
+      loadEnv({ ...baseEnv, BETTER_AUTH_SECRET: "short" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("rejects a malformed price id", async () => {
+    await expect(
+      loadEnv({
+        ...baseEnv,
+        ...billingEnv,
+        STRIPE_PRICE_BASIC_MONTHLY: "prod_123",
+      }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("accepts Google credentials", async () => {
+    const env = await loadEnv({
+      ...baseEnv,
+      GOOGLE_CLIENT_ID: "id",
+      GOOGLE_CLIENT_SECRET: "secret",
+    });
+    expect(env.GOOGLE_CLIENT_ID).toBe("id");
+  });
+
+  it("requires both Google credentials", async () => {
+    await expect(
+      loadEnv({ ...baseEnv, GOOGLE_CLIENT_ID: "id" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("rejects a malformed Resend API key", async () => {
+    await expect(
+      loadEnv({ ...baseEnv, RESEND_API_KEY: "sk_123" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+
+  it("parses admin emails into a normalized list", async () => {
+    const env = await loadEnv({
+      ...baseEnv,
+      ADMIN_EMAILS: "admin@example.com, Other@Example.com,",
+    });
+    expect(env.ADMIN_EMAILS).toEqual([
+      "admin@example.com",
+      "other@example.com",
+    ]);
+  });
+
+  it("defaults admin emails to an empty list", async () => {
+    const env = await loadEnv(baseEnv);
+    expect(env.ADMIN_EMAILS).toEqual([]);
+  });
+
+  it("rejects a malformed admin emails entry", async () => {
+    await expect(
+      loadEnv({ ...baseEnv, ADMIN_EMAILS: "not-an-email" }),
+    ).rejects.toThrow("Invalid environment variables");
+  });
+});

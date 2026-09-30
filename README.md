@@ -43,6 +43,8 @@ It also upserts the people from `src/lib/graph/fixtures.ts` as `Person` rows and
 
 Demo script: sign in as Kobe, ask "When is the payroll cut-off in December?", click **Ask Filip** and send. Sign in as Filip: the question is in his inbox with a drafted answer. Send it, and Kobe sees the answer under Inbox → Sent and as a new node in the graph.
 
+The other way round: as Filip, ask "Is there a deploy freeze over the holidays?" and click **Ask Kobe**. Kobe gets it with a drafted answer about the 14 December to 4 January freeze. Their work is linked in the graph through the year-end payroll run.
+
 ### What is real and what is mocked
 
 - **Real (Postgres):** accounts, the `Person` behind each account (`user.personId`), and questions and access requests between people (`Question` table). Asking, answering, declining and approving access work across server instances.

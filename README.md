@@ -45,13 +45,11 @@ question
 
 The database holds every data point and its access rights as facts. Answers are built from those stored facts, and access decisions come from stored rights, so SD Wise can't hallucinate an answer or a permission. When a person answers a request, their answer is stored as a new fact and appears as a new node in the asker's knowledge graph.
 
-The search behind subsystems 1 and 2 is described in [`docs/node-finding.md`](docs/node-finding.md).
-
 ## How to test
 
 ### Accounts
 
-Sign-up is disabled. There are two accounts:
+Sign in with one of these two accounts:
 
 | User | Email | Password | Role |
 | --- | --- | --- | --- |
@@ -64,59 +62,3 @@ Sign-up is disabled. There are two accounts:
 2. Sign in as **Filip**. The question is in the inbox with a drafted answer; send it.
 3. Still as **Filip**, ask *"Is there a deploy freeze over the holidays?"*, click **Ask Kobe** and send.
 4. Sign in as **Kobe**. Answer from the inbox, and Filip sees the answer as a new node in his graph.
-
-To start again from an empty inbox, run `pnpm db:seed:demo --reset`.
-
-## Running it locally
-
-Requires Node.js 24 (see `.nvmrc`), pnpm and Docker.
-
-```bash
-pnpm install
-pnpm db:up             # start Postgres in Docker
-pnpm db:migrate        # apply migrations
-pnpm db:seed:demo      # create Kobe and Filip, their people and demo questions
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000). Local development works without any `.env`: `.env.example` supplies the defaults. All environment variables are declared and validated in `src/env.ts`.
-
-> [!WARNING]
-> `pnpm db:seed:demo` deletes every account other than Kobe and Filip.
-
-### What is real and what is mocked
-
-- **Real (Postgres):** accounts, the person behind each account, and questions, answers and access requests between people.
-- **Mocked:** the knowledge graph and integrations (`src/lib/graph/fixtures.ts`). Answers stored in the database are layered onto this graph on every read.
-
-## Stack
-
-Next.js 16 (App Router), React 19, Tailwind CSS 4, Better Auth, Prisma 7 on PostgreSQL, Vitest, oxlint and Biome.
-
-## Scripts
-
-| Script | Description |
-| --- | --- |
-| `pnpm dev` | Start the dev server |
-| `pnpm build` / `pnpm start` | Production build / serve |
-| `pnpm lint` / `pnpm fix` | Lint and format check / auto-fix |
-| `pnpm typecheck` | Generate the Prisma client and run `tsc` |
-| `pnpm test` | Run unit tests |
-| `pnpm db:up` / `pnpm db:down` | Start / stop Postgres |
-| `pnpm db:migrate` | Create and apply a migration (dev) |
-| `pnpm db:deploy` | Apply pending migrations (production) |
-| `pnpm db:seed:demo` | Create the demo accounts and questions. `--reset` clears questions first |
-| `pnpm db:studio` | Open Prisma Studio |
-
-## Project structure
-
-```
-prisma/              database schema, migrations and seed scripts
-src/
-  app/(auth)/        sign-in
-  app/(app)/         graph, inbox, integrations, settings, admin
-  lib/graph/         knowledge graph, access rules and questions
-  lib/               auth, sessions, Prisma client
-docs/                design notes
-marketing/           promo and explainer videos
-```

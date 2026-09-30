@@ -1,3 +1,4 @@
+import { growBrain } from "./mock-brain";
 import type {
   EdgeKind,
   Integration,
@@ -439,7 +440,7 @@ const nodeSeeds: NodeSeed[] = [
   },
 ];
 
-export const nodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
+const coreNodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
   id: n.id,
   title: n.title,
   content: n.content,
@@ -530,7 +531,7 @@ const edgeSeeds: [string, string, EdgeKind, string][] = [
   ],
 ];
 
-export const edges: KnowledgeEdge[] = edgeSeeds.map(
+const coreEdges: KnowledgeEdge[] = edgeSeeds.map(
   ([sourceId, targetId, kind, description], i) => ({
     id: `e-${i + 1}`,
     sourceId,
@@ -539,3 +540,9 @@ export const edges: KnowledgeEdge[] = edgeSeeds.map(
     description,
   }),
 );
+
+// The hand-written facts above plus ~10k generated ones, so the graph looks
+// like a real company brain. UI mock only, nothing here touches the database.
+const brain = growBrain(coreNodes, coreEdges, 10_000);
+export const nodes: KnowledgeNode[] = brain.nodes;
+export const edges: KnowledgeEdge[] = brain.edges;

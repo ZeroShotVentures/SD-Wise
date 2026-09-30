@@ -18,6 +18,7 @@ export function toNodeView(
       integrationId: node.integrationId,
       ownerIds: node.ownerIds,
       createdAt: node.createdAt,
+      pos: node.pos,
       isNew: false,
     };
   }

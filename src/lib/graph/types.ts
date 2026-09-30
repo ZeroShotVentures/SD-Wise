@@ -51,6 +51,9 @@ export type KnowledgeNode = {
   ownerIds: string[];
   accessIds: string[];
   createdAt: string;
+  // Mock only: precomputed graph layout, so the client doesn't have to run
+  // a physics simulation over thousands of nodes.
+  pos?: [number, number];
 };
 
 // proposal: edges carry meaning ("updates", "relates to", ...).
@@ -95,6 +98,7 @@ export type NodeView =
       integrationId: string | null;
       ownerIds: string[];
       createdAt: string;
+      pos?: [number, number];
       isNew: false;
     };
 

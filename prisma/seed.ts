@@ -13,7 +13,10 @@ config({ path: [".env.local", ".env", ".env.example"], quiet: true });
 
 const MODEL = "alibaba/qwen3.8-flash";
 const MAX_DATA_POINTS = 1000;
+const PEOPLE = 150;
 const EDGES_PER_NODE = 1.5;
+const ITEMS_PER_BATCH = 8;
+const EDGE_CHUNK = 40;
 const COMPANY =
   "SD Worx, a European provider of payroll, HR and workforce management services headquartered in Antwerp, Belgium";
 
@@ -44,7 +47,7 @@ const SOURCE_INTEGRATION = {
   MEETING: IntegrationType.google_meet,
 } as const;
 
-const departmentSchema = z.object({
+const rolesSchema = z.object({
   roles: z
     .array(
       z.object({
@@ -54,6 +57,11 @@ const departmentSchema = z.object({
     )
     .min(3)
     .max(10),
+});
+
+type Role = z.infer<typeof rolesSchema>["roles"][number];
+
+const knowledgeSchema = z.object({
   knowledge: z
     .array(
       z.object({
@@ -64,8 +72,10 @@ const departmentSchema = z.object({
         contentSummary: z.string(),
       }),
     )
-    .min(4),
+    .min(1),
 });
+
+type KnowledgeItem = z.infer<typeof knowledgeSchema>["knowledge"][number];
 
 const edgesSchema = z.object({
   edges: z.array(z.object({ from: z.number().int(), to: z.number().int() })),
@@ -83,10 +93,7 @@ function sample<T>(items: T[], count: number): T[] {
   return [...picked];
 }
 
-function distributeHeadcount(
-  roles: { role: string; headcountWeight: number }[],
-  total: number,
-): string[] {
+function distributeHeadcount(roles: Role[], total: number): string[] {
   const totalWeight = roles.reduce((sum, r) => sum + r.headcountWeight, 0);
   const counts = roles.map((r) =>
     Math.floor((r.headcountWeight / totalWeight) * total),
@@ -114,23 +121,90 @@ function scaleHeadcounts(
   return scaled;
 }
 
-async function generateDepartment(department: Department, headcount: number) {
+function departmentIntro(department: Department, headcount: number) {
+  return `You are generating realistic internal company data for ${COMPANY}.
+
+For the ${department} department, which has ${headcount} employees (for this company PRODUCTION means payroll processing operations):`;
+}
+
+async function generateRoles(department: Department, headcount: number) {
   const { output } = await generateText({
     model: MODEL,
-    output: Output.object({ schema: departmentSchema }),
-    prompt: `You are generating realistic internal company data for ${COMPANY}.
-
-For the ${department} department, which has ${headcount} employees (for this company PRODUCTION means payroll processing operations):
+    output: Output.object({ schema: rolesSchema }),
+    prompt: `${departmentIntro(department, headcount)}
 - List 3 to 10 distinct job roles in that department (e.g. "Senior Payroll Consultant", "IT Support Technician"), from junior staff to managers.
-- headcountWeight (1 to 10) is how common the role is relative to the others: frontline roles high, managers low.
-- Write 6 to 8 pieces of internal knowledge produced by people in those roles: Slack messages (MESSAGE), emails (EMAIL), or meeting notes (MEETING). Mix the sources.
-- authorIndex is the 0-based index of the author's role in the roles list.
+- headcountWeight (1 to 10) is how common the role is relative to the others: frontline roles high, managers low.`,
+  });
+  return output.roles;
+}
+
+async function generateKnowledge(
+  department: Department,
+  headcount: number,
+  roles: Role[],
+  count: number,
+  previous: KnowledgeItem[],
+) {
+  const { output } = await generateText({
+    model: MODEL,
+    output: Output.object({ schema: knowledgeSchema }),
+    prompt: `${departmentIntro(department, headcount)}
+
+Roles (0-based index):
+${roles.map((r, index) => `${index}. ${r.role}`).join("\n")}
+${
+  previous.length > 0
+    ? `
+Already written (do not repeat these topics, but follow-ups on them are welcome):
+${previous.map((item) => `- ${item.contentSummary}`).join("\n")}
+`
+    : ""
+}
+- Write exactly ${count} pieces of internal knowledge produced by people in those roles: Slack messages (MESSAGE), emails (EMAIL), or meeting notes (MEETING). Mix the sources.
+- authorIndex is the 0-based index of the author's role in the roles list above.
 - content is the full text (2 to 6 sentences), concrete and specific: names of systems, clients, numbers, dates, decisions.
 - contentSummary is one sentence.
 - sourceDescription says where it came from, e.g. "#finance-team Slack channel", "Email to the logistics lead", "Weekly IT sync meeting".
 - Some items should reference work of other departments so knowledge connects across the company.`,
   });
-  return output;
+  return output.knowledge;
+}
+
+async function generateDepartment(
+  department: Department,
+  headcount: number,
+  itemCount: number,
+) {
+  const roles = await generateRoles(department, headcount);
+  const knowledge: KnowledgeItem[] = [];
+  while (knowledge.length < itemCount) {
+    // oxlint-disable-next-line no-await-in-loop
+    const batch = await generateKnowledge(
+      department,
+      headcount,
+      roles,
+      Math.min(ITEMS_PER_BATCH, itemCount - knowledge.length),
+      knowledge,
+    );
+    knowledge.push(...batch);
+  }
+  return { roles, knowledge: knowledge.slice(0, itemCount) };
+}
+
+async function generateEdges(
+  nodes: { summary: string }[],
+  start: number,
+  end: number,
+  target: number,
+) {
+  const { output } = await generateText({
+    model: MODEL,
+    output: Output.object({ schema: edgesSchema }),
+    prompt: `Below is a numbered list of knowledge items from one company. Return pairs of items that are meaningfully related (same project, decision, client, system, incident, or follow-up). "from" is the item that references or builds on "to". Only return edges whose "from" is between ${start} and ${end - 1}; "to" can be any item. Aim for about ${target} edges and include cross-department links.
+
+${nodes.map((node, index) => `${index}. ${node.summary}`).join("\n")}`,
+  });
+  return output.edges;
 }
 
 async function main() {
@@ -158,11 +232,18 @@ async function main() {
     Department,
     number,
   ][];
+  const itemsPerDepartment = Math.floor(
+    (MAX_DATA_POINTS - PEOPLE) / (1 + EDGES_PER_NODE) / departments.length,
+  );
 
   const generated = await Promise.all(
     departments.map(async ([department, headcount]) => {
       try {
-        const data = await generateDepartment(department, headcount);
+        const data = await generateDepartment(
+          department,
+          headcount,
+          itemsPerDepartment,
+        );
         console.log(
           `  ${department}: ${data.roles.length} roles, ${data.knowledge.length} items`,
         );
@@ -179,10 +260,10 @@ async function main() {
     (sum, { data }) => sum + data.knowledge.length,
     0,
   );
-  const edgeBudget = Math.round(nodeCount * EDGES_PER_NODE);
+  const edgeBudget = MAX_DATA_POINTS - PEOPLE - nodeCount;
   const seededHeadcount = scaleHeadcounts(
     succeeded.map(({ department, headcount }) => [department, headcount]),
-    MAX_DATA_POINTS - nodeCount - edgeBudget,
+    PEOPLE,
   );
 
   const seeded = await Promise.all(
@@ -247,16 +328,31 @@ async function main() {
     ),
   );
 
-  const { output } = await generateText({
-    model: MODEL,
-    output: Output.object({ schema: edgesSchema }),
-    prompt: `Below is a numbered list of knowledge items from one company. Return pairs of items that are meaningfully related (same project, decision, client, system, incident, or follow-up). "from" is the item that references or builds on "to". Aim for about ${edgeBudget} edges and include cross-department links.
-
-${nodes.map((node, index) => `${index}. ${node.summary}`).join("\n")}`,
-  });
+  const chunkStarts = Array.from(
+    { length: Math.ceil(nodes.length / EDGE_CHUNK) },
+    (_, index) => index * EDGE_CHUNK,
+  );
+  const proposedEdges = await Promise.all(
+    chunkStarts.map(async (start) => {
+      const end = Math.min(start + EDGE_CHUNK, nodes.length);
+      try {
+        return await generateEdges(
+          nodes,
+          start,
+          end,
+          Math.ceil((edgeBudget * (end - start)) / nodes.length),
+        );
+      } catch (error) {
+        console.warn(
+          `  edges ${start}-${end - 1}: skipped (${(error as Error).message})`,
+        );
+        return [];
+      }
+    }),
+  );
 
   const edgesByKey = new Map<string, { sourceId: string; targetId: string }>();
-  for (const { from, to } of output.edges) {
+  for (const { from, to } of proposedEdges.flat()) {
     const source = nodes[from];
     const target = nodes[to];
     if (!source || !target || source === target) continue;

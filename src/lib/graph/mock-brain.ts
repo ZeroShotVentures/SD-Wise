@@ -1154,6 +1154,331 @@ function security() {
   }
 }
 
+const COMPETITORS = [
+  "ADP",
+  "Visma",
+  "Ceridian",
+  "Securex",
+  "Acerta",
+  "Partena",
+  "Workday",
+  "Personio",
+  "Payfit",
+  "Cegid",
+  "Lucca",
+  "DATEV",
+  "Sage",
+  "Paycor",
+];
+
+function market() {
+  for (const rival of COMPETITORS) {
+    cluster("market", `rival-${rival}`, [
+      {
+        title: `Competitor: ${rival}`,
+        summary: `${rival} competes with us in ${int(2, 9)} countries and wins about ${int(5, 35)}% of shared deals.`,
+        quote: `${rival} keeps showing up in tenders, mostly on price.`,
+        pool: "sales",
+        public: 0.6,
+      },
+      {
+        title: `${rival} pricing intel`,
+        summary: `${rival} quotes ${eur(int(250, 620) / 100)} per payslip for mid-size clients, ${int(5, 25)}% below our list price.`,
+        quote: `a prospect shared the ${rival} offer. They discount hard on multi-year deals.`,
+        pool: "sales",
+        source: "EMAIL",
+        public: 0.05,
+      },
+      {
+        title: `${rival} win/loss`,
+        summary: `We won ${int(2, 14)} and lost ${int(2, 14)} deals against ${rival} this year; top reason: ${pick(["price", "integrations", "local expertise", "self-service UX", "implementation speed"])}.`,
+        quote: `win/loss review on ${rival} is done, slides are on the drive.`,
+        pool: "sales",
+        source: "MEETING",
+        public: 0.2,
+      },
+      {
+        title: `${rival} product launch`,
+        summary: `${rival} launched ${pick(["an AI payroll copilot", "instant pay", "a mobile-first employee app", "a free tier", "a marketplace"])} in ${pick(MONTHS)}.`,
+        quote: `${rival} announced it at their conference. Product wants a response plan.`,
+        pool: "product",
+        public: 0.4,
+      },
+    ]);
+  }
+  const partners = [
+    "Deloitte",
+    "KPMG",
+    "PwC",
+    "EY",
+    "Accenture",
+    "Capgemini",
+    "Sopra Steria",
+    "NTT Data",
+    "Cronos",
+    "Ordina",
+    "Nexi",
+    "Worldline",
+    "Belfius",
+    "KBC",
+    "ING",
+    "BNP Paribas Fortis",
+    "Edenred",
+    "Sodexo",
+    "Ethias",
+    "AXA",
+  ];
+  for (const partner of partners) {
+    cluster("market", `partner-${partner}`, [
+      {
+        title: `Partner: ${partner}`,
+        summary: `${partner} refers about ${int(3, 60)} clients a year and resells ${pick(PRODUCTS)}.`,
+        quote: `partnership with ${partner} is in year ${int(1, 8)}. QBR next month.`,
+        pool: "sales",
+        public: 0.7,
+      },
+      {
+        title: `${partner} revenue share`,
+        summary: `${partner} earns a ${int(5, 25)}% revenue share on referred contracts.`,
+        quote: `commission terms for ${partner} are in the partner agreement.`,
+        pool: "finance",
+        source: "EMAIL",
+        public: 0.05,
+      },
+      {
+        title: `${partner} joint offering`,
+        summary: `${partner} and SD Worx are building a joint ${pick(["outsourcing", "advisory", "compliance", "mobility"])} offering for ${pick(QUARTERS)} 2027.`,
+        quote: `workshop with ${partner} went well, pilot client is identified.`,
+        pool: "product",
+        source: "MEETING",
+        public: 0.3,
+      },
+    ]);
+  }
+}
+
+function tenders() {
+  const buyers = [
+    "City of Antwerp",
+    "Flemish Government",
+    "NMBS",
+    "De Lijn",
+    "UZ Leuven",
+    "Proximus",
+    "Colruyt Group",
+    "AB InBev",
+    "Solvay",
+    "UCB",
+    "Umicore",
+    "Bpost",
+    "Brussels Airport",
+    "Port of Antwerp",
+    "KU Leuven",
+    "VRT",
+    "Randstad NL",
+    "Rabobank",
+    "Philips",
+    "Heineken",
+    "Airbus",
+    "Michelin",
+  ];
+  for (const buyer of buyers) {
+    const fte = int(800, 40000);
+    cluster("tenders", `tender-${buyer}`, [
+      {
+        title: `Tender ${buyer}`,
+        summary: `${buyer} issued an RFP for payroll covering ${fmt(fte)} employees; submission due ${int(1, 28)} ${pick(MONTHS)}.`,
+        quote: `RFP from ${buyer} landed. Bid team is forming, go/no-go on Friday.`,
+        pool: "sales",
+        source: "EMAIL",
+        public: 0.15,
+      },
+      {
+        title: `${buyer} bid price`,
+        summary: `Our bid for ${buyer} is ${eur(int(240, 520) / 100)} per payslip, ${pick(["aggressive", "at list", "with volume discount"])}.`,
+        quote: `pricing for ${buyer} reviewed with finance, margin is ${int(12, 38)}%.`,
+        pool: "finance",
+        public: 0.03,
+      },
+      {
+        title: `${buyer} requirements`,
+        summary: `${buyer} requires ${pick(["ISO 27001", "data residency in Belgium", "SSO with their IdP", "a 99.95% SLA", "WCAG 2.2 accessibility", "an exit plan"])}; we cover ${int(82, 99)}% of the ${int(90, 260)} requirements.`,
+        quote: `requirements matrix for ${buyer} is filled in. Gaps are with product.`,
+        pool: "product",
+        source: "MEETING",
+        public: 0.1,
+      },
+      {
+        title: `${buyer} decision`,
+        summary: `${buyer} will decide in ${pick(MONTHS)}; we are ${pick(["shortlisted", "preferred bidder", "second place", "in the BAFO round"])}.`,
+        quote: `news from ${buyer}: presentation is scheduled.`,
+        pool: "sales",
+        public: 0.1,
+        edge: ["UPDATES", "Tender progress"],
+      },
+    ]);
+    link(
+      `tender-${buyer}`,
+      `rival-${pick(COMPETITORS)}`,
+      "RELATES_TO",
+      "Competing on this tender",
+    );
+    link(
+      `tender-${buyer}`,
+      `country-${pick(COUNTRIES.slice(0, 3)).code}`,
+      "RELATES_TO",
+      "Payroll in this country",
+    );
+  }
+}
+
+function okrs() {
+  for (const team of TEAMS) {
+    for (const q of ["Q3 2026", "Q4 2026"]) {
+      const objectives = [
+        "Cut payroll errors",
+        "Speed up onboarding",
+        "Grow self-service usage",
+        "Reduce cloud cost",
+        "Improve NPS",
+        "Raise automation rate",
+        "Shorten ticket resolution",
+        "Launch in a new country",
+      ];
+      const objective = pick(objectives);
+      cluster("okr", `okr-${team}-${q}`, [
+        {
+          title: `${team} OKR ${q}`,
+          summary: `${team} objective for ${q}: ${objective.toLowerCase()}.`,
+          quote: `our ${q} objective is to ${objective.toLowerCase()}. Three key results, all measurable.`,
+          pool: "product",
+          public: 0.7,
+        },
+        {
+          title: `${team} KR1 ${q}`,
+          summary: `Key result: ${objective.toLowerCase()} by ${int(10, 60)}%; currently at ${int(5, 95)}%.`,
+          quote: `progress on KR1 is ${pick(["on track", "at risk", "behind", "ahead"])}.`,
+          pool: "product",
+          public: 0.5,
+          edge: ["UPDATES", "Progress"],
+        },
+        {
+          title: `${team} KR2 ${q}`,
+          summary: `Key result: reach ${int(60, 98)}% ${pick(["automation", "first-time-right", "on-time delivery", "adoption"])}; currently ${int(30, 95)}%.`,
+          quote: `KR2 needs help from ${pick(TEAMS)}.`,
+          pool: "product",
+          public: 0.5,
+          edge: ["UPDATES", "Progress"],
+        },
+        {
+          title: `${team} retro ${q}`,
+          summary: `Retro highlights: ${pick(["too many meetings", "great cross-team pairing", "unclear priorities", "slow approvals", "good release cadence"])}.`,
+          quote: `retro notes are in Confluence.`,
+          pool: "hr",
+          source: "MEETING",
+          public: 0.3,
+        },
+      ]);
+    }
+    link(
+      `okr-${team}-Q4 2026`,
+      `okr-${team}-Q3 2026`,
+      "UPDATES",
+      "Follows last quarter",
+    );
+    link(
+      `okr-${team}-Q4 2026`,
+      `team-${team}`,
+      "RELATES_TO",
+      "Team objectives",
+    );
+  }
+}
+
+function changes() {
+  const topics = [
+    "payslip layout",
+    "SEPA file format",
+    "Dimona flow",
+    "DMFA structure",
+    "tax certificate 281.10",
+    "holiday accrual",
+    "overtime caps",
+    "student work quota",
+    "flexi-job limits",
+    "meal voucher caps",
+    "mobility budget",
+    "cafeteria plan",
+    "pension reporting",
+    "garnishment rules",
+    "notice periods",
+    "outplacement",
+    "time credit",
+    "career breaks",
+    "sick leave notification",
+    "EV company car tax",
+    "telework flat rate",
+    "pay transparency",
+    "gender pay gap reporting",
+    "minimum hours contract",
+  ];
+  for (const topic of topics) {
+    const country = pick(COUNTRIES.slice(0, 6));
+    const effective = `${int(1, 28)} ${pick(MONTHS)} ${pick([2026, 2027])}`;
+    cluster("changes", `change-${topic}`, [
+      {
+        title: `Change: ${topic}`,
+        summary: `New ${topic} rules in ${country.name} apply from ${effective}.`,
+        quote: `${country.tax} published the ${topic} change. Legal is writing the impact note.`,
+        pool: "legal",
+        source: "EMAIL",
+        public: 0.6,
+      },
+      {
+        title: `${topic} impact analysis`,
+        summary: `The ${topic} change affects ${int(5, 70)}% of clients and ${int(1, 8)} engine modules.`,
+        quote: `impact analysis done: most work is in ${pick(SERVICES)}.`,
+        pool: "legal",
+        source: "MEETING",
+        edge: ["DEPENDS_ON", "Analysis of the change"],
+      },
+      {
+        title: `${topic} build ticket`,
+        summary: `Engineering estimates ${int(3, 60)} days for the ${topic} change, planned for ${pick(QUARTERS)}.`,
+        quote: `ticket is groomed and scheduled.`,
+        pool: "eng",
+        edge: ["DEPENDS_ON", "Implementation work"],
+      },
+      {
+        title: `${topic} client comms`,
+        summary: `Clients get a newsletter on ${topic} ${int(2, 8)} weeks before ${effective}.`,
+        quote: `comms drafted, legal review pending.`,
+        pool: "marketing",
+        public: 0.6,
+      },
+      {
+        title: `${topic} support FAQ`,
+        summary: `Support prepared an FAQ on ${topic}; expect ${int(40, 600)} tickets in the first month.`,
+        quote: `FAQ is in the help centre, agents briefed.`,
+        pool: "support",
+        public: 0.8,
+      },
+    ]);
+    link(
+      `change-${topic}`,
+      `country-${country.code}`,
+      "UPDATES",
+      `${country.name} rule change`,
+    );
+    link(
+      `change-${topic}`,
+      `svc-${pick(SERVICES)}`,
+      "DEPENDS_ON",
+      "Changes this service",
+    );
+  }
+}
+
 function customers() {
   const used = new Set<string>();
   for (;;) {
@@ -1448,6 +1773,10 @@ export function growBrain(
   finance();
   marketing();
   security();
+  market();
+  tenders();
+  okrs();
+  changes();
   customers();
 
   // Bridges from the core into the rest of the brain.

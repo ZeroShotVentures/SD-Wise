@@ -541,8 +541,8 @@ const coreEdges: KnowledgeEdge[] = edgeSeeds.map(
   }),
 );
 
-// The hand-written facts above plus ~10k generated ones, so the graph looks
+// The hand-written facts above plus ~15k generated ones, so the graph looks
 // like a real company brain. UI mock only, nothing here touches the database.
-const brain = growBrain(coreNodes, coreEdges, 10_000);
+const brain = growBrain(coreNodes, coreEdges, 15_000);
 export const nodes: KnowledgeNode[] = brain.nodes;
 export const edges: KnowledgeEdge[] = brain.edges;

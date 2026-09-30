@@ -23,6 +23,9 @@ model User {
   sessions Session[]
   accounts Account[]
 
+  personId String? @unique
+  person   Person? @relation(fields: [personId], references: [id])
+
   @@map("user")
 }
 
@@ -82,4 +85,84 @@ model RateLimit {
   lastRequest BigInt
 
   @@map("rateLimit")
+}
+
+enum Department {
+  HR
+  IT
+  FINANCE
+  MARKETING
+  SALES
+  CUSTOMER_SERVICE
+  PRODUCTION
+  LOGISTICS
+  MAINTENANCE
+  SECURITY
+  CLEANING
+  SECRETARIAL
+  RECEPTION
+  ACCOUNTING
+  AUDIT
+  OTHER
+}
+
+/// graph schema
+
+enum IntegrationType {
+  slack
+  email
+  google_meet
+}
+
+enum KnowledgeSource {
+  MESSAGE
+  EMAIL
+  MEETING
+  DOCUMENT
+  OTHER
+}
+
+model Integrations {
+  id    String          @id @default(uuid())
+  type  IntegrationType
+  nodes KnowledgeNode[]
+}
+
+model Person {
+  id         String          @id @default(uuid())
+  // role in the company ()
+  role       String
+  department Department
+  user       User?
+  knowledge  KnowledgeNode[]
+}
+
+model KnowledgeNode {
+  id                String          @id @default(uuid())
+  content           String
+  contentSummary    String
+  access            Person[]
+  source            KnowledgeSource
+  integrationId     String
+  integration       Integrations    @relation(fields: [integrationId], references: [id])
+  sourceDescription String
+  outgoingEdges     KnowledgeEdge[] @relation("EdgeSource")
+  incomingEdges     KnowledgeEdge[] @relation("EdgeTarget")
+  edgeCount         Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  lastAccessedAt    DateTime        @default(now())
+
+  @@index([integrationId])
+}
+
+model KnowledgeEdge {
+  id       String        @id @default(uuid())
+  sourceId String
+  source   KnowledgeNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetId String
+  target   KnowledgeNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId])
+  @@index([targetId])
 }

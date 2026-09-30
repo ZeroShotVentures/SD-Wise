@@ -12,5 +12,5 @@ export default async function Page({
 }) {
   const me = await requirePerson();
   const { node } = await searchParams;
-  return <GraphExplorer view={getGraph(me)} focusId={node ?? null} />;
+  return <GraphExplorer view={await getGraph(me)} focusId={node ?? null} />;
 }

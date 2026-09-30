@@ -14,5 +14,5 @@ export default async function Page({
   const callbackURL = safeRedirect((await searchParams).callbackURL);
   if (await getSession()) redirect(callbackURL);
 
-  return <AuthForm mode="sign-in" callbackURL={callbackURL} />;
+  return <AuthForm callbackURL={callbackURL} />;
 }

@@ -1,316 +1,312 @@
 import "server-only";
+import type { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftAnswer, searchGraph } from "./ai";
+import {
+  answerNodeId,
+  applyAnswers,
+  questionIdOf,
+  type ResolvedQuery,
+  unseenFor,
+} from "./answers";
 import * as fixtures from "./fixtures";
 import type {
   AskResult,
   GraphView,
   InboxItem,
   Integration,
-  KnowledgeEdge,
-  KnowledgeNode,
   Person,
-  Query,
   ShareScope,
 } from "./types";
 
-// In-memory mock of the graph backend. Every function here maps onto a
-// Prisma query later; callers only pass the acting person's id.
+// The knowledge graph and integrations are still mocked (fixtures, in
+// memory). Questions between people are stored in the database, so asking,
+// answering and access requests work across instances.
 
-type Store = {
-  people: Person[];
-  integrations: Integration[];
-  nodes: KnowledgeNode[];
-  edges: KnowledgeEdge[];
-  queries: Query[];
-  // Nodes that became visible to someone since they last looked.
-  unseen: Map<string, Set<string>>;
+const globalForGraph = globalThis as unknown as {
+  sdWiseIntegrations?: Integration[];
 };
 
-const globalForStore = globalThis as unknown as { sdWiseStore?: Store };
-
-function store(): Store {
-  globalForStore.sdWiseStore ??= {
-    people: structuredClone(fixtures.people),
-    integrations: structuredClone(fixtures.integrations),
-    nodes: structuredClone(fixtures.nodes),
-    edges: structuredClone(fixtures.edges),
-    queries: structuredClone(fixtures.queries),
-    unseen: new Map(),
-  };
-  return globalForStore.sdWiseStore;
+function integrations() {
+  globalForGraph.sdWiseIntegrations ??= structuredClone(fixtures.integrations);
+  return globalForGraph.sdWiseIntegrations;
 }
 
-export function resetStore() {
-  globalForStore.sdWiseStore = undefined;
+export function resetIntegrations() {
+  globalForGraph.sdWiseIntegrations = undefined;
 }
 
-const firstName = (name: string) => name.split(/[\s.@_-]/)[0]?.toLowerCase();
+const withPeople = {
+  asker: { include: { user: { select: { name: true } } } },
+  recipient: { include: { user: { select: { name: true } } } },
+} satisfies Prisma.QuestionInclude;
 
-// Until Users are linked to Persons, match on first name, then fall back to
-// the first person so every account can use the demo.
-export function personFor(user: { name: string; email: string }): Person {
-  const { people } = store();
-  const names = new Set([firstName(user.name), firstName(user.email)]);
+type QuestionRow = Prisma.QuestionGetPayload<{ include: typeof withPeople }>;
+type PersonRow = QuestionRow["asker"];
+
+// Names come from the fixtures (the graph's people), else from the linked
+// account.
+function toPerson(row: PersonRow): Person {
   return (
-    people.find((p) => names.has(firstName(p.name))) ?? (people[0] as Person)
+    fixtures.people.find((p) => p.id === row.id) ?? {
+      id: row.id,
+      name: row.user?.name ?? row.role,
+      role: row.role,
+      department: row.department,
+    }
   );
 }
 
-function liveNodes() {
-  const { nodes, integrations } = store();
+function toQuery(row: QuestionRow): ResolvedQuery {
+  const answered = row.status === "ANSWERED";
+  return {
+    id: row.id,
+    kind: row.kind,
+    askerId: row.askerId,
+    recipientId: row.recipientId,
+    question: row.question,
+    nodeIds: row.nodeIds,
+    status: row.status,
+    answer: row.answer,
+    shareScope: row.shareScope,
+    answerNodeId: !answered
+      ? null
+      : row.kind === "ACCESS"
+        ? (row.nodeIds[0] ?? null)
+        : answerNodeId(row.id),
+    createdAt: row.createdAt.toISOString(),
+    resolvedAt: row.resolvedAt?.toISOString() ?? null,
+    seenAt: row.seenAt?.toISOString() ?? null,
+    asker: toPerson(row.asker),
+    recipient: toPerson(row.recipient),
+  };
+}
+
+export async function personFor(userId: string): Promise<Person | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, person: true },
+  });
+  if (!user?.person) return null;
+  return toPerson({ ...user.person, user: { name: user.name } });
+}
+
+// The fixture graph with answers layered on, minus disconnected sources.
+async function loadGraph() {
+  const answered = (
+    await prisma.question.findMany({
+      where: { status: "ANSWERED" },
+      include: withPeople,
+      orderBy: { resolvedAt: "asc" },
+    })
+  ).map(toQuery);
+  const { nodes, edges } = applyAnswers(
+    fixtures.nodes,
+    fixtures.edges,
+    answered,
+  );
   const off = new Set(
-    integrations.filter((i) => !i.connected).map((i) => i.id),
+    integrations()
+      .filter((i) => !i.connected)
+      .map((i) => i.id),
   );
-  return nodes.filter((n) => !n.integrationId || !off.has(n.integrationId));
-}
-
-function liveEdges(nodes: KnowledgeNode[]) {
-  const ids = new Set(nodes.map((n) => n.id));
-  return store().edges.filter(
-    (e) => ids.has(e.sourceId) && ids.has(e.targetId),
+  const live = nodes.filter(
+    (n) => !n.integrationId || !off.has(n.integrationId),
   );
+  const ids = new Set(live.map((n) => n.id));
+  return {
+    all: nodes,
+    nodes: live,
+    edges: edges.filter((e) => ids.has(e.sourceId) && ids.has(e.targetId)),
+    answered,
+  };
 }
 
-function markUnseen(personId: string, nodeId: string) {
-  const { unseen } = store();
-  const set = unseen.get(personId) ?? new Set();
-  set.add(nodeId);
-  unseen.set(personId, set);
-}
-
-export function markSeen(me: Person, nodeId: string) {
-  store().unseen.get(me.id)?.delete(nodeId);
-}
-
-export function getGraph(me: Person): GraphView {
-  const s = store();
-  const nodes = liveNodes();
+export async function getGraph(me: Person): Promise<GraphView> {
+  const { nodes, edges, answered } = await loadGraph();
   const visible = new Set(
     nodes.filter((n) => canSee(n, me.id)).map((n) => n.id),
   );
-  const unseen = s.unseen.get(me.id) ?? new Set();
+  const unseen = unseenFor(me.id, answered);
   return {
     me,
-    people: s.people,
-    integrations: s.integrations,
+    people: fixtures.people,
+    integrations: integrations(),
     nodes: nodes.map((n) => toNodeView(n, me.id, unseen)),
-    edges: liveEdges(nodes).map((e) => toEdgeView(e, visible)),
+    edges: edges.map((e) => toEdgeView(e, visible)),
   };
 }
 
-export function ask(me: Person, question: string): AskResult {
-  const nodes = liveNodes();
-  const { hits, visited } = searchGraph(question, nodes, liveEdges(nodes));
-  return answerFor(question, me.id, hits, visited, nodes, store().people);
+export async function markSeen(me: Person, nodeId: string) {
+  const questionId = questionIdOf(nodeId);
+  await prisma.question.updateMany({
+    where: {
+      askerId: me.id,
+      status: "ANSWERED",
+      seenAt: null,
+      OR: [
+        { kind: "ACCESS", nodeIds: { has: nodeId } },
+        ...(questionId ? [{ id: questionId }] : []),
+      ],
+    },
+    data: { seenAt: new Date() },
+  });
 }
 
-function findPerson(id: string) {
-  const person = store().people.find((p) => p.id === id);
-  if (!person) throw new Error("Unknown person");
-  return person;
+export async function ask(me: Person, question: string): Promise<AskResult> {
+  const { nodes, edges } = await loadGraph();
+  const { hits, visited } = searchGraph(question, nodes, edges);
+  return answerFor(question, me.id, hits, visited, nodes, fixtures.people);
 }
 
-function findNode(id: string) {
-  const node = store().nodes.find((n) => n.id === id);
-  if (!node) throw new Error("Unknown node");
-  return node;
-}
-
-export function askPerson(
+export async function askPerson(
   me: Person,
   recipientId: string,
   question: string,
   nodeIds: string[],
 ) {
-  findPerson(recipientId);
-  return addQuery({
-    kind: "QUESTION",
-    askerId: me.id,
-    recipientId,
-    question,
-    nodeIds,
+  if (recipientId === me.id) throw new Error("Can't ask yourself");
+  const recipient = await prisma.person.findUnique({
+    where: { id: recipientId },
+    select: { id: true },
+  });
+  if (!recipient) throw new Error("Unknown person");
+  return prisma.question.create({
+    data: {
+      kind: "QUESTION",
+      askerId: me.id,
+      recipientId,
+      question,
+      nodeIds,
+    },
   });
 }
 
-export function requestAccess(me: Person, nodeId: string, ownerId: string) {
-  const node = findNode(nodeId);
+export async function requestAccess(
+  me: Person,
+  nodeId: string,
+  ownerId: string,
+) {
+  const { all } = await loadGraph();
+  const node = all.find((n) => n.id === nodeId);
+  if (!node) throw new Error("Unknown node");
   if (!node.ownerIds.includes(ownerId)) throw new Error("Not an owner");
   if (canSee(node, me.id)) throw new Error("Already has access");
-  const existing = store().queries.find(
-    (q) =>
-      q.kind === "ACCESS" &&
-      q.status === "PENDING" &&
-      q.askerId === me.id &&
-      q.nodeIds.includes(nodeId),
-  );
+  const existing = await prisma.question.findFirst({
+    where: {
+      kind: "ACCESS",
+      status: "PENDING",
+      askerId: me.id,
+      nodeIds: { has: nodeId },
+    },
+  });
   if (existing) return existing;
-  return addQuery({
-    kind: "ACCESS",
-    askerId: me.id,
-    recipientId: ownerId,
-    question: "Can I see what you know about this?",
-    nodeIds: [nodeId],
+  return prisma.question.create({
+    data: {
+      kind: "ACCESS",
+      askerId: me.id,
+      recipientId: ownerId,
+      question: "Can I see what you know about this?",
+      nodeIds: [nodeId],
+    },
   });
 }
 
-function addQuery(
-  q: Pick<Query, "kind" | "askerId" | "recipientId" | "question" | "nodeIds">,
+// Resolves a pending question addressed to me. The status check is part of
+// the update, so a question can only be resolved once.
+async function resolve(
+  me: Person,
+  queryId: string,
+  kind: "QUESTION" | "ACCESS" | undefined,
+  data: Prisma.QuestionUpdateManyMutationInput,
 ) {
-  const query: Query = {
-    ...q,
-    id: `q-${crypto.randomUUID()}`,
-    status: "PENDING",
-    answer: null,
-    shareScope: null,
-    answerNodeId: null,
-    createdAt: new Date().toISOString(),
-    resolvedAt: null,
-  };
-  store().queries.push(query);
-  return query;
+  const { count } = await prisma.question.updateMany({
+    where: { id: queryId, recipientId: me.id, status: "PENDING", kind },
+    data: { ...data, resolvedAt: new Date() },
+  });
+  if (count === 0) throw new Error("Nothing to answer");
 }
 
-function pendingFor(me: Person, queryId: string) {
-  const query = store().queries.find((q) => q.id === queryId);
-  if (!query || query.recipientId !== me.id || query.status !== "PENDING") {
-    throw new Error("Nothing to answer");
-  }
-  return query;
-}
-
-// Answering writes the answer back into the graph as a new node, linked to
-// the facts it was based on, visible to the asker (or everyone).
-export function answerQuery(
+export async function answerQuery(
   me: Person,
   queryId: string,
   answer: string,
   scope: ShareScope,
 ) {
-  const s = store();
-  const query = pendingFor(me, queryId);
-  if (query.kind !== "QUESTION") throw new Error("Not a question");
-  const asker = findPerson(query.askerId);
-  const based = query.nodeIds.filter((id) => canSee(findNode(id), me.id));
-
-  const node: KnowledgeNode = {
-    id: `n-${crypto.randomUUID()}`,
-    title: query.question,
-    content: `${asker.name} asked: ${query.question}\n${me.name} answered: ${answer}`,
-    contentSummary: answer,
-    source: "OTHER",
-    integrationId: null,
-    sourceDescription: `Answer from ${me.name} to ${asker.name}`,
-    visibility: scope === "PUBLIC" ? "PUBLIC" : "PRIVATE",
-    ownerIds: [me.id],
-    accessIds: [me.id, asker.id],
-    createdAt: new Date().toISOString(),
-  };
-  s.nodes.push(node);
-  for (const targetId of based) {
-    s.edges.push({
-      id: `e-${crypto.randomUUID()}`,
-      sourceId: node.id,
-      targetId,
-      kind: "ANSWERS",
-      description: `${me.name} answered ${asker.name} based on this`,
-    });
-  }
-  markUnseen(asker.id, node.id);
-
-  Object.assign(query, {
+  await resolve(me, queryId, "QUESTION", {
     status: "ANSWERED",
     answer,
     shareScope: scope,
-    answerNodeId: node.id,
-    resolvedAt: new Date().toISOString(),
   });
-  return query;
 }
 
-export function approveAccess(me: Person, queryId: string) {
-  const query = pendingFor(me, queryId);
-  if (query.kind !== "ACCESS") throw new Error("Not an access request");
-  for (const id of query.nodeIds) {
-    const node = findNode(id);
-    if (!node.ownerIds.includes(me.id)) throw new Error("Not an owner");
-    if (!node.accessIds.includes(query.askerId)) {
-      node.accessIds.push(query.askerId);
-    }
-    markUnseen(query.askerId, id);
-  }
-  Object.assign(query, {
+export async function approveAccess(me: Person, queryId: string) {
+  const query = await prisma.question.findUnique({ where: { id: queryId } });
+  const owns = query?.nodeIds.every((id) =>
+    fixtures.nodes.find((n) => n.id === id)?.ownerIds.includes(me.id),
+  );
+  if (query?.kind === "ACCESS" && !owns) throw new Error("Not an owner");
+  await resolve(me, queryId, "ACCESS", {
     status: "ANSWERED",
     shareScope: "ASKER",
-    answerNodeId: query.nodeIds[0] ?? null,
-    resolvedAt: new Date().toISOString(),
   });
-  return query;
 }
 
-export function declineQuery(me: Person, queryId: string) {
-  const query = pendingFor(me, queryId);
-  Object.assign(query, {
-    status: "DECLINED",
-    resolvedAt: new Date().toISOString(),
-  });
-  return query;
+export async function declineQuery(me: Person, queryId: string) {
+  await resolve(me, queryId, undefined, { status: "DECLINED" });
 }
 
-function toItem(q: Query, viewer: Person): InboxItem {
-  const nodes = liveNodes();
-  const asker = findPerson(q.askerId);
-  const isRecipient = q.recipientId === viewer.id;
-  const suggested =
-    isRecipient && q.kind === "QUESTION" && q.status === "PENDING"
-      ? draftAnswer(
-          q.question,
-          asker,
-          viewer.id,
-          q.nodeIds,
-          nodes,
-          liveEdges(nodes),
-        )
-      : null;
-  return {
-    ...q,
-    asker,
-    recipient: findPerson(q.recipientId),
-    suggestedAnswer: suggested?.text ?? null,
-    nodeTitles: q.nodeIds.flatMap((id) => {
-      const node = store().nodes.find((n) => n.id === id);
-      return node && canSee(node, viewer.id) ? [node.title] : [];
+export async function getInbox(me: Person) {
+  const [rows, graph] = await Promise.all([
+    prisma.question.findMany({
+      where: { OR: [{ recipientId: me.id }, { askerId: me.id }] },
+      include: withPeople,
+      orderBy: { createdAt: "desc" },
     }),
+    loadGraph(),
+  ]);
+
+  const toItem = (q: ResolvedQuery): InboxItem => {
+    const suggested =
+      q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING"
+        ? draftAnswer(
+            q.question,
+            q.asker,
+            me.id,
+            q.nodeIds,
+            graph.nodes,
+            graph.edges,
+          )
+        : null;
+    return {
+      ...q,
+      suggestedAnswer: suggested?.text ?? null,
+      nodeTitles: q.nodeIds.flatMap((id) => {
+        const node = graph.all.find((n) => n.id === id);
+        return node && canSee(node, me.id) ? [node.title] : [];
+      }),
+    };
   };
-}
 
-const newestFirst = (a: Query, b: Query) =>
-  b.createdAt.localeCompare(a.createdAt);
-
-export function getInbox(me: Person) {
-  const { queries } = store();
+  const queries = rows.map(toQuery);
   return {
-    received: queries
-      .filter((q) => q.recipientId === me.id)
-      .toSorted(newestFirst)
-      .map((q) => toItem(q, me)),
-    sent: queries
-      .filter((q) => q.askerId === me.id)
-      .toSorted(newestFirst)
-      .map((q) => toItem(q, me)),
+    received: queries.filter((q) => q.recipientId === me.id).map(toItem),
+    sent: queries.filter((q) => q.askerId === me.id).map(toItem),
   };
 }
 
 export function pendingCount(me: Person) {
-  return store().queries.filter(
-    (q) => q.recipientId === me.id && q.status === "PENDING",
-  ).length;
+  return prisma.question.count({
+    where: { recipientId: me.id, status: "PENDING" },
+  });
 }
 
 export function getIntegrations() {
-  const s = store();
-  return s.integrations.map((integration) => {
-    const nodes = s.nodes.filter((n) => n.integrationId === integration.id);
+  return integrations().map((integration) => {
+    const nodes = fixtures.nodes.filter(
+      (n) => n.integrationId === integration.id,
+    );
     return {
       id: integration.id,
       type: integration.type,
@@ -322,8 +318,9 @@ export function getIntegrations() {
   });
 }
 
+// Mocked: no OAuth, connecting just flips the flag in memory.
 export function setConnected(id: string, connected: boolean) {
-  const integration = store().integrations.find((i) => i.id === id);
+  const integration = integrations().find((i) => i.id === id);
   if (!integration) throw new Error("Unknown integration");
   integration.connected = connected;
   integration.connectedAt = connected ? new Date().toISOString() : null;

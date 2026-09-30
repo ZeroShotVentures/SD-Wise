@@ -22,7 +22,7 @@ export async function askPerson(input: {
   const data = z
     .object({ recipientId: id, question, nodeIds: z.array(id).max(10) })
     .parse(input);
-  graph.askPerson(me, data.recipientId, data.question, data.nodeIds);
+  await graph.askPerson(me, data.recipientId, data.question, data.nodeIds);
   revalidatePath("/", "layout");
 }
 
@@ -32,11 +32,11 @@ export async function requestAccess(input: {
 }) {
   const me = await requirePerson();
   const data = z.object({ nodeId: id, ownerId: id }).parse(input);
-  graph.requestAccess(me, data.nodeId, data.ownerId);
+  await graph.requestAccess(me, data.nodeId, data.ownerId);
   revalidatePath("/", "layout");
 }
 
 export async function markSeen(nodeId: string) {
   const me = await requirePerson();
-  graph.markSeen(me, id.parse(nodeId));
+  await graph.markSeen(me, id.parse(nodeId));
 }

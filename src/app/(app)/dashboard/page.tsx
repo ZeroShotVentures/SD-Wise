@@ -1,20 +1,5 @@
-import type { Metadata } from "next";
-import { Dashboard } from "@/components/dashboard";
-import { emailEnabled } from "@/lib/features";
-import { requireSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Dashboard" };
-
-export default async function Page() {
-  const { user } = await requireSession();
-
-  return (
-    <Dashboard
-      user={{
-        email: user.email,
-        emailVerified: user.emailVerified,
-      }}
-      emailEnabled={emailEnabled}
-    />
-  );
+export default function Page() {
+  redirect("/graph");
 }

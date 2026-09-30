@@ -29,7 +29,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => router }));
 
 const defaultProps = {
   mode: "sign-in" as const,
-  callbackURL: "/dashboard",
+  callbackURL: "/graph",
   googleEnabled: false,
   emailEnabled: false,
 };
@@ -53,7 +53,7 @@ describe("AuthForm", () => {
       email: "jane@example.com",
       password: "hunter22",
     });
-    expect(router.replace).toHaveBeenCalledWith("/dashboard");
+    expect(router.replace).toHaveBeenCalledWith("/graph");
   });
 
   it("signs up with name, email and password", async () => {
@@ -137,7 +137,7 @@ describe("AuthForm", () => {
 
     expect(signIn.social).toHaveBeenCalledWith({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: "/graph",
     });
   });
 });

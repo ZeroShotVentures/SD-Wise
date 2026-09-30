@@ -1,4 +1,4 @@
-export const defaultRedirect = "/dashboard";
+export const defaultRedirect = "/graph";
 
 // Only same-origin paths; "//host" and "/\host" are protocol-relative URLs.
 export function safeRedirect(value: unknown): string {

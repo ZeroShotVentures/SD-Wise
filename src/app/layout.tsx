@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import { env } from "@/env";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -16,10 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.BETTER_AUTH_URL),
   title: {
-    default: "my-app",
-    template: "%s · my-app",
+    default: "SD Wise",
+    template: "%s · SD Wise",
   },
-  description: "Sign in to my-app.",
+  description:
+    "Ask your company brain. Get an answer, or the person who knows.",
 };
 
 export default function RootLayout({
@@ -30,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
       >
         {children}
       </body>

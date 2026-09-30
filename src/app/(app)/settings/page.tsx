@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { DeleteAccount } from "@/components/settings/delete-account";
-import { EmailForm } from "@/components/settings/email-form";
 import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
 import { secondaryButtonClass } from "@/components/settings/styles";
-import { emailEnabled } from "@/lib/features";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -51,22 +49,8 @@ export default async function Page() {
         </p>
       </header>
 
-      <Section title="Profile">
+      <Section title="Profile" description={`Your email is ${user.email}.`}>
         <ProfileForm name={user.name} />
-      </Section>
-
-      <Section
-        title="Email"
-        description={`Your email is ${user.email}${user.emailVerified ? "" : " (not verified)"}.`}
-      >
-        {emailEnabled ? (
-          <EmailForm email={user.email} />
-        ) : (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Changing your email requires email delivery, which isn&apos;t
-            configured.
-          </p>
-        )}
       </Section>
 
       {hasPassword && (

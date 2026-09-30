@@ -20,8 +20,6 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().startsWith("re_").optional(),
-    EMAIL_FROM: z.string().min(1),
     ADMIN_EMAILS: z
       .string()
       .optional()

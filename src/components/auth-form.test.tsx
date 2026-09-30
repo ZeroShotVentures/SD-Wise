@@ -31,7 +31,6 @@ const defaultProps = {
   mode: "sign-in" as const,
   callbackURL: "/graph",
   googleEnabled: false,
-  emailEnabled: false,
 };
 
 describe("AuthForm", () => {
@@ -109,21 +108,12 @@ describe("AuthForm", () => {
     );
   });
 
-  it("hides Google and password reset when disabled", () => {
+  it("hides Google when disabled", () => {
     render(<AuthForm {...defaultProps} />);
 
     expect(
       screen.queryByRole("button", { name: "Continue with Google" }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText("Forgot password?")).not.toBeInTheDocument();
-  });
-
-  it("links to password reset when email is enabled", () => {
-    render(<AuthForm {...defaultProps} emailEnabled />);
-
-    expect(
-      screen.getByRole("link", { name: "Forgot password?" }),
-    ).toHaveAttribute("href", "/forgot-password");
   });
 
   it("signs in with Google", async () => {

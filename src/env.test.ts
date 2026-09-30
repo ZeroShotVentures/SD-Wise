@@ -12,7 +12,6 @@ const isolatedKeys = [
   "BETTER_AUTH_SECRET",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
-  "RESEND_API_KEY",
   "ADMIN_EMAILS",
 ];
 
@@ -69,12 +68,6 @@ describe("env", () => {
   it("requires both Google credentials", async () => {
     await expect(
       loadEnv({ ...baseEnv, GOOGLE_CLIENT_ID: "id" }),
-    ).rejects.toThrow("Invalid environment variables");
-  });
-
-  it("rejects a malformed Resend API key", async () => {
-    await expect(
-      loadEnv({ ...baseEnv, RESEND_API_KEY: "sk_123" }),
     ).rejects.toThrow("Invalid environment variables");
   });
 

@@ -10,15 +10,9 @@ type AuthFormProps = {
   mode: "sign-in" | "sign-up";
   callbackURL: string;
   googleEnabled: boolean;
-  emailEnabled: boolean;
 };
 
-export function AuthForm({
-  mode,
-  callbackURL,
-  googleEnabled,
-  emailEnabled,
-}: AuthFormProps) {
+export function AuthForm({ mode, callbackURL, googleEnabled }: AuthFormProps) {
   const router = useRouter();
   const isSignUp = mode === "sign-up";
   const togglePath = isSignUp ? "/sign-in" : "/sign-up";
@@ -124,22 +118,12 @@ export function AuthForm({
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Password
-            </label>
-            {!isSignUp && emailEnabled && (
-              <Link
-                href="/forgot-password"
-                className="text-sm text-zinc-500 hover:underline dark:text-zinc-400"
-              >
-                Forgot password?
-              </Link>
-            )}
-          </div>
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
+            Password
+          </label>
           <input
             id="password"
             type="password"

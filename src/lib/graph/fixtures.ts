@@ -492,6 +492,36 @@ const nodeSeeds: NodeSeed[] = [
     owners: ["p-kobe", "p-sofie"],
     at: "2026-09-25",
   },
+  // Platform and payroll operations: what Kobe and Filip know about each
+  // other's work, so each has a reason to ask the other.
+  {
+    id: "n-deploy-freeze",
+    title: "Deploy freeze over the holidays",
+    summary:
+      "No platform deploys from 14 December to 4 January, so the payroll engine stays stable for the year-end run.",
+    content:
+      "Kobe: we freeze all platform deploys from 14 December to 4 January. The OAuth go-live ships the week before, hotfixes only after that and they need my sign-off.",
+    source: "MESSAGE",
+    integrationId: "i-slack",
+    from: "#platform",
+    visibility: "PRIVATE",
+    owners: ["p-kobe"],
+    at: "2026-09-26",
+  },
+  {
+    id: "n-engine-capacity",
+    title: "Year-end engine capacity",
+    summary:
+      "The payroll engine runs with double the workers from 14 to 30 December to handle the year-end volume.",
+    content:
+      "Filip: December volume is about 30% higher than a normal month, bonuses included. Kobe: we double the payroll engine workers from 14 to 30 December and I'm on call for the year-end run.",
+    source: "MEETING",
+    integrationId: "i-teams-meetings",
+    from: "Meeting: Kobe & Filip, year-end readiness",
+    visibility: "PRIVATE",
+    owners: ["p-kobe", "p-filip"],
+    at: "2026-09-29",
+  },
 ];
 
 export const nodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
@@ -594,6 +624,15 @@ const edgeSeeds: [string, string, EdgeKind, string][] = [
     "RELATES_TO",
     "Both about payslip delivery",
   ],
+  [
+    "n-deploy-freeze",
+    "n-year-end-run",
+    "RELATES_TO",
+    "Keeps the platform stable for the run",
+  ],
+  ["n-deploy-freeze", "n-api-oauth", "DEPENDS_ON", "OAuth ships before it"],
+  ["n-engine-capacity", "n-year-end-run", "RELATES_TO", "Capacity for the run"],
+  ["n-engine-capacity", "n-deploy-freeze", "RELATES_TO", "Same holiday window"],
 ];
 
 export const edges: KnowledgeEdge[] = edgeSeeds.map(

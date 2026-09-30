@@ -90,6 +90,31 @@ describe("ask", () => {
     );
     expect(draft?.text).toMatch(/^Hi Kobe! .*14 December/);
   });
+
+  it("points Filip to Kobe for the deploy freeze", () => {
+    const result = ask(filip, "Is there a deploy freeze over the holidays?");
+    expect(result.answer).toBeNull();
+    expect(result.people[0]?.person.id).toBe(kobe.id);
+  });
+
+  it("drafts Kobe's reply from what he knows", () => {
+    const draft = draftAnswer(
+      "Is there a deploy freeze over the holidays?",
+      filip,
+      kobe.id,
+      ["n-deploy-freeze"],
+      nodes,
+      edges,
+    );
+    expect(draft?.text).toMatch(/^Hi Filip! .*14 December to 4 January/);
+  });
+
+  it("links Kobe's and Filip's knowledge in the graph", () => {
+    const shared = nodes.filter(
+      (n) => canSee(n, kobe.id) && canSee(n, filip.id),
+    );
+    expect(shared.map((n) => n.id)).toContain("n-engine-capacity");
+  });
 });
 
 describe("answers", () => {

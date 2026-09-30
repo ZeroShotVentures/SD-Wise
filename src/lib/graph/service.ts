@@ -138,7 +138,16 @@ export async function getGraph(me: Person): Promise<GraphView> {
   };
 }
 
+// Ids reach Prisma filters, so refuse anything that isn't a plain string: an
+// object like { not: "x" } would otherwise be read as a query operator.
+function assertId(value: unknown): asserts value is string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error("Invalid id");
+  }
+}
+
 export async function markSeen(me: Person, nodeId: string) {
+  assertId(nodeId);
   const questionId = questionIdOf(nodeId);
   await prisma.question.updateMany({
     where: {
@@ -147,7 +156,7 @@ export async function markSeen(me: Person, nodeId: string) {
       seenAt: null,
       OR: [
         { kind: "ACCESS", nodeIds: { has: nodeId } },
-        ...(questionId ? [{ id: questionId }] : []),
+        ...(questionId ? [{ id: { equals: questionId } }] : []),
       ],
     },
     data: { seenAt: new Date() },
@@ -221,8 +230,14 @@ async function resolve(
   kind: "QUESTION" | "ACCESS" | undefined,
   data: Prisma.QuestionUpdateManyMutationInput,
 ) {
+  assertId(queryId);
   const { count } = await prisma.question.updateMany({
-    where: { id: queryId, recipientId: me.id, status: "PENDING", kind },
+    where: {
+      id: { equals: queryId },
+      recipientId: me.id,
+      status: "PENDING",
+      kind,
+    },
     data: { ...data, resolvedAt: new Date() },
   });
   if (count === 0) throw new Error("Nothing to answer");

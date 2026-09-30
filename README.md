@@ -12,38 +12,23 @@ Seeing everything doesn't mean showing everything. SD Wise knows who is allowed 
 
 ## How a question is answered
 
-A user asks SD Wise a question. Five subsystems handle it in turn.
+You ask SD Wise a question. It then does three things.
 
-1. **Connect.** Subsystem 1 searches all company knowledge, private included, and connects every relevant and useful point of knowledge to the question.
-2. **Split by rights.** Subsystem 2 checks the asker's rights on each of those points and splits them into *accessible* and *not accessible*.
-3. **Decide.** Subsystem 3 decides how to answer. There are three outcomes:
+1. **Find.** It searches all company knowledge, including the private parts, and connects every fact that helps answer the question.
+2. **Check.** It sorts those facts into what you're allowed to see and what you aren't.
+3. **Answer.** It answers with what you can see. For the rest, it tells you who knows more.
 
-   | Case | Situation | What SD Wise does |
-   | --- | --- | --- |
-   | **A** | Everything needed is accessible | **Subsystem 4** answers directly with the knowledge it has. |
-   | **B** | Some knowledge requires access | **Subsystem 5** sends a request to the person who holds it (person X), with the question and a proposed answer that would apply once access is given. If a first answer without that knowledge is already useful, the asker gets it right away. |
-   | **C** | Not accessible and clearly not authorized | **Subsystem 3** says no. |
+That gives one of three results:
 
-```
-question
-   │
-   ▼
-[1] connect all relevant knowledge  (sees everything, private included)
-   │
-   ▼
-[2] split by rights ──► accessible / not accessible
-   │
-   ▼
-[3] decide
-   ├── A: all accessible      ──► [4] answer
-   ├── B: access required      ──► [5] ask person X, with a drafted answer
-   │                                   (+ a first answer from what is accessible)
-   └── C: clearly not allowed  ──► no
-```
+- **You can see everything.** You get the full answer.
+- **Someone else holds part of it.** You get what SD Wise can already tell you, plus a suggestion like *"Filip knows something related from an email"*. One click sends Filip your question, and SD Wise has already drafted a reply from what Filip can see. Filip checks it and sends it, or declines.
+- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists and who owns it, but not what it says. You can request access, and the owner approves or declines.
+
+When someone answers you, the answer becomes new knowledge: a new node in your graph, linked to the facts it came from.
 
 ### Facts, not guesses
 
-The database holds every data point and its access rights as facts. Answers are built from those stored facts, and access decisions come from stored rights, so SD Wise can't hallucinate an answer or a permission. When a person answers a request, their answer is stored as a new fact and appears as a new node in the asker's knowledge graph.
+Every fact, and who is allowed to see it, is stored in the database. SD Wise only answers with those stored facts and only follows those stored rights, so it can't make up an answer or hand out access that doesn't exist.
 
 ## How to test
 

@@ -15,7 +15,6 @@ model User {
   image            String?
   createdAt        DateTime
   updatedAt        DateTime
-  stripeCustomerId String?
   role             String?
   banned           Boolean?  @default(false)
   banReason        String?
@@ -83,27 +82,4 @@ model RateLimit {
   lastRequest BigInt
 
   @@map("rateLimit")
-}
-
-model Subscription {
-  id                   String    @id
-  plan                 String
-  referenceId          String
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  status               String
-  periodStart          DateTime?
-  periodEnd            DateTime?
-  cancelAtPeriodEnd    Boolean?
-  cancelAt             DateTime?
-  canceledAt           DateTime?
-  endedAt              DateTime?
-  seats                Int?
-  trialStart           DateTime?
-  trialEnd             DateTime?
-  billingInterval      String?
-  stripeScheduleId     String?
-
-  @@index([referenceId])
-  @@map("subscription")
 }

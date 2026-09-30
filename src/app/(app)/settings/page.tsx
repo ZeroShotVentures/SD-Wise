@@ -5,7 +5,6 @@ import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
 import { secondaryButtonClass } from "@/components/settings/styles";
-import { env } from "@/env";
 import { emailEnabled } from "@/lib/features";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
@@ -129,11 +128,7 @@ export default async function Page() {
       <Section
         title="Delete account"
         tone="danger"
-        description={`Permanently delete your account and all of its data.${
-          env.BILLING_ENABLED
-            ? " Any active subscription is canceled immediately, without a refund."
-            : ""
-        } This can't be undone.`}
+        description="Permanently delete your account and all of its data. This can't be undone."
       >
         <DeleteAccount hasPassword={hasPassword} />
       </Section>

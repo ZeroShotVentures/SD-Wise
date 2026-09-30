@@ -10,7 +10,6 @@ import { SetPasswordForm } from "@/components/admin/set-password-form";
 import { UserBadges } from "@/components/admin/user-badges";
 import { Section } from "@/components/settings/section";
 import { secondaryButtonClass } from "@/components/settings/styles";
-import { env } from "@/env";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdmin, requireAdmin } from "@/lib/session";
@@ -207,11 +206,7 @@ export default async function Page({
           <Section
             title="Delete user"
             tone="danger"
-            description={`Permanently delete this user and all of their data.${
-              env.BILLING_ENABLED
-                ? " Any active subscription is canceled immediately, without a refund."
-                : ""
-            } This can't be undone.`}
+            description="Permanently delete this user and all of their data. This can't be undone."
           >
             <RemoveUser userId={target.id} email={target.email} />
           </Section>

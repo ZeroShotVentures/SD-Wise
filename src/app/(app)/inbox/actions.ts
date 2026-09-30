@@ -20,18 +20,18 @@ export async function sendAnswer(input: {
       scope: z.enum(["ASKER", "PUBLIC"]),
     })
     .parse(input);
-  graph.answerQuery(me, data.queryId, data.answer, data.scope);
+  await graph.answerQuery(me, data.queryId, data.answer, data.scope);
   revalidatePath("/", "layout");
 }
 
 export async function approveAccess(queryId: string) {
   const me = await requirePerson();
-  graph.approveAccess(me, id.parse(queryId));
+  await graph.approveAccess(me, id.parse(queryId));
   revalidatePath("/", "layout");
 }
 
 export async function decline(queryId: string) {
   const me = await requirePerson();
-  graph.declineQuery(me, id.parse(queryId));
+  await graph.declineQuery(me, id.parse(queryId));
   revalidatePath("/", "layout");
 }

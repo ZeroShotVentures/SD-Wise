@@ -12,6 +12,8 @@ import {
 config({ path: [".env.local", ".env", ".env.example"], quiet: true });
 
 const MODEL = "alibaba/qwen3.8-flash";
+const MAX_DATA_POINTS = 1000;
+const EDGES_PER_NODE = 1.5;
 const COMPANY =
   "SD Worx, a European provider of payroll, HR and workforce management services headquartered in Antwerp, Belgium";
 
@@ -87,10 +89,29 @@ function distributeHeadcount(
 ): string[] {
   const totalWeight = roles.reduce((sum, r) => sum + r.headcountWeight, 0);
   const counts = roles.map((r) =>
-    Math.max(1, Math.floor((r.headcountWeight / totalWeight) * total)),
+    Math.floor((r.headcountWeight / totalWeight) * total),
   );
   counts[0] = (counts[0] ?? 0) + total - counts.reduce((a, b) => a + b, 0);
   return roles.flatMap((r, index) => Array(counts[index]).fill(r.role));
+}
+
+function scaleHeadcounts(
+  departments: [Department, number][],
+  max: number,
+): Map<Department, number> {
+  const total = departments.reduce((sum, [, headcount]) => sum + headcount, 0);
+  const ratio = Math.min(1, max / total);
+  const scaled = new Map(
+    departments.map(([department, headcount]) => [
+      department,
+      Math.max(1, Math.floor(headcount * ratio)),
+    ]),
+  );
+  const [largest] = departments.reduce((a, b) => (b[1] > a[1] ? b : a));
+  const remainder =
+    Math.min(max, total) - [...scaled.values()].reduce((a, b) => a + b, 0);
+  scaled.set(largest, (scaled.get(largest) ?? 0) + remainder);
+  return scaled;
 }
 
 async function generateDepartment(department: Department, headcount: number) {
@@ -153,49 +174,61 @@ async function main() {
     }),
   );
 
+  const succeeded = generated.filter((entry) => entry !== null);
+  const nodeCount = succeeded.reduce(
+    (sum, { data }) => sum + data.knowledge.length,
+    0,
+  );
+  const edgeBudget = Math.round(nodeCount * EDGES_PER_NODE);
+  const seededHeadcount = scaleHeadcounts(
+    succeeded.map(({ department, headcount }) => [department, headcount]),
+    MAX_DATA_POINTS - nodeCount - edgeBudget,
+  );
+
   const seeded = await Promise.all(
-    generated
-      .filter((entry) => entry !== null)
-      .map(async ({ department, headcount, data }) => {
-        const people = await prisma.person.createManyAndReturn({
-          data: distributeHeadcount(data.roles, headcount).map((role) => ({
-            role,
-            department,
-          })),
-        });
-        const nodes = await Promise.all(
-          data.knowledge.map(async (item) => {
-            const authorRole =
-              data.roles[item.authorIndex]?.role ?? data.roles[0]?.role;
-            const author =
-              sample(
-                people.filter((person) => person.role === authorRole),
-                1,
-              )[0] ?? sample(people, 1)[0]!;
-            const colleagues = sample(
-              people.filter((person) => person.id !== author.id),
-              4,
-            );
-            const node = await prisma.knowledgeNode.create({
-              data: {
-                content: item.content,
-                contentSummary: item.contentSummary,
-                source: KnowledgeSource[item.source],
-                sourceDescription: item.sourceDescription,
-                integrationId: integrations[SOURCE_INTEGRATION[item.source]],
-                access: {
-                  connect: [author, ...colleagues].map(({ id }) => ({ id })),
-                },
+    succeeded.map(async ({ department, data }) => {
+      const people = await prisma.person.createManyAndReturn({
+        data: distributeHeadcount(
+          data.roles,
+          seededHeadcount.get(department) ?? 1,
+        ).map((role) => ({
+          role,
+          department,
+        })),
+      });
+      const nodes = await Promise.all(
+        data.knowledge.map(async (item) => {
+          const authorRole =
+            data.roles[item.authorIndex]?.role ?? data.roles[0]?.role;
+          const author =
+            sample(
+              people.filter((person) => person.role === authorRole),
+              1,
+            )[0] ?? sample(people, 1)[0]!;
+          const colleagues = sample(
+            people.filter((person) => person.id !== author.id),
+            4,
+          );
+          const node = await prisma.knowledgeNode.create({
+            data: {
+              content: item.content,
+              contentSummary: item.contentSummary,
+              source: KnowledgeSource[item.source],
+              sourceDescription: item.sourceDescription,
+              integrationId: integrations[SOURCE_INTEGRATION[item.source]],
+              access: {
+                connect: [author, ...colleagues].map(({ id }) => ({ id })),
               },
-            });
-            return {
-              id: node.id,
-              summary: `[${department}] ${item.contentSummary}`,
-            };
-          }),
-        );
-        return { people, nodes };
-      }),
+            },
+          });
+          return {
+            id: node.id,
+            summary: `[${department}] ${item.contentSummary}`,
+          };
+        }),
+      );
+      return { people, nodes };
+    }),
   );
 
   const allPeople = seeded.flatMap((entry) => entry.people);
@@ -217,7 +250,7 @@ async function main() {
   const { output } = await generateText({
     model: MODEL,
     output: Output.object({ schema: edgesSchema }),
-    prompt: `Below is a numbered list of knowledge items from one company. Return pairs of items that are meaningfully related (same project, decision, client, system, incident, or follow-up). "from" is the item that references or builds on "to". Aim for about ${Math.round(nodes.length * 1.5)} edges and include cross-department links.
+    prompt: `Below is a numbered list of knowledge items from one company. Return pairs of items that are meaningfully related (same project, decision, client, system, incident, or follow-up). "from" is the item that references or builds on "to". Aim for about ${edgeBudget} edges and include cross-department links.
 
 ${nodes.map((node, index) => `${index}. ${node.summary}`).join("\n")}`,
   });
@@ -232,7 +265,7 @@ ${nodes.map((node, index) => `${index}. ${node.summary}`).join("\n")}`,
       targetId: target.id,
     });
   }
-  const edges = [...edgesByKey.values()];
+  const edges = [...edgesByKey.values()].slice(0, edgeBudget);
   await prisma.knowledgeEdge.createMany({ data: edges, skipDuplicates: true });
 
   const edgeCounts = new Map<string, number>();

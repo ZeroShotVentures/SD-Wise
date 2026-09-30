@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
@@ -139,16 +140,20 @@ export async function getGraph(me: Person): Promise<GraphView> {
 }
 
 // Ids reach Prisma filters, so refuse anything that isn't a plain string: an
-// object like { not: "x" } would otherwise be read as a query operator.
-function assertId(value: unknown): asserts value is string {
-  if (typeof value !== "string" || value.length === 0) {
-    throw new Error("Invalid id");
-  }
+// object like { not: "x" } would otherwise be read as a query operator. Only
+// the parsed value is passed on to Prisma.
+const Id = z.string().min(1).max(100);
+
+function parseId(value: unknown): string {
+  const parsed = Id.safeParse(value);
+  if (!parsed.success) throw new Error("Invalid id");
+  return parsed.data;
 }
 
-export async function markSeen(me: Person, nodeId: string) {
-  assertId(nodeId);
-  const questionId = questionIdOf(nodeId);
+export async function markSeen(me: Person, rawNodeId: string) {
+  const nodeId = parseId(rawNodeId);
+  const rawQuestionId = questionIdOf(nodeId);
+  const questionId = rawQuestionId ? parseId(rawQuestionId) : null;
   await prisma.question.updateMany({
     where: {
       askerId: me.id,
@@ -226,11 +231,11 @@ export async function requestAccess(
 // the update, so a question can only be resolved once.
 async function resolve(
   me: Person,
-  queryId: string,
+  rawQueryId: string,
   kind: "QUESTION" | "ACCESS" | undefined,
   data: Prisma.QuestionUpdateManyMutationInput,
 ) {
-  assertId(queryId);
+  const queryId = parseId(rawQueryId);
   const { count } = await prisma.question.updateMany({
     where: {
       id: { equals: queryId },
@@ -256,7 +261,8 @@ export async function answerQuery(
   });
 }
 
-export async function approveAccess(me: Person, queryId: string) {
+export async function approveAccess(me: Person, rawQueryId: string) {
+  const queryId = parseId(rawQueryId);
   const query = await prisma.question.findUnique({ where: { id: queryId } });
   const owns = query?.nodeIds.every((id) =>
     fixtures.nodes.find((n) => n.id === id)?.ownerIds.includes(me.id),

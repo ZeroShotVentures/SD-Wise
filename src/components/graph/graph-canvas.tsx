@@ -43,6 +43,9 @@ const YELLOW = "#ffbe00";
 const LOCKED_FILL = "#2a3640";
 const LOCKED_STROKE = "#56666f";
 
+// Canvas-space rectangle on screen this frame, for culling.
+type Frame = { minX: number; minY: number; maxX: number; maxY: number };
+
 const endId = (end: GraphLink["source"]) =>
   typeof end === "object" ? String(end?.id) : String(end);
 
@@ -75,6 +78,11 @@ export default function GraphCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [hoverId, setHoverId] = useState<string | null>(null);
+  const frame = useRef<Frame | null>(null);
+  const time = useRef(0);
+  const zoom = useRef(1);
+  // Large graphs arrive laid out; small ones are left to the simulation.
+  const staticLayout = useMemo(() => nodes.some((n) => n.pos), [nodes]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -102,11 +110,28 @@ export default function GraphCanvas({
     const graphNodes = nodes.map((view) => {
       const existing = nodeIndex.get(view.id);
       const node: GraphNode = existing ?? { id: view.id, view, degree: 0 };
+      if (!existing && view.pos) [node.x, node.y] = view.pos;
       node.view = view;
       node.degree = degree.get(view.id) ?? 0;
       nodeIndex.set(view.id, node);
       return node;
     });
+    // Nodes without a position (new answers) go next to what they link to.
+    for (const [i, node] of graphNodes.entries()) {
+      if (node.x !== undefined) continue;
+      const edge = edges.find(
+        (e) => e.sourceId === node.id || e.targetId === node.id,
+      );
+      const other =
+        edge &&
+        nodeIndex.get(
+          edge.sourceId === node.id ? edge.targetId : edge.sourceId,
+        );
+      if (other?.x === undefined || other.y === undefined) continue;
+      const angle = i * 2.39996; // golden angle, so siblings fan out
+      node.x = other.x + Math.cos(angle) * 24;
+      node.y = other.y + Math.sin(angle) * 24;
+    }
     const links: GraphLink[] = edges.map((view) => ({
       id: view.id,
       view,
@@ -120,9 +145,13 @@ export default function GraphCanvas({
   useEffect(() => {
     const api = apiRef.current;
     if (!ready || !api) return;
+    if (staticLayout) {
+      api.zoomToFit(0, 40);
+      return;
+    }
     api.d3Force("charge")?.strength?.(-140);
     api.d3Force("link")?.distance?.(55);
-  }, [apiRef, ready]);
+  }, [apiRef, ready, staticLayout]);
 
   const searching = highlight.visited.size > 0 || highlight.scanning !== null;
 
@@ -135,7 +164,14 @@ export default function GraphCanvas({
     const x = node.x ?? 0;
     const y = node.y ?? 0;
     const r = 4 + Math.min(node.degree, 6) * 0.9;
-    const t = Date.now() / 1000;
+    const f = frame.current;
+    if (
+      f &&
+      (x + r < f.minX || x - r > f.maxX || y + r < f.minY || y - r > f.maxY)
+    ) {
+      return;
+    }
+    const t = time.current;
     const isHit = highlight.hits.has(view.id);
     const isVisited = highlight.visited.has(view.id);
     const isScan = highlight.scanning === view.id;
@@ -143,6 +179,16 @@ export default function GraphCanvas({
     const dim = searching && !isVisited && !isScan;
 
     ctx.globalAlpha = dim ? 0.25 : 1;
+
+    // Zoomed far out: plain dots, the details wouldn't be visible anyway.
+    if (r * scale < 2.5 && !isHit && !isVisited && !isScan && !isSelected) {
+      ctx.fillStyle = view.locked ? LOCKED_STROKE : SOURCES[view.source].color;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(r, 1 / scale), 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      return;
+    }
 
     if (isHit) {
       const pulse = 0.5 + 0.5 * Math.sin(t * 3);
@@ -191,7 +237,10 @@ export default function GraphCanvas({
       ctx.stroke();
     }
 
-    const showLabel = scale > 1.6 || isSelected || isHit || hoverId === view.id;
+    // Crowded graphs only label hubs until you zoom in further.
+    const labelScale = staticLayout && node.degree < 4 ? 3 : 1.6;
+    const showLabel =
+      scale > labelScale || isSelected || isHit || hoverId === view.id;
     if (showLabel) {
       // Draw text in screen pixels; tiny canvas fonts scaled up render badly.
       const label = view.locked ? "Locked" : view.title;
@@ -224,11 +273,23 @@ export default function GraphCanvas({
           graphData={data}
           backgroundColor="rgba(0,0,0,0)"
           autoPauseRedraw={false}
-          cooldownTicks={120}
-          minZoom={0.5}
+          cooldownTicks={staticLayout ? 0 : 120}
+          enableNodeDrag={!staticLayout}
+          minZoom={staticLayout ? 0.08 : 0.5}
           maxZoom={4}
           nodeRelSize={6}
           nodeLabel={() => ""}
+          onRenderFramePre={(ctx, scale) => {
+            const m = ctx.getTransform().inverse();
+            const a = m.transformPoint({ x: 0, y: 0 });
+            const b = m.transformPoint({
+              x: ctx.canvas.width,
+              y: ctx.canvas.height,
+            });
+            frame.current = { minX: a.x, minY: a.y, maxX: b.x, maxY: b.y };
+            time.current = Date.now() / 1000;
+            zoom.current = scale;
+          }}
           nodeCanvasObject={drawNode}
           nodePointerAreaPaint={(node, color, ctx) => {
             const r = 4 + Math.min(node.degree, 6) * 0.9 + 3;
@@ -241,9 +302,10 @@ export default function GraphCanvas({
             if (selectedId === link.id) return "#ffffff";
             if (linkLit(link)) return "rgba(255,190,0,0.85)";
             if (searching) return "rgba(255,255,255,0.06)";
-            return link.view.locked
-              ? "rgba(255,255,255,0.12)"
-              : "rgba(255,255,255,0.28)";
+            // Fade lines when zoomed out so thousands don't turn into a haze.
+            const fade = Math.min(1, 0.35 + zoom.current * 0.65);
+            const alpha = (link.view.locked ? 0.12 : 0.28) * fade;
+            return `rgba(255,255,255,${alpha.toFixed(2)})`;
           }}
           linkLineDash={(link) => (link.view.locked ? [2, 3] : null)}
           linkWidth={(link) =>

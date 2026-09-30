@@ -4,7 +4,7 @@ import { ArrowUp, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 const EXAMPLES = [
-  "What do we charge Kras?",
+  "When is the December payroll cut-off?",
   "When does the API move to OAuth?",
   "How much is double holiday pay?",
   "When does Payroll Cloud v3 launch?",

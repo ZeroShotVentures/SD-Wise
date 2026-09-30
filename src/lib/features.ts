@@ -1,5 +1,0 @@
-import { env } from "@/env";
-
-export const googleEnabled = Boolean(
-  env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
-);

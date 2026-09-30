@@ -5,7 +5,7 @@ Next.js scaffold with authentication, account management, and Postgres.
 ## Stack
 
 - [Next.js 16](https://nextjs.org) (App Router) with React 19 and Tailwind CSS 4
-- [Better Auth](https://www.better-auth.com) for email/password and Google sign-in
+- [Better Auth](https://www.better-auth.com) for email/password sign-in
 - [Prisma 7](https://www.prisma.io) on PostgreSQL (via `@prisma/adapter-pg`)
 - [t3-env](https://env.t3.gg) + [Zod](https://zod.dev) for typed, validated environment variables
 - [oxlint](https://oxc.rs/docs/guide/usage/linter) for linting, [Biome](https://biomejs.dev) for formatting and import sorting
@@ -43,8 +43,7 @@ All variables are declared and validated in `src/env.ts`. The app refuses to bui
 | `DATABASE_URL` | Postgres connection string. The default matches `docker-compose.yml`. |
 | `BETTER_AUTH_SECRET` | At least 32 characters, required in production. Generate with `openssl rand -base64 32`. |
 | `BETTER_AUTH_URL` | Base URL of the app, e.g. `http://localhost:3000`. |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth client. Sign in with Google is enabled when both are set. |
-| `ADMIN_EMAILS` | Optional, comma-separated. The only way to make someone an admin: listed accounts with a verified email (Google sign-in) are admins, everyone else is a regular user. |
+| `ADMIN_EMAILS` | Optional, comma-separated. The only way to make someone an admin: listed accounts are admins once their email is verified, everyone else is a regular user. |
 
 ## Routes and auth checks
 
@@ -67,9 +66,9 @@ Protect data on the server, not in the browser:
 `/settings` lets users:
 
 - Change their name.
-- Change their password (only for users who have one). This signs out their other devices.
+- Change their password. This signs out their other devices.
 - See active sessions and revoke one or all other devices.
-- Delete their account. Password users must enter their password; Google-only users must have signed in within the last day.
+- Delete their account after entering their password.
 
 ## Admin portal
 
@@ -80,7 +79,7 @@ Built on the Better Auth [admin plugin](https://www.better-auth.com/docs/plugins
 - **Impersonate** the user. The admin is signed in as them for up to an hour, with a banner and a "Stop impersonating" button that returns to the admin session. Impersonation sessions are hidden from the user's own session list. Other admins can't be impersonated.
 - **Ban** them for a set time or permanently, with a reason. Banning signs them out everywhere and blocks sign-in until the ban is lifted or expires.
 - See and revoke their **sessions**.
-- Set a new **password**, or give a Google-only user one.
+- Set a new **password**.
 - **Delete** them.
 
 Admins can't take these actions on their own account.
@@ -89,7 +88,13 @@ Admins can't take these actions on their own account.
 
 Admins are defined only by `ADMIN_EMAILS`, a comma-separated list of addresses (in `.env` locally, or in the host environment in production). Roles can't be changed from the portal; to add or remove an admin, edit the variable and restart or redeploy.
 
-A listed user is an admin only once their email is verified. The app sends no email, so email/password accounts are never verified (anyone could sign up with an admin's address); admins must sign in with Google, whose accounts arrive verified.
+A listed user is an admin only once their email is verified, so nobody can become an admin just by signing up with a listed address. The app sends no email, so verify an admin by hand after they sign up:
+
+```sql
+UPDATE "user" SET "emailVerified" = true WHERE email = 'admin@example.com';
+```
+
+Then restart the server so the startup sync grants the role (direct database writes skip the update hook).
 
 The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set on sign-up, re-checked on every user update (so changes apply immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
 
@@ -98,18 +103,6 @@ To add finer-grained roles (e.g. support staff who can impersonate but not delet
 ## Rate limiting
 
 Better Auth rate-limits its endpoints in production (not in development). Counters are stored in the `rateLimit` table rather than in memory, so limits hold across multiple instances and serverless invocations. Tune limits with `rateLimit` in `src/lib/auth.ts`.
-
-## Sign in with Google
-
-Off until `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. To set it up:
-
-1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), configure the OAuth consent screen, then create an OAuth client ID of type "Web application".
-2. Add `http://localhost:3000/api/auth/callback/google` (and `https://<your-domain>/api/auth/callback/google` for production) as an authorized redirect URI.
-3. Copy the client ID and secret into `.env`.
-
-New Google users arrive with a verified email. If an email/password user with the same address already exists, Google sign-in is refused, because email/password accounts are never verified and linking them would allow account takeover through an unverified address.
-
-Whether Google is enabled is read at build time, so changing it requires a rebuild/redeploy.
 
 ## Email
 

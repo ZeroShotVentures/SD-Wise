@@ -9,13 +9,6 @@ type Credentials = { email: string; password: string };
 const { signIn, signUp, router } = vi.hoisted(() => ({
   signIn: {
     email: vi.fn<(input: Credentials) => Promise<AuthResult>>(),
-    social:
-      vi.fn<
-        (input: {
-          provider: string;
-          callbackURL: string;
-        }) => Promise<AuthResult>
-      >(),
   },
   signUp: {
     email:
@@ -30,7 +23,6 @@ vi.mock("next/navigation", () => ({ useRouter: () => router }));
 const defaultProps = {
   mode: "sign-in" as const,
   callbackURL: "/graph",
-  googleEnabled: false,
 };
 
 describe("AuthForm", () => {
@@ -106,28 +98,5 @@ describe("AuthForm", () => {
       "href",
       "/sign-in?callbackURL=%2Fsettings",
     );
-  });
-
-  it("hides Google when disabled", () => {
-    render(<AuthForm {...defaultProps} />);
-
-    expect(
-      screen.queryByRole("button", { name: "Continue with Google" }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("signs in with Google", async () => {
-    signIn.social.mockResolvedValue({ error: null });
-    const user = userEvent.setup();
-    render(<AuthForm {...defaultProps} googleEnabled />);
-
-    await user.click(
-      screen.getByRole("button", { name: "Continue with Google" }),
-    );
-
-    expect(signIn.social).toHaveBeenCalledWith({
-      provider: "google",
-      callbackURL: "/graph",
-    });
   });
 });

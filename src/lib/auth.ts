@@ -41,15 +41,6 @@ export const auth = betterAuth({
       },
     },
   },
-  socialProviders:
-    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-      ? {
-          google: {
-            clientId: env.GOOGLE_CLIENT_ID,
-            clientSecret: env.GOOGLE_CLIENT_SECRET,
-          },
-        }
-      : undefined,
   // nextCookies must stay last so it sees cookies set by the other plugins.
   plugins: [admin({ impersonationSessionDuration: 60 * 60 }), nextCookies()],
 });

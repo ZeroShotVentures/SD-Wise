@@ -155,6 +155,8 @@ model KnowledgeNode {
   lastAccessedAt    DateTime        @default(now())
 
   @@index([integrationId])
+  /// HNSW (vector_cosine_ops) index, created in the knowledge_node_embedding migration
+  @@index([contentEmbedding])
 }
 
 model KnowledgeEdge {

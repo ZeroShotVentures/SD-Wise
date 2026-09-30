@@ -74,9 +74,6 @@ const knowledgeSchema = z.object({
     )
     .min(1),
 });
-
-type KnowledgeItem = z.infer<typeof knowledgeSchema>["knowledge"][number];
-
 const edgesSchema = z.object({
   edges: z.array(z.object({ from: z.number().int(), to: z.number().int() })),
 });
@@ -143,8 +140,13 @@ async function generateKnowledge(
   headcount: number,
   roles: Role[],
   count: number,
-  previous: KnowledgeItem[],
+  batchIndex: number,
+  batchCount: number,
 ) {
+  const groups = Math.min(batchCount, roles.length);
+  const focusRoles = roles
+    .map((r, index) => `${index}. ${r.role}`)
+    .filter((_, index) => index % groups === batchIndex % groups);
   const { output } = await generateText({
     model: MODEL,
     output: Output.object({ schema: knowledgeSchema }),
@@ -153,10 +155,10 @@ async function generateKnowledge(
 Roles (0-based index):
 ${roles.map((r, index) => `${index}. ${r.role}`).join("\n")}
 ${
-  previous.length > 0
+  batchCount > 1
     ? `
-Already written (do not repeat these topics, but follow-ups on them are welcome):
-${previous.map((item) => `- ${item.contentSummary}`).join("\n")}
+This is batch ${batchIndex + 1} of ${batchCount}, generated in parallel with the others. To avoid overlapping topics, most items in this batch should be written by these roles and be about their day-to-day work:
+${focusRoles.join("\n")}
 `
     : ""
 }
@@ -176,17 +178,24 @@ async function generateDepartment(
   itemCount: number,
 ) {
   const roles = await generateRoles(department, headcount);
-  const knowledge: KnowledgeItem[] = [];
-  while (knowledge.length < itemCount) {
-    // oxlint-disable-next-line no-await-in-loop
-    const batch = await generateKnowledge(
-      department,
-      headcount,
-      roles,
-      Math.min(ITEMS_PER_BATCH, itemCount - knowledge.length),
-      knowledge,
-    );
-    knowledge.push(...batch);
+  const batchCount = Math.ceil(itemCount / ITEMS_PER_BATCH);
+  const batches = await Promise.allSettled(
+    Array.from({ length: batchCount }, (_, batchIndex) =>
+      generateKnowledge(
+        department,
+        headcount,
+        roles,
+        Math.min(ITEMS_PER_BATCH, itemCount - batchIndex * ITEMS_PER_BATCH),
+        batchIndex,
+        batchCount,
+      ),
+    ),
+  );
+  const knowledge = batches.flatMap((batch) =>
+    batch.status === "fulfilled" ? batch.value : [],
+  );
+  if (knowledge.length === 0) {
+    throw new Error("all knowledge batches failed");
   }
   return { roles, knowledge: knowledge.slice(0, itemCount) };
 }

@@ -1,0 +1,259 @@
+import { PrismaPg } from "@prisma/adapter-pg";
+import { generateText, Output } from "ai";
+import { config } from "dotenv";
+import { z } from "zod";
+import {
+  Department,
+  IntegrationType,
+  KnowledgeSource,
+  PrismaClient,
+} from "../src/generated/prisma/client";
+
+config({ path: [".env.local", ".env", ".env.example"], quiet: true });
+
+const MODEL = "alibaba/qwen3.8-flash";
+const COMPANY =
+  "SD Worx, a European provider of payroll, HR and workforce management services headquartered in Antwerp, Belgium";
+
+const DEPARTMENT_HEADCOUNT: Record<
+  Exclude<Department, typeof Department.OTHER>,
+  number
+> = {
+  CUSTOMER_SERVICE: 1600,
+  PRODUCTION: 1480,
+  IT: 1400,
+  SALES: 600,
+  FINANCE: 350,
+  ACCOUNTING: 300,
+  HR: 300,
+  MARKETING: 250,
+  AUDIT: 150,
+  SECURITY: 120,
+  SECRETARIAL: 120,
+  LOGISTICS: 100,
+  CLEANING: 90,
+  MAINTENANCE: 80,
+  RECEPTION: 60,
+};
+
+const SOURCE_INTEGRATION = {
+  MESSAGE: IntegrationType.slack,
+  EMAIL: IntegrationType.email,
+  MEETING: IntegrationType.google_meet,
+} as const;
+
+const departmentSchema = z.object({
+  roles: z
+    .array(
+      z.object({
+        role: z.string(),
+        headcountWeight: z.number().int().min(1).max(10),
+      }),
+    )
+    .min(3)
+    .max(10),
+  knowledge: z
+    .array(
+      z.object({
+        authorIndex: z.number().int().min(0),
+        source: z.enum(["MESSAGE", "EMAIL", "MEETING"]),
+        sourceDescription: z.string(),
+        content: z.string(),
+        contentSummary: z.string(),
+      }),
+    )
+    .min(4),
+});
+
+const edgesSchema = z.object({
+  edges: z.array(z.object({ from: z.number().int(), to: z.number().int() })),
+});
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+});
+
+function sample<T>(items: T[], count: number): T[] {
+  const picked = new Set<T>();
+  while (picked.size < Math.min(count, items.length)) {
+    picked.add(items[Math.floor(Math.random() * items.length)] as T);
+  }
+  return [...picked];
+}
+
+function distributeHeadcount(
+  roles: { role: string; headcountWeight: number }[],
+  total: number,
+): string[] {
+  const totalWeight = roles.reduce((sum, r) => sum + r.headcountWeight, 0);
+  const counts = roles.map((r) =>
+    Math.max(1, Math.floor((r.headcountWeight / totalWeight) * total)),
+  );
+  counts[0] = (counts[0] ?? 0) + total - counts.reduce((a, b) => a + b, 0);
+  return roles.flatMap((r, index) => Array(counts[index]).fill(r.role));
+}
+
+async function generateDepartment(department: Department, headcount: number) {
+  const { output } = await generateText({
+    model: MODEL,
+    output: Output.object({ schema: departmentSchema }),
+    prompt: `You are generating realistic internal company data for ${COMPANY}.
+
+For the ${department} department, which has ${headcount} employees (for this company PRODUCTION means payroll processing operations):
+- List 3 to 10 distinct job roles in that department (e.g. "Senior Payroll Consultant", "IT Support Technician"), from junior staff to managers.
+- headcountWeight (1 to 10) is how common the role is relative to the others: frontline roles high, managers low.
+- Write 6 to 8 pieces of internal knowledge produced by people in those roles: Slack messages (MESSAGE), emails (EMAIL), or meeting notes (MEETING). Mix the sources.
+- authorIndex is the 0-based index of the author's role in the roles list.
+- content is the full text (2 to 6 sentences), concrete and specific: names of systems, clients, numbers, dates, decisions.
+- contentSummary is one sentence.
+- sourceDescription says where it came from, e.g. "#finance-team Slack channel", "Email to the logistics lead", "Weekly IT sync meeting".
+- Some items should reference work of other departments so knowledge connects across the company.`,
+  });
+  return output;
+}
+
+async function main() {
+  if (!process.env.AI_GATEWAY_API_KEY) {
+    throw new Error("Set AI_GATEWAY_API_KEY in .env.local to run the seed.");
+  }
+
+  console.log(`Seeding with ${MODEL}...`);
+
+  await prisma.knowledgeEdge.deleteMany();
+  await prisma.knowledgeNode.deleteMany();
+  await prisma.integrations.deleteMany();
+  await prisma.person.deleteMany();
+
+  const integrations = Object.fromEntries(
+    await Promise.all(
+      Object.values(IntegrationType).map(async (type) => [
+        type,
+        (await prisma.integrations.create({ data: { type } })).id,
+      ]),
+    ),
+  ) as Record<IntegrationType, string>;
+
+  const departments = Object.entries(DEPARTMENT_HEADCOUNT) as [
+    Department,
+    number,
+  ][];
+
+  const generated = await Promise.all(
+    departments.map(async ([department, headcount]) => {
+      try {
+        const data = await generateDepartment(department, headcount);
+        console.log(
+          `  ${department}: ${data.roles.length} roles, ${data.knowledge.length} items`,
+        );
+        return { department, headcount, data };
+      } catch (error) {
+        console.warn(`  ${department}: skipped (${(error as Error).message})`);
+        return null;
+      }
+    }),
+  );
+
+  const seeded = await Promise.all(
+    generated
+      .filter((entry) => entry !== null)
+      .map(async ({ department, headcount, data }) => {
+        const people = await prisma.person.createManyAndReturn({
+          data: distributeHeadcount(data.roles, headcount).map((role) => ({
+            role,
+            department,
+          })),
+        });
+        const nodes = await Promise.all(
+          data.knowledge.map(async (item) => {
+            const authorRole =
+              data.roles[item.authorIndex]?.role ?? data.roles[0]?.role;
+            const author =
+              sample(
+                people.filter((person) => person.role === authorRole),
+                1,
+              )[0] ?? sample(people, 1)[0]!;
+            const colleagues = sample(
+              people.filter((person) => person.id !== author.id),
+              4,
+            );
+            const node = await prisma.knowledgeNode.create({
+              data: {
+                content: item.content,
+                contentSummary: item.contentSummary,
+                source: KnowledgeSource[item.source],
+                sourceDescription: item.sourceDescription,
+                integrationId: integrations[SOURCE_INTEGRATION[item.source]],
+                access: {
+                  connect: [author, ...colleagues].map(({ id }) => ({ id })),
+                },
+              },
+            });
+            return {
+              id: node.id,
+              summary: `[${department}] ${item.contentSummary}`,
+            };
+          }),
+        );
+        return { people, nodes };
+      }),
+  );
+
+  const allPeople = seeded.flatMap((entry) => entry.people);
+  const nodes = seeded.flatMap((entry) => entry.nodes);
+
+  await Promise.all(
+    sample(nodes, Math.ceil(nodes.length / 4)).map((node) =>
+      prisma.knowledgeNode.update({
+        where: { id: node.id },
+        data: {
+          access: {
+            connect: sample(allPeople, 2).map(({ id }) => ({ id })),
+          },
+        },
+      }),
+    ),
+  );
+
+  const { output } = await generateText({
+    model: MODEL,
+    output: Output.object({ schema: edgesSchema }),
+    prompt: `Below is a numbered list of knowledge items from one company. Return pairs of items that are meaningfully related (same project, decision, client, system, incident, or follow-up). "from" is the item that references or builds on "to". Aim for about ${Math.round(nodes.length * 1.5)} edges and include cross-department links.
+
+${nodes.map((node, index) => `${index}. ${node.summary}`).join("\n")}`,
+  });
+
+  const edgesByKey = new Map<string, { sourceId: string; targetId: string }>();
+  for (const { from, to } of output.edges) {
+    const source = nodes[from];
+    const target = nodes[to];
+    if (!source || !target || source === target) continue;
+    edgesByKey.set(`${source.id}:${target.id}`, {
+      sourceId: source.id,
+      targetId: target.id,
+    });
+  }
+  const edges = [...edgesByKey.values()];
+  await prisma.knowledgeEdge.createMany({ data: edges, skipDuplicates: true });
+
+  const edgeCounts = new Map<string, number>();
+  for (const { sourceId, targetId } of edges) {
+    edgeCounts.set(sourceId, (edgeCounts.get(sourceId) ?? 0) + 1);
+    edgeCounts.set(targetId, (edgeCounts.get(targetId) ?? 0) + 1);
+  }
+  await Promise.all(
+    [...edgeCounts].map(([id, edgeCount]) =>
+      prisma.knowledgeNode.update({ where: { id }, data: { edgeCount } }),
+    ),
+  );
+
+  console.log(
+    `Done: ${allPeople.length} people, ${nodes.length} knowledge nodes, ${edges.length} edges.`,
+  );
+}
+
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

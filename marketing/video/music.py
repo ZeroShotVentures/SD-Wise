@@ -1,6 +1,6 @@
 import numpy as np, wave
 SR = 48000
-DUR = 47.0
+DUR = 72.0
 N = int(SR * DUR)
 L = np.zeros(N); R = np.zeros(N)
 rng = np.random.default_rng(1)
@@ -111,22 +111,20 @@ for k in range(int(DUR // 4) + 1):
         i = int(t0 * SR); v = v[: max(0, N - i)]
         padL[i:i + len(v)] += v * 0.09
 tt = np.arange(N) / SR
-cut = np.interp(tt, [0, 5, 6, 10, 12.5, 30, 31, 37.8, 38, 42.3, 42.5, 47], [500, 1200, 700, 1500, 1800, 2200, 900, 1600, 2400, 3000, 1400, 500])
+cut = np.interp(tt, [0, 4.5, 5.5, 9.5, 12.5, 38.5, 39, 45.5, 46, 59.5, 63.5, 65.4, 67.5, 72], [500, 1200, 700, 1500, 1800, 2400, 900, 1400, 2000, 2800, 2200, 3200, 1400, 500])
 pad = lp(padL, cut)
 L += pad * 0.9; R += pad * 0.9 * 0.97
 
 # intro ticks + heartbeat
-for i in range(int(6 / 0.25)):
+for i in range(int(5.5 / 0.25)):
     add(hat(), i * 0.25, 0.25 if i % 2 else 0.4, pan=0.3 if i % 2 else -0.3)
-for b in np.arange(0, 10, 1.0):
+for b in np.arange(0, 9.5, 1.0):
     add(kick(0.5), b)
-for b in np.arange(6, 10, 0.5):
+for b in np.arange(5.5, 9.5, 0.5):
     add(pluck(note(chord_at(b)[int(b * 2) % 3] + 12), 0.5), b, pan=0.2)
-add(riser(1.5), 8.5, 0.5)
-add(riser(1.0), 3.5, 0.3)
-add(impact(), 10.0, 0.9)
-add(impact(), 4.45, 0.35)
-
+add(riser(1.5), 8.0, 0.5)
+add(impact(), 2.75, 0.35)
+add(impact(), 9.5, 0.9)
 # groove section
 def groove(a, b, kickg=1.0, arp=True, half=False):
     t = a
@@ -149,27 +147,35 @@ def groove(a, b, kickg=1.0, arp=True, half=False):
                 add(pluck(note(nn)), t + k * 0.25, 0.8, pan=0.35 if k else -0.35)
         t += BEAT
 
-for b in np.arange(10.5, 12.5, 0.5):
+for b in np.arange(10.0, 12.5, 0.5):
     add(pluck(note(chord_at(b)[int(b * 2) % 3] + 24), 0.5), b, pan=-0.2)
 add(whoosh(0.8), 12.1, 0.8)
 add(kick(1.1), 12.5)
-groove(12.5, 31.0)
-add(whoosh(0.8), 24.1, 0.8)
-add(impact(), 24.5, 0.35)
-groove(31.0, 37.5, kickg=0.9, arp=False, half=True)
-for b in np.arange(31, 37.5, 0.5):
+groove(12.5, 39.0)
+add(whoosh(0.8), 28.6, 0.8)
+add(impact(), 29.0, 0.35)
+add(impact(), 35.8, 0.25)
+groove(39.0, 45.5, kickg=0.9, arp=False, half=True)
+for b in np.arange(39, 45.5, 0.5):
     add(pluck(note(chord_at(b)[int(b * 2) % 3] + 12), 0.45), b, pan=0.2)
-add(impact(), 34.6, 0.3)
-add(riser(1.4), 36.6, 0.6)
-add(impact(), 38.0, 0.6)
-groove(38.0, 40.4, kickg=1.0)
-add(riser(0.9), 39.5, 0.5)
-add(impact(), 40.45, 0.9)
-for b in np.arange(40.5, 42.5, 1.0):
+add(impact(), 42.2, 0.3)
+add(riser(1.0), 45.0, 0.5)
+add(whoosh(0.8), 45.6, 0.8)
+groove(46.0, 59.5)
+add(impact(), 51.7, 0.25)
+add(whoosh(0.8), 59.1, 0.8)
+groove(59.5, 63.5)
+for b in np.arange(59.5, 63.5, 0.5):
+    add(kick(0.6), b + 0.25); add(clap(), b, 0.35)
+add(impact(), 63.5, 0.6)
+groove(63.5, 65.0, kickg=0.9, arp=False)
+add(riser(1.0), 64.4, 0.6)
+add(impact(), 65.4, 0.9)
+for b in np.arange(65.5, 67.5, 1.0):
     add(kick(0.8), b)
-add(impact(), 42.5, 0.8)
-for b in np.arange(42.5, 46, 0.5):
-    add(pluck(note(CHORDS[0][int(b * 2) % 3] + 24), 0.35 * (1 - (b - 42.5) / 4)), b, pan=(-0.4 if int(b * 2) % 2 else 0.4))
+add(impact(), 67.5, 0.8)
+for b in np.arange(67.5, 71, 0.5):
+    add(pluck(note(CHORDS[0][int(b * 2) % 3] + 24), 0.35 * (1 - (b - 67.5) / 4)), b, pan=(-0.4 if int(b * 2) % 2 else 0.4))
 
 # simple stereo delay/reverb send
 def verb(x):

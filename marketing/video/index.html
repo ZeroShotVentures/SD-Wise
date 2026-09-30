@@ -55,10 +55,13 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--navy);font
   <section class="scene" id="s1"><div class="bg-dark"></div></section>
   <section class="scene" id="s2"></section>
   <section class="scene" id="s3"><div class="bg-dark"></div></section>
-  <section class="scene" id="s4"><div class="bg-light"></div></section>
-  <section class="scene" id="s5"><div class="bg-light"></div></section>
-  <section class="scene" id="s6"><div class="bg-dark"></div></section>
-  <section class="scene" id="s7"><div class="bg-dark"></div></section>
+  <section class="scene" id="c1"><div class="bg-light"></div></section>
+  <section class="scene" id="c2"><div class="bg-light"></div></section>
+  <section class="scene" id="c3"><div class="bg-dark"></div></section>
+  <section class="scene" id="c4"><div class="bg-dark"></div></section>
+  <section class="scene" id="c5"><div class="bg-light"></div></section>
+  <section class="scene" id="c6"><div class="bg-light"></div></section>
+  <section class="scene" id="f7"><div class="bg-dark"></div></section>
   <section class="scene" id="s8"><div class="bg-dark"></div></section>
   <section class="scene" id="s9"><div class="bg-dark"></div></section>
   <div id="wipe" class="abs" style="inset:0;pointer-events:none"></div>
@@ -101,9 +104,10 @@ const SRC={
   slack:{c:'#5b1f5f',g:'hash',n:'Slack'}, teams:{c:'#5b5fc7',g:'chat',n:'Teams'},
   meet:{c:'#0e8a6d',g:'video',n:'Meet'}, zoom:{c:'#2d7cf6',g:'video',n:'Zoom'},
   doc:{c:'#1f6f4a',g:'doc',n:'SharePoint'}, hr:{c:'#d6003a',g:'lock',n:'HR'},
+  tmeet:{c:'#464eb8',g:'video',n:'Teams meetings'}, answer:{c:'#14b88a',g:'spark',n:'Answer'},
 };
 const svg=(g,size=24,stroke='#fff',sw=2)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><path d="${GL[g]}"/></svg>`;
-const PEOPLE={S:['Sarah','#e07a2e'],D:['Dirk','#2f8f6b'],L:['Lotte','#b0347a'],T:['Tom','#3a6fd8'],J:['Jonas','#7a5bd6'],V:['Victor','#c9892a'],A:['An','#2a9bb0'],M:['Marc','#8a6e4b']};
+const PEOPLE={B:['Bram','#e07a2e'],L:['Lotte','#b0347a'],D:['Dario','#2f8f6b'],V:['Victor','#c9892a'],J:['Julien','#7a5bd6'],K:['Kobe','#3a6fd8'],A:['An','#2a9bb0'],S:['Sofie','#d0496b'],T:['Timon','#5b8a2e'],P:['Pieter','#8a6e4b']};
 const dots=ids=>ids.map((k,i)=>`<span class="dot" style="background:${PEOPLE[k][1]};${i==0?'margin-left:0':''}">${k}</span>`).join('');
 
 // logo (paths from the SD Wise mark)
@@ -167,124 +171,103 @@ const typed=(str,t,t0,cps=22)=>{const n=Math.floor(clamp((t-t0)*cps,0,str.length
 const caret=(t,t0,t1)=>(t>=t0&&t<t1&&Math.floor(t*2.4)%2==0)?'<span style="opacity:.9">|</span>':'';
 const fmt=n=>Math.round(n).toLocaleString('en-US');
 
-// ---------- wipe (brand slashes) ----------
-const wipe=$('wipe');
-const WB=[mk(wipe,'',null,'width:220px;background:#7b86a2'),mk(wipe,'',null,'width:220px;background:#d6003a'),mk(wipe,'',null,'width:260px;background:#f2a900'),mk(wipe,'',null,'width:5200px')];
-function wipeU(t,tc,finalColor,dir=1){
-  const span=0.9;
-  if(Math.abs(t-tc)>span){return false}
-  WB[3].style.background=finalColor;
-  const v=6200; // px/s
-  // final bar center at screen center at tc; leading stripes ahead
-  const bigW=5200, cx=(t-tc)*v*dir;
-  const pos=[
-    cx+dir*(bigW/2+620), cx+dir*(bigW/2+380), cx+dir*(bigW/2+130), cx
-  ];
-  WB.forEach((d,i)=>{const w=parseFloat(d.style.width);d.style.left=(W/2+pos[i]-w/2)+'px';d.style.transform='skewX(-18deg)';});
-  return true;
-}
 
-// ================= SCENE 1 : scattered =================
+// ================= TIMELINE =================
+const T={s2:5.5,s3:9.5,c1:12.5,c2:21.0,c3:29.0,c4:39.0,c5:46.0,c6:53.0,f7:59.5,s8:63.5,s9:67.5,end:72.0};
+const DUR=T.end;
+
+// ================= S1 : scattered =================
 const s1=$('s1');
 const cardLayerBack=mk(s1,'abs',null,'inset:0');
 const s1Center=mk(s1,'abs',null,'inset:0');
 const cardLayerFront=mk(s1,'abs',null,'inset:0');
 const CT=[
- ['outlook','Sarah Peeters','RE: Payroll cutover Brussels','OUTLOOK · 09:12'],
- ['slack','#ops-benelux','Anyone know why the bank file failed?','SLACK · 2 MIN'],
- ['teams','Ops weekly sync','Transcript · 42 min','TEAMS MEETING'],
- ['doc','Leave_policy_v3_FINAL.docx','Edited by HR · 3 versions','SHAREPOINT'],
- ['gmail','Dirk Janssens','Fwd: Acme renewal — pricing?','GMAIL · 08:47'],
- ['teams','Lotte Claes','Let\'s take the salary review offline','TEAMS CHAT'],
- ['zoom','Client call · Acme','Recording · 31 min','ZOOM'],
- ['doc','SEPA_XML_v9_spec.pdf','Finance · 214 pages','DRIVE'],
- ['slack','#hr-payroll','Cutover moved to 14 Nov?','SLACK · 1 H'],
- ['outlook','Tom Wouters','Who owns the onboarding flow?','OUTLOOK · TUE'],
- ['teams','Jonas Maes','Ask Sarah, she fixed this last year','TEAMS CHAT'],
- ['doc','Q3_board_notes.docx','Confidential','SHAREPOINT'],
- ['meet','Kick-off · Project Delta','Notes · 18 action items','GOOGLE MEET'],
- ['outlook','Finance Team','Bank file format changes 1 Nov','OUTLOOK · MON'],
+ ['outlook','Lotte Janssens','RE: Kras contract terms','OUTLOOK · 09:12'],
+ ['slack','#payroll-engine','Can\'t close v3 until indexation is in','SLACK · 2 MIN'],
+ ['tmeet','Kras renewal prep','Transcript · 42 min','TEAMS MEETING'],
+ ['teams','Bram & Victor','Kras asked about the API again','TEAMS CHAT'],
+ ['outlook','An Maes','Indexation update — PC 200','OUTLOOK · MON'],
+ ['teams','Sofie Peeters','Let\'s take the salary review offline','TEAMS CHAT'],
+ ['zoom','Client call · Kras','Recording · 31 min','ZOOM'],
+ ['slack','#sales-benelux','Kras signed in spring 2024','SLACK · 1 H'],
+ ['tmeet','Product roadmap Q4','Decision: v3 GA in March','TEAMS MEETING'],
+ ['gmail','Pieter Claes','Holiday pay tickets again?','GMAIL · 08:47'],
+ ['slack','#support','Payslip PDF bug is back','SLACK · 5 MIN'],
+ ['teams','Kobe Willems','OAuth 2.1 ships before v3','TEAMS CHAT'],
+ ['meet','AI tooling budget','Notes · 6 action items','GOOGLE MEET'],
+ ['outlook','Dario','Fwd: LLM vendor shortlist','OUTLOOK · TUE'],
 ];
 seed=11;
 const cards=[];
 for(let i=0;i<46;i++){
   const c=CT[i%CT.length]; const sc=SRC[c[0]];
   const z=0.45+rnd()*0.95;
-  const front=z>1.18;
+  const front=z>1.22;
   const el=mk(front?cardLayerFront:cardLayerBack,'card',
     `<div class="ic" style="background:${sc.c}">${svg(sc.g,26)}</div><div class="tx"><div class="who">${c[1]}</div><div class="line">${c[2]}</div><div class="meta">${c[3]}</div></div>`);
-  // spread positions, avoid exact center for front cards
-  let x=rnd()*(W+500)-250, y=rnd()*(H+300)-150;
-  cards.push({el,z,x,y,vx:(rnd()-.5)*70,vy:(rnd()-.5)*40-12,r:(rnd()-.5)*10,t0:i*0.085+rnd()*0.2,ang:Math.atan2(y-H/2,x-W/2)});
+  let x=rnd()*(W+500)-250, y=rnd()*(H+260)-130;
+  cards.push({el,z,x,y,vx:(rnd()-.5)*70,vy:(rnd()-.5)*40-6,r:(rnd()-.5)*10,t0:i*0.07+rnd()*0.15,ang:Math.atan2(y-H/2,x-W/2)});
 }
 cards.sort((a,b)=>a.z-b.z).forEach(c=>c.el.parentNode.appendChild(c.el));
 const s1Kicker=mk(s1Center,'abs label',"Your company's knowledge lives",'left:0;right:0;top:380px;text-align:center;color:rgba(255,255,255,.7);font-size:24px');
-const WORDS=[[0.45,'In inboxes.'],[1.45,'In meetings.'],[2.45,'In documents.'],[3.45,'In chats.'],[4.45,"In people's heads."]];
+const WORDS=[[0.35,'In inboxes.'],[1.15,'In meetings.'],[1.95,'In chats.'],[2.75,"In people's heads."]];
 const s1Words=WORDS.map(([tt,w])=>{const e=kt(s1Center,[w],'position:absolute;left:0;right:0;top:430px;text-align:center;color:#fff;font-size:150px;text-shadow:0 10px 60px rgba(0,0,0,.5)');e._t=tt;return e});
-const s1Count=mk(s1,'abs pill',`<span style="width:10px;height:10px;border-radius:50%;background:#f2a900;display:inline-block"></span><span class="n">0</span>&nbsp;unread · unshared · unknown`,'left:50%;top:48px;transform:translateX(-50%);background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.14)');
-// people in heads
-const HEADS=[['D',420,250,'knows why the bank file failed'],['S',1480,230,'fixed this exact issue last year'],['L',300,780,'has the salary review'],['J',1560,770,'remembers what Acme was promised'],['M',860,860,'knows who to call at the bank'],['A',1150,150,'wrote the real process — in her notes']];
+const s1Count=mk(s1,'abs pill',`<span style="width:10px;height:10px;border-radius:50%;background:#f2a900;display:inline-block"></span><span class="n">0</span>&nbsp;messages · meetings · decisions`,'left:50%;top:48px;transform:translateX(-50%);background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.14)');
+const HEADS=[['V',400,240,'knows why v3 is blocked'],['B',1470,220,'knows what Kras was promised'],['S',300,780,'holds the salary reviews'],['A',1540,770,'has the 2027 indexation numbers'],['P',850,870,'knows the top ticket driver'],['L',1130,140,'knows the real Kras price']];
 const heads=HEADS.map(([k,x,y,txt],i)=>{
   const a=mk(s1,'avatar',k,`left:${x}px;top:${y}px;width:86px;height:86px;background:${PEOPLE[k][1]};border:4px solid rgba(255,255,255,.9)`);
   const tg=mk(s1,'tag',`<span style="color:${PEOPLE[k][1]}">${PEOPLE[k][0]}</span> · ${txt}`,`left:${x+100}px;top:${y+22}px`);
-  return {a,tg,x,y,t0:4.55+i*0.09};
+  return {a,tg,x,y,t0:2.85+i*0.09};
 });
 function s1U(t){
-  const cardsOn = t<11;
-  cardLayerBack.style.display=cardLayerFront.style.display=cardsOn?'block':'none';
-  if(!cardsOn)return;
-  // dim during s2, implode during logo
-  const dim=eio(prog(t,5.9,0.6));
-  const imp=eio(prog(t,9.55,0.75));
-  const fly=eio(prog(t,4.3,1.2)); // cards push outward when "people's heads"
+  const dim=eio(prog(t,5.2,0.6));
+  const imp=eio(prog(t,8.55,0.9));
+  const fly=eio(prog(t,2.6,1.3));
   cards.forEach(c=>{
     const p=eback(prog(t,c.t0,0.55));
     const tt=Math.max(0,t-c.t0);
     let x=c.x+c.vx*tt*c.z, y=c.y+c.vy*tt*c.z;
-    // push outward
-    const push=fly*260*c.z;
+    const push=fly*240*c.z;
     x+=Math.cos(c.ang)*push; y+=Math.sin(c.ang)*push;
-    // implode to center
     x=lerp(x,W/2-190,imp); y=lerp(y,H/2-50,imp);
     const s=c.z*lerp(0.55,1,p)*lerp(1,0.05,imp);
-    const depthBlur=Math.abs(c.z-0.95)*5.5;
-    const b=depthBlur+(1-p)*10+dim*5+imp*10;
-    const o=clamp(p*1.4)*lerp(1,c.z>1.18?0.0:0.35,dim)*(1-imp*imp);
-    S(c.el,{x,y,s,r:c.r*(1-imp),o,b});
+    const b=Math.abs(c.z-0.95)*5.5+(1-p)*10+dim*5+imp*6;
+    const o=clamp(p*1.4)*lerp(lerp(1,c.z>1.22?0.0:0.35,dim),0.8,imp)*(1-Math.pow(imp,3));
+    S(c.el,{x,y,s,r:c.r*(1-imp),o:clamp(o),b});
   });
-  if(t>6.5){s1Center.style.display='none'}else{s1Center.style.display='block'}
-  fadeIn(s1Kicker,t,0.15,{out:5.7});
-  s1Words.forEach((e,i)=>{const nxt=i<4?WORDS[i+1][0]-0.14:5.75;ktU(e,t,e._t,{st:0.05,d:0.5,out:nxt,od:0.18,acc:'#f2a900'})});
-  s1Words[4]._w.forEach((w,i)=>{if(i>0)w.style.color='#f2a900'});
-  s1Count.querySelector('.n').textContent=fmt(Math.pow(clamp(t/5.8),1.6)*1284211);
-  s1Count.style.opacity=clamp(t/0.4)*(1-prog(t,5.6,0.4));
+  s1Center.style.display=t>5.8?'none':'block';
+  fadeIn(s1Kicker,t,0.15,{out:5.1});
+  s1Words.forEach((e,i)=>{const nxt=i<3?WORDS[i+1][0]-0.12:5.1;ktU(e,t,e._t,{st:0.05,d:0.45,out:nxt,od:0.16})});
+  s1Words[3]._w.forEach((w,i)=>{if(i>0)w.style.color='#f2a900'});
+  s1Count.querySelector('.n').textContent=fmt(Math.pow(clamp(t/5.1),1.6)*1284211);
+  s1Count.style.opacity=clamp(t/0.4)*(1-prog(t,5.0,0.4));
   heads.forEach(h=>{
-    const p=eback(prog(t,h.t0,0.5)), q=eio(prog(t,5.75,0.4));
+    const p=eback(prog(t,h.t0,0.5)), q=eio(prog(t,5.1,0.4));
     S(h.a,{s:p*(1-q*0.4),o:clamp(p)*(1-q),b:q*8});
     const p2=ex(prog(t,h.t0+0.15,0.5));
     S(h.tg,{x:(1-p2)*-20,o:p2*(1-q),b:(1-p2)*6+q*8});
   });
 }
 
-// ================= SCENE 2 : statement =================
+// ================= S2 : statement =================
 const s2=$('s2');
 const s2a=kt(s2,['Your company knows more','than *anyone *in *it.'],'position:absolute;left:0;right:0;top:360px;text-align:center;color:#fff;font-size:118px');
-const s2b=kt(s2,['Until now, nobody','could *ask *it.'],'position:absolute;left:0;right:0;top:360px;text-align:center;color:#fff;font-size:118px');
+const s2b=kt(s2,['What if it could','*think *as *one?'],'position:absolute;left:0;right:0;top:360px;text-align:center;color:#fff;font-size:118px');
 function s2U(t){
-  ktU(s2a,t,6.05,{st:0.08,out:7.85,od:0.25,acc:'#f2a900'});
-  ktU(s2b,t,8.0,{st:0.09,out:9.55,od:0.3,acc:'#f2a900'});
+  ktU(s2a,t,5.55,{st:0.08,out:7.3,od:0.25,acc:'#f2a900'});
+  ktU(s2b,t,7.45,{st:0.09,out:9.2,od:0.3,acc:'#f2a900'});
 }
 
-// ================= SCENE 3 : logo =================
+// ================= S3 : logo =================
 const s3=$('s3');
-const s3logo=mk(s3,'abs',logo(true),'left:460px;top:390px;width:1000px;height:345px');
-const s3rays=document.createElement('canvas');s3rays.width=W;s3rays.height=H;s3rays.style.cssText='position:absolute;inset:0';s3.insertBefore(s3rays,s3logo);
+const s3rays=document.createElement('canvas');s3rays.width=W;s3rays.height=H;s3rays.style.cssText='position:absolute;inset:0';s3.appendChild(s3rays);
+const s3logo=mk(s3,'abs',logo(true),'left:460px;top:350px;width:1000px;height:345px');
+const s3sub=mk(s3,'abs',"One mind for your whole company.",'left:0;right:0;top:760px;text-align:center;color:rgba(255,255,255,.9);font-size:42px;font-weight:550;letter-spacing:-.02em');
 function barsU(root,t,t0){
   const bs=root.querySelectorAll('.bars polygon');
   bs.forEach((b,i)=>{
     const p=eo5(prog(t,t0+i*0.09,0.55));
-    const dy=(1-p)*(i==1?-900:900);
-    b.style.transform=`translate(${(1-p)*(i==1?120:-160)}px,${dy}px)`;
+    b.style.transform=`translate(${(1-p)*(i==1?120:-160)}px,${(1-p)*(i==1?-900:900)}px)`;
     b.style.opacity=clamp(p*3);
   });
   const wm=root.querySelector('.wm');
@@ -293,8 +276,7 @@ function barsU(root,t,t0){
 function raysU(cv,t,t0,strength=1,rot=0){
   const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
   const p=prog(t,t0,1.6); if(p<=0||p>=1)return;
-  ctx.save();ctx.translate(W/2,H/2);
-  seed=99;
+  ctx.save();ctx.translate(W/2,H/2);seed=99;
   for(let i=0;i<90;i++){
     const a=rnd()*Math.PI*2+rot, sp=0.6+rnd()*1.4, len=80+rnd()*260;
     const r0=ex(p)*sp*1400;
@@ -306,309 +288,436 @@ function raysU(cv,t,t0,strength=1,rot=0){
   ctx.restore();
 }
 function s3U(t){
-  barsU(s3logo,t,10.0);
-  raysU(s3rays,t,10.25,1);
+  barsU(s3logo,t,T.s3);
+  raysU(s3rays,t,T.s3+0.25,1);
+  fadeIn(s3sub,t,T.s3+1.05);
   const z=eio(prog(t,11.9,0.6));
-  S(s3logo,{s:lerp(1,1.12,prog(t,10,2.4))+z*0.5,b:z*14,o:1-z*0.6});
+  S(s3logo,{s:lerp(1,1.08,prog(t,T.s3,3))+z*0.4,b:z*14,o:1-z*0.6});
+  S(s3sub,{o:(1-z)*ex(prog(t,T.s3+1.05,0.6)),y:(1-ex(prog(t,T.s3+1.05,0.6)))*30,b:z*10});
 }
 
-// ================= SCENE 4 : CAPTURE =================
-const s4=$('s4');
-const s4lab=mk(s4,'abs label','<span style="color:#d6003a">01</span> <span style="opacity:.4">/</span> Capture','left:140px;top:300px;color:#5f6b76');
-const s4h=kt(s4,['*Capture','everything.'],'position:absolute;left:136px;top:345px;color:#1d2830;font-size:112px');
-const s4sub=mk(s4,'abs sub','Every mail, meeting, chat and document —<br>distilled into facts, the moment it happens.','left:140px;top:612px;width:680px;color:#5f6b76');
-const s4cv=document.createElement('canvas');s4cv.width=W;s4cv.height=H;s4cv.style.cssText='position:absolute;inset:0';s4.appendChild(s4cv);
-const HUB={x:1290,y:540};
-const s4hub=mk(s4,'abs glass',`<div style="position:absolute;left:28px;top:30px;width:72px;height:96px">${logo(false,false)}</div>`,`left:${HUB.x-70}px;top:${HUB.y-78}px;width:140px;height:156px;border-radius:34px;box-shadow:0 30px 70px rgba(20,30,40,.18)`);
-const TILES=['outlook','slack','teams','meet','gmail','zoom','doc'];
-const tiles=TILES.map((k,i)=>{const y=150+i*118;const x=960+Math.sin(i/6*Math.PI)*-60;
-  return {el:mk(s4,'tile',svg(SRC[k].g,40,'#fff',2.1),`left:${x-42}px;top:${y-42}px;background:${SRC[k].c}`),x,y,k}});
-const FACTS=[
- ['meet','Brussels payroll cutover moved to 14 Nov','OPS WEEKLY · 6 OCT',['S','D']],
- ['outlook','Bank file format changes on 1 Nov (SEPA v9)','FINANCE MAIL',['M']],
- ['slack','Acme renewal at risk — pricing concern','#SALES-BENELUX',['J','T']],
- ['hr','Victor · salary review approved','HR · PRIVATE',['L']],
-];
-const facts=FACTS.map(([k,t,m,own],i)=>({el:mk(s4,'fact',`<div class="ic" style="background:${SRC[k].c}">${svg(SRC[k].g,22)}</div><div><div class="t">${t}</div><div class="m">${k=='hr'?svg('lock',14,'#d6003a',2.4):''}${m}<span style="margin-left:auto;display:inline-flex;padding-left:8px">${dots(own)}</span></div></div>`,'left:0;top:0'),x:1420,y:250+i*150}));
-const s4count=mk(s4,'abs pill','<span style="width:10px;height:10px;border-radius:50%;background:#d6003a;display:inline-block"></span><span class="n">0</span>&nbsp;facts captured','right:90px;top:60px;background:#fff;color:#1d2830;border:1px solid #e3e7ec');
-function s4U(t){
-  const l=t-12.5;
-  fadeIn(s4lab,t,12.75,{out:18.2});
-  ktU(s4h,t,12.8,{st:0.09,out:18.2,acc:'#d6003a'});
-  fadeIn(s4sub,t,13.3,{out:18.2});
-  const hp=eback(prog(t,13.0,0.55));
-  S(s4hub,{s:hp,o:clamp(hp)});
-  tiles.forEach((ti,i)=>{const p=eback(prog(t,13.4+i*0.08,0.5));S(ti.el,{x:(1-p)*(HUB.x-ti.x),y:(1-p)*(HUB.y-ti.y),s:lerp(.3,1,clamp(p)),o:clamp(p*2)})});
-  const ctx=s4cv.getContext('2d');ctx.clearRect(0,0,W,H);
-  tiles.forEach((ti,i)=>{
-    const p=eo(prog(t,13.9+i*0.08,0.6)); if(p<=0)return;
-    const x0=ti.x+44,y0=ti.y,x1=HUB.x-72,y1=HUB.y;
-    const mx=(x0+x1)/2;
-    ctx.strokeStyle='rgba(29,40,48,.16)';ctx.lineWidth=2;ctx.setLineDash([]);
-    ctx.beginPath();ctx.moveTo(x0,y0);ctx.bezierCurveTo(mx,y0,mx,y1,lerp(x0,x1,p),lerp(y0,y1,p));ctx.stroke();
-    // particles
-    if(p>=1){for(let k=0;k<3;k++){const u=((t*0.9+k/3+i*0.137)%1);const bx=bez(x0,mx,mx,x1,u),by=bez(y0,y0,y1,y1,u);
-      ctx.fillStyle=SRC[ti.k].c;ctx.globalAlpha=Math.sin(u*Math.PI);ctx.beginPath();ctx.arc(bx,by,4.5,0,7);ctx.fill();ctx.globalAlpha=1}}
-  });
-  facts.forEach((f,i)=>{
-    const t0=14.7+i*0.55; const p=ex(prog(t,t0,0.7)); if(p<=0){f.el.style.opacity=0;return}
-    const x=lerp(HUB.x-210,f.x,p), y=lerp(HUB.y-40,f.y,p);
-    S(f.el,{x,y,s:lerp(.4,1,p),o:clamp(p*2.5),b:(1-p)*12});
-    // connector from hub
-    ctx.strokeStyle='rgba(214,0,58,.28)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(HUB.x+70,HUB.y);ctx.bezierCurveTo(HUB.x+110,HUB.y,f.x-60,y+40,x,y+40);ctx.globalAlpha=clamp(p);ctx.stroke();ctx.globalAlpha=1;
-  });
-  s4count.querySelector('.n').textContent=fmt(1284211+Math.max(0,l)*2731);
-  s4count.style.opacity=ex(prog(t,13.2,0.5));
+// ---------- shared chapter header ----------
+function chapter(parent,num,name,lines,sub,{dark=false,acc,top=250,size=100,subTop}={}){
+  const lab=mk(parent,'abs label',`<span style="color:${acc}">${num}</span> <span style="opacity:.4">/</span> ${name}`,`left:140px;top:${top}px;color:${dark?'rgba(255,255,255,.6)':'#5f6b76'}`);
+  const h=kt(parent,lines,`position:absolute;left:136px;top:${top+44}px;color:${dark?'#fff':'#1d2830'};font-size:${size}px`);
+  const sb=mk(parent,'abs sub',sub,`left:140px;top:${subTop??(top+60+lines.length*size*1.02)}px;width:660px;color:${dark?'rgba(255,255,255,.65)':'#5f6b76'}`);
+  return {lab,h,sb,acc,u(t,t0,out){fadeIn(lab,t,t0-0.05,{out});ktU(h,t,t0,{st:0.08,out,acc});fadeIn(sb,t,t0+0.5,{out})}};
 }
-const bez=(a,b,c,d,u)=>{const m=1-u;return m*m*m*a+3*m*m*u*b+3*m*u*u*c+u*u*u*d};
 
-// ================= GRAPH (shared by S5/S6) =================
-const GN=[
- {id:'cut',x:1290,y:520,t:'Brussels payroll cutover',k:'meet',o:['S','D']},
- {id:'bank',x:1030,y:330,t:'Bank file format changes 1 Nov',k:'outlook',o:['M']},
- {id:'moved',x:1560,y:340,t:'Cutover moved to 14 Nov',k:'teams',o:['S']},
- {id:'ops',x:1600,y:660,t:'Ops weekly · 6 Oct',k:'meet',o:['S','D','J']},
- {id:'sepa',x:1250,y:190,t:'SEPA XML v9 spec',k:'doc',o:['M']},
- {id:'acme',x:1050,y:790,t:'Acme renewal at risk',k:'slack',o:['J','T']},
- {id:'leave',x:1330,y:860,t:'Leave policy v3',k:'doc',o:['A']},
- {id:'sal',x:1110,y:650,t:'Victor · salary review',k:'hr',o:['L'],priv:1},
- {id:'fix',x:1700,y:470,t:'Fix: re-map IBAN fields',k:'slack',o:['D'],priv:0},
- {id:'board',x:1690,y:860,t:'Q3 board notes',k:'doc',o:['V'],priv:1},
-];
-const GE=[['bank','cut','causes'],['sepa','bank','defines'],['cut','moved','updates'],['moved','ops','decided in'],['fix','moved','unblocks'],['cut','acme','impacts'],['ops','leave','mentions'],['sal','cut',''],['ops','board',''],['acme','leave',''],['sepa','moved','']];
-const GPATH=['bank','cut','moved','ops'];
-seed=5;const BGD=[];for(let i=0;i<70;i++){BGD.push({x:820+rnd()*1060,y:110+rnd()*880,r:2+rnd()*3.5,ph:rnd()*6})}
-const BGE=[];for(let i=0;i<60;i++){const a=Math.floor(rnd()*70),b=Math.floor(rnd()*70);const d=Math.hypot(BGD[a].x-BGD[b].x,BGD[a].y-BGD[b].y);if(d<260)BGE.push([a,b])}
-const gmap={};GN.forEach((n,i)=>{n.i=i;gmap[n.id]=n});
-function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+// ---------- graph engine ----------
 const P2={};for(const k in GL)P2[k]=new Path2D(GL[k]);
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 function glyph(ctx,g,x,y,s,col,lw=2){ctx.save();ctx.translate(x,y);ctx.scale(s/24,s/24);ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke(P2[g]);ctx.restore()}
-function nodeBox(ctx,n){ctx.font='600 19px Inter';const w=ctx.measureText(n.t).width+64+n.o.length*18+14;return {w,h:52}}
-function drawGraph(ctx,t,{appear=()=>1,edgeP=()=>1,dark=false,hl=null,hlE=null,dim=0,cam=1,labels=0,lockReveal=0}){
+const NODES={
+ cust:{t:'Kras is a payroll customer',k:'slack',o:['B']},
+ price:{t:'Kras pricing · €4.20 / payslip',k:'outlook',o:['B','L']},
+ renew:{t:'Kras renewal · 8% discount',k:'tmeet',o:['B','L','D']},
+ api:{t:'Kras wants API access',k:'teams',o:['B','V']},
+ oauth:{t:'API auth moves to OAuth 2.1',k:'slack',o:['V','K']},
+ v3:{t:'Payroll Cloud v3 · March 2027',k:'tmeet',o:['D','V','J','K']},
+ block:{t:'v3 blocked on indexation rules',k:'slack',o:['V','J','K']},
+ idx:{t:'Indexation 2027 · PC 200',k:'outlook',o:['A','S'],priv:1},
+ sal:{t:'Salary review: Victor',k:'hr',o:['S'],priv:1},
+ car:{t:'Company car policy 2027',k:'teams',o:['S']},
+ video:{t:'v3 launch video',k:'slack',o:['T']},
+ ans:{t:'Answer · indexation is 2.1%',k:'answer',o:['A']},
+};
+const EDGES=[['renew','price','UPDATES'],['renew','v3','DEPENDS ON'],['price','cust','RELATES TO'],['api','cust','RELATES TO'],['api','oauth','DEPENDS ON'],['block','v3','BLOCKS'],['idx','block','RELATES TO'],['oauth','v3','RELATES TO'],['sal','car','RELATES TO'],['video','v3','DEPENDS ON'],['ans','idx','ANSWERS'],['ans','block','ANSWERS']];
+function nodeW(ctx,n){ctx.font='600 19px Inter';return ctx.measureText(n.t).width+64+n.o.length*18+14}
+seed=5;const BGD=[];for(let i=0;i<80;i++){BGD.push({x:840+rnd()*1060,y:100+rnd()*900,r:2+rnd()*3.5,ph:rnd()*6})}
+const BGE=[];for(let i=0;i<70;i++){const a=Math.floor(rnd()*80),b=Math.floor(rnd()*80);if(Math.hypot(BGD[a].x-BGD[b].x,BGD[a].y-BGD[b].y)<250)BGE.push([a,b])}
+// o: {pos:{id:[x,y]}, appear(id), edgeP(i), dark, hl(id), hlE(a,b), dim, cam, labels, locked(id), badge(id), bg, grow}
+function drawGraph(ctx,t,o){
+  const {pos,dark=false,dim=0,cam=1,labels=0}=o;
+  const appear=o.appear||(()=>1), edgeP=o.edgeP||(()=>1), hl=o.hl||(()=>false), hlE=o.hlE||(()=>false), locked=o.locked||(()=>0), badge=o.badge||(()=>null);
   ctx.clearRect(0,0,W,H);
   ctx.save();ctx.translate(1340,540);ctx.scale(cam,cam);ctx.translate(-1340,-540);
-  // background constellation
-  const bgA=appear(-1);
-  BGE.forEach(([a,b])=>{const A=BGD[a],B=BGD[b];ctx.strokeStyle=dark?`rgba(255,255,255,${.07*bgA})`:`rgba(29,40,48,${.07*bgA})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke()});
-  BGD.forEach(d=>{const f=0.5+0.5*Math.sin(t*1.3+d.ph);ctx.fillStyle=dark?`rgba(160,190,230,${(.18+.2*f)*bgA})`:`rgba(29,40,48,${(.12+.12*f)*bgA})`;ctx.beginPath();ctx.arc(d.x+Math.sin(t*.5+d.ph)*4,d.y+Math.cos(t*.4+d.ph)*4,d.r,0,7);ctx.fill()});
-  // edges
-  GE.forEach(([a,b,lab],ei)=>{
-    const A=gmap[a],B=gmap[b];const p=edgeP(ei);if(p<=0)return;
-    const isH=hlE&&hlE(a,b);
-    const x1=lerp(A.x,B.x,p),y1=lerp(A.y,B.y,p);
+  const bgA=o.bg??1;
+  if(bgA>0){
+    BGE.forEach(([a,b])=>{const A=BGD[a],B=BGD[b];ctx.strokeStyle=dark?`rgba(255,255,255,${.07*bgA})`:`rgba(29,40,48,${.07*bgA})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke()});
+    BGD.forEach((d,i)=>{const g=o.grow?clamp(o.grow*1.3-i/80*0.3):1;if(g<=0)return;const f=0.5+0.5*Math.sin(t*1.3+d.ph);ctx.fillStyle=dark?`rgba(160,190,230,${(.18+.2*f)*bgA*g})`:`rgba(29,40,48,${(.12+.12*f)*bgA*g})`;ctx.beginPath();ctx.arc(d.x+Math.sin(t*.5+d.ph)*4,d.y+Math.cos(t*.4+d.ph)*4,d.r*g,0,7);ctx.fill()});
+  }
+  EDGES.forEach(([a,b,lab],ei)=>{
+    if(!pos[a]||!pos[b])return;
+    const p=edgeP(ei,a,b);if(p<=0)return;
+    const [ax,ay]=pos[a],[bx,by]=pos[b];
+    const isH=hlE(a,b);
+    const lk=locked(a)||locked(b);
+    const x1=lerp(ax,bx,p),y1=lerp(ay,by,p);
+    const isAns=lab==='ANSWERS';
     ctx.lineWidth=isH?4:2;
-    ctx.strokeStyle=isH?'#f2a900':(dark?`rgba(255,255,255,${.22*(1-dim*.6)})`:'rgba(29,40,48,.22)');
-    ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(x1,y1);ctx.stroke();
-    if(isH){ // pulse
-      const u=(t*1.4+ei*.3)%1;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lerp(A.x,B.x,u),lerp(A.y,B.y,u),5,0,7);ctx.fill();
-    }
-    if(lab&&labels>0&&p>=1){
-      const mx=(A.x+B.x)/2,my=(A.y+B.y)/2;ctx.font='500 14px Mono';const w=ctx.measureText(lab).width+18;
+    ctx.setLineDash(lk?[6,8]:[]);
+    ctx.strokeStyle=isH?'#f2a900':isAns?'#14b88a':(dark?`rgba(255,255,255,${.24*(1-dim*.6)})`:'rgba(29,40,48,.22)');
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(x1,y1);ctx.stroke();ctx.setLineDash([]);
+    if(isH){const u=(t*1.4+ei*.3)%1;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(lerp(ax,bx,u),lerp(ay,by,u),5,0,7);ctx.fill()}
+    if(labels>0&&p>=1){
+      const mx=(ax+bx)/2,my=(ay+by)/2;const txt=lk?'':lab;ctx.font='600 13px Mono';const w=lk?30:ctx.measureText(txt).width+20;
       ctx.globalAlpha=labels*(isH?1:(1-dim*.7));
-      ctx.fillStyle=dark?(isH?'#f2a900':'#1b2e40'):'#fff';rr(ctx,mx-w/2,my-13,w,26,13);ctx.fill();
-      ctx.strokeStyle=dark?'rgba(255,255,255,.18)':'#e3e7ec';ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle=dark?(isH?'#0c1720':'rgba(255,255,255,.75)'):'#5f6b76';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lab,mx,my+1);ctx.textAlign='left';ctx.globalAlpha=1;
+      ctx.fillStyle=isH?'#f2a900':isAns?'#14b88a':lk?'#d6003a':(dark?'#1b2e40':'#fff');rr(ctx,mx-w/2,my-13,w,26,13);ctx.fill();
+      if(!isH&&!isAns&&!lk){ctx.strokeStyle=dark?'rgba(255,255,255,.18)':'#dfe3e8';ctx.lineWidth=1;ctx.stroke()}
+      if(lk){glyph(ctx,'lock',mx-8,my-8,16,'#fff',2.4)}
+      else{ctx.fillStyle=isH?'#0c1720':isAns?'#fff':(dark?'rgba(255,255,255,.75)':'#5f6b76');ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,mx,my+1);ctx.textAlign='left'}
+      ctx.globalAlpha=1;
     }
   });
-  // nodes
-  GN.forEach(n=>{
-    const p=appear(n.i);if(p<=0)return;
-    const {w,h}=nodeBox(ctx,n);const s=lerp(.5,1,eback(p));
-    const isH=hl&&hl(n.id);
-    ctx.save();ctx.translate(n.x,n.y);ctx.scale(s,s);ctx.globalAlpha=clamp(p*2)*(isH?1:(1-dim*.65));
+  Object.keys(pos).forEach(id=>{
+    const n=NODES[id];const p=appear(id);if(p<=0)return;const [x,y]=pos[id];
+    const w=nodeW(ctx,n),h=52;const s=lerp(.5,1,eback(p));
+    const isH=hl(id);const lk=locked(id);
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.globalAlpha=clamp(p*2)*(isH?1:(1-dim*.65));
     if(isH){ctx.shadowColor='rgba(242,169,0,.8)';ctx.shadowBlur=40}
     else{ctx.shadowColor=dark?'rgba(0,0,0,.5)':'rgba(20,30,40,.12)';ctx.shadowBlur=24;ctx.shadowOffsetY=8}
     ctx.fillStyle=dark?(isH?'#ffffff':'#15283a'):'#fff';rr(ctx,-w/2,-h/2,w,h,16);ctx.fill();
     ctx.shadowColor='transparent';
-    ctx.strokeStyle=isH?'#f2a900':(dark?'rgba(255,255,255,.14)':'#e3e7ec');ctx.lineWidth=isH?2.5:1.2;ctx.stroke();
-    // icon
+    ctx.strokeStyle=isH?'#f2a900':lk?'rgba(214,0,58,.8)':n.k==='answer'?'#14b88a':(dark?'rgba(255,255,255,.14)':'#e3e7ec');ctx.lineWidth=(isH||lk||n.k==='answer')?2.5:1.2;ctx.stroke();
     const sc=SRC[n.k];ctx.fillStyle=sc.c;rr(ctx,-w/2+8,-18,36,36,10);ctx.fill();glyph(ctx,sc.g,-w/2+14,-12,24,'#fff',2.2);
-    const locked=n.priv&&lockReveal>0;
     ctx.font='600 19px Inter';ctx.textBaseline='middle';ctx.fillStyle=dark?(isH?'#1d2830':'#fff'):'#1d2830';
-    if(locked){ctx.globalAlpha*=1;ctx.filter=`blur(${6*lockReveal}px)`;}
+    if(lk){ctx.filter=`blur(${7*lk}px)`}
     ctx.fillText(n.t,-w/2+54,1);ctx.filter='none';
-    if(locked){ctx.fillStyle='#d6003a';rr(ctx,-w/2+54+ (w-64-n.o.length*18-14)/2-18,-15,36,30,9);ctx.fill();glyph(ctx,'lock',-w/2+54+(w-64-n.o.length*18-14)/2-11,-11,22,'#fff',2.3)}
-    // owners
-    n.o.forEach((o,k)=>{const cx=w/2-18-(n.o.length-1-k)*18;ctx.fillStyle=PEOPLE[o][1];ctx.beginPath();ctx.arc(cx,0,12,0,7);ctx.fill();ctx.strokeStyle=dark?(isH?'#fff':'#15283a'):'#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='700 11px Inter';ctx.textAlign='center';ctx.fillText(o,cx,1);ctx.textAlign='left'});
+    if(lk){const cx=-w/2+54+(w-64-n.o.length*18-14)/2;ctx.globalAlpha*=lk;ctx.fillStyle='#d6003a';rr(ctx,cx-50,-15,100,30,9);ctx.fill();glyph(ctx,'lock',cx-42,-9,18,'#fff',2.4);ctx.fillStyle='#fff';ctx.font='700 13px Mono';ctx.fillText('PRIVATE',cx-18,1);ctx.globalAlpha/=lk}
+    n.o.forEach((ow,k)=>{const cx=w/2-18-(n.o.length-1-k)*18;ctx.fillStyle=PEOPLE[ow][1];ctx.beginPath();ctx.arc(cx,0,12,0,7);ctx.fill();ctx.strokeStyle=dark?(isH?'#fff':'#15283a'):'#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='700 11px Inter';ctx.textAlign='center';ctx.fillText(ow,cx,1);ctx.textAlign='left'});
+    const bd=badge(id);
+    if(bd){ctx.globalAlpha=clamp(bd.p);ctx.font='700 13px Mono';const bw=ctx.measureText(bd.text).width+22;const bs=lerp(.6,1,eback(bd.p));ctx.save();ctx.translate(w/2-bw/2,-h/2-4);ctx.scale(bs,bs);ctx.fillStyle=bd.color;rr(ctx,-bw/2,-14,bw,28,14);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(bd.text,0,1);ctx.restore();ctx.textAlign='left'}
     ctx.restore();
   });
   ctx.restore();
 }
+function mkCanvas(parent,before){const c=document.createElement('canvas');c.width=W;c.height=H;c.style.cssText='position:absolute;inset:0';before?parent.insertBefore(c,before):parent.appendChild(c);return c}
 
-// ================= SCENE 5 : CONNECT =================
-const s5=$('s5');
-const s5cv=document.createElement('canvas');s5cv.width=W;s5cv.height=H;s5cv.style.cssText='position:absolute;inset:0';s5.appendChild(s5cv);
-const s5lab=mk(s5,'abs label','<span style="color:#e39a00">02</span> <span style="opacity:.4">/</span> Connect','left:140px;top:300px;color:#5f6b76');
-const s5h=kt(s5,['*One *living','memory.'],'position:absolute;left:136px;top:345px;color:#1d2830;font-size:112px');
-const s5sub=mk(s5,'abs sub','Every fact linked to the people, projects<br>and decisions behind it. Always current.','left:140px;top:612px;width:680px;color:#5f6b76');
-const ORDER=['cut','bank','moved','sepa','ops','fix','acme','sal','leave','board'];
-function s5U(t){
-  fadeIn(s5lab,t,18.75,{out:24.2});
-  ktU(s5h,t,18.8,{st:0.09,out:24.2,acc:'#e39a00'});
-  fadeIn(s5sub,t,19.3,{out:24.2});
-  const ctx=s5cv.getContext('2d');
-  drawGraph(ctx,t,{
-    appear:i=>i<0?prog(t,18.6,1):prog(t,18.8+ORDER.indexOf(GN[i].id)*0.26,0.5),
-    edgeP:ei=>{const [a,b]=GE[ei];const ta=18.8+Math.max(ORDER.indexOf(a),ORDER.indexOf(b))*0.26+0.3;return eo(prog(t,ta,0.5))},
-    cam:lerp(0.94,1.02,eio(prog(t,18.5,6))),labels:ex(prog(t,21.9,0.6)),
+// ================= C1 : LISTEN =================
+const c1=$('c1');
+const c1cv=mkCanvas(c1);
+const c1H=chapter(c1,'01','Listen',['Every','conversation,','*understood.'],'SD Wise listens to every chat, mail and meeting — and keeps the <b style="color:#1d2830">facts</b>, not the files.',{acc:'#d6003a',top:250,size:96});
+const INTS=[['slack','Slack'],['teams','Microsoft Teams'],['outlook','Outlook'],['tmeet','Teams meetings'],['meet','Google Meet'],['gmail','Gmail'],['zoom','Zoom']];
+const ints=INTS.map(([k,n],i)=>{const row=i<4?0:1;const col=row?i-4:i;const x=900+col*236+(row?118:0),y=92+row*66;
+  const el=mk(c1,'abs',`<span style="width:34px;height:34px;border-radius:9px;background:${SRC[k].c};display:grid;place-items:center">${svg(SRC[k].g,19)}</span><span style="flex:1">${n}</span><span class="tg" style="width:40px;height:24px;border-radius:12px;background:#d5dae0;position:relative"><i style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></i></span>`,`left:${x}px;top:${y}px;width:222px;height:54px;display:flex;align-items:center;gap:10px;padding:0 12px 0 10px;background:#fff;border:1px solid #e3e7ec;border-radius:16px;font-size:15px;font-weight:600;white-space:nowrap;color:#1d2830;box-shadow:0 8px 20px rgba(20,30,40,.06)`);
+  return el});
+const TR=[['D','We can go to 8% if they migrate to v3.',1],['L','Fine, as long as it\'s tied to v3.',1],['B','Great. Any other asks from Kras?',0],['B','They want the Payroll API by Q1.',2],['D','Ok. I\'ll send Kras the proposal on Friday.',3]];
+const c1tr=mk(c1,'abs',`<div style="display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid #eef1f4">
+  <span style="width:40px;height:40px;border-radius:11px;background:${SRC.tmeet.c};display:grid;place-items:center">${svg('video',22)}</span>
+  <div><div style="font-weight:650;font-size:19px;color:#1d2830">Kras renewal prep</div><div style="font-family:Mono;font-size:13px;color:#8a95a0;letter-spacing:.05em;margin-top:2px">TEAMS MEETING · 42 MIN</div></div>
+  <span style="margin-left:auto;display:inline-flex">${dots(['B','L','D'])}</span>
+  <span class="rec" style="font-family:Mono;font-size:13px;color:#d6003a;display:flex;align-items:center;gap:6px;margin-left:10px"><i style="width:9px;height:9px;border-radius:50%;background:#d6003a;display:block"></i>LIVE</span></div>
+  <div class="lines" style="padding:14px 24px"></div>`,`left:900px;top:250px;width:540px;background:#fff;border:1px solid #e3e7ec;border-radius:22px;box-shadow:0 24px 60px rgba(20,30,40,.10)`);
+const c1lines=TR.map(([k,txt])=>mk(c1tr.querySelector('.lines'),'',`<span class="dot" style="background:${PEOPLE[k][1]};margin:0;width:30px;height:30px;font-size:13px;flex:none">${k}</span><div><div style="font-size:14px;font-weight:650;color:${PEOPLE[k][1]}">${PEOPLE[k][0]}</div><div class="tx" style="font-size:18px;color:#1d2830;margin-top:2px;padding:1px 4px;margin-left:-4px;border-radius:6px">${txt}</div></div>`,'display:flex;gap:12px;align-items:flex-start;padding:10px 0'));
+const c1agent=mk(c1,'abs pill',`<span class="sp" style="width:14px;height:14px;border-radius:50%;border:2.5px solid #006dd8;border-right-color:transparent;display:inline-block"></span>Agent · extracting facts`,'left:900px;top:870px;background:#1d2830;color:#fff;font-size:16px');
+const F1=[['Kras gets 8% renewal discount','tied to Payroll Cloud v3',['B','L','D'],1],['Kras wants the Payroll API by Q1 2027','request via Bram',['B','L','D'],3],['Proposal goes to Kras on Friday','owner: Dario',['B','L','D'],4]];
+const c1facts=F1.map(([t1,t2,own],i)=>mk(c1,'fact',`<div class="ic" style="background:${SRC.tmeet.c}">${svg('spark',22)}</div><div style="flex:1"><div class="t">${t1}</div><div style="font-size:15px;color:#5f6b76;margin-top:3px">${t2}</div><div class="m" style="margin-top:10px">${svg('lock',14,'#d6003a',2.4)}<span style="color:#d6003a">PRIVATE</span> · OWNED BY<span style="display:inline-flex;padding-left:10px">${dots(own)}</span></div></div>`,'left:0;top:0;width:380px'));
+const c1cap=mk(c1,'abs label','42 min meeting <span style="color:#d6003a">→</span> 3 facts · owned by the 3 people who were there','left:1080px;top:880px;color:#5f6b76;font-size:17px');
+function c1U(t){
+  const l=t-T.c1;
+  c1H.u(t,T.c1+0.3,T.c2-0.3);
+  ints.forEach((el,i)=>{const p=eback(prog(t,T.c1+0.35+i*0.07,0.5));S(el,{y:(1-clamp(p))*-20,s:lerp(.8,1,clamp(p)),o:clamp(p*2)});
+    const on=prog(t,T.c1+0.9+i*0.12,0.25);const tg=el.querySelector('.tg');tg.style.background=on>0.5?'#1a9e66':'#d5dae0';tg.querySelector('i').style.transform=`translateX(${on*16}px)`});
+  const tp=ex(prog(t,T.c1+1.3,0.7));S(c1tr,{y:(1-tp)*60,o:tp,b:(1-tp)*10});
+  c1tr.querySelector('.rec i').style.opacity=0.4+0.6*(Math.floor(t*2)%2);
+  c1lines.forEach((ln,i)=>{const p=ex(prog(t,T.c1+1.9+i*0.55,0.45));S(ln,{y:(1-p)*16,o:p,b:(1-p)*6})});
+  // highlight + extract
+  const ext=[[0,1],[3],[4]];const ctx=c1cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  c1lines.forEach(ln=>ln.querySelector('.tx').style.background='transparent');
+  const ap=ex(prog(t,T.c1+3.0,0.5));S(c1agent,{o:ap*(1-prog(t,T.c1+7.4,0.3)),y:(1-ap)*20});
+  c1agent.querySelector('.sp').style.transform=`rotate(${t*540}deg)`;
+  c1facts.forEach((f,i)=>{
+    const t0=T.c1+3.5+i*1.05;const hp=prog(t,t0-0.35,0.3);
+    ext[i].forEach(li=>{if(hp>0)c1lines[li].querySelector('.tx').style.background=`rgba(242,169,0,${0.32*clamp(hp)})`});
+    const p=ex(prog(t,t0,0.7));const fx=1460,fy=250+i*190;
+    if(p<=0){f.style.opacity=0;return}
+    const srcLine=c1lines[ext[i][ext[i].length-1]];const r=srcLine.getBoundingClientRect();
+    const sx=1440,sy=r.top+r.height/2;
+    S(f,{x:lerp(sx-200,fx,p),y:lerp(sy-50,fy,p),s:lerp(.5,1,p),o:clamp(p*2),b:(1-p)*10});
+    ctx.strokeStyle=`rgba(242,169,0,${.7*clamp(p)})`;ctx.lineWidth=2.5;ctx.setLineDash([2,7]);ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.bezierCurveTo(sx+30,sy,fx-30,fy+60,lerp(sx,fx,p),lerp(sy,fy+60,p));ctx.stroke();ctx.setLineDash([]);
   });
+  fadeIn(c1cap,t,T.c1+6.9,{out:T.c2-0.3});
 }
 
-// ================= SCENE 6 : REASON =================
-const s6=$('s6');
-const s6cv=document.createElement('canvas');s6cv.width=W;s6cv.height=H;s6cv.style.cssText='position:absolute;inset:0';s6.appendChild(s6cv);
-const s6lab=mk(s6,'abs label','<span style="color:#f2a900">03</span> <span style="opacity:.4">/</span> Reason','left:140px;top:300px;color:rgba(255,255,255,.6)');
-const s6h=kt(s6,['*Ask your','whole company.'],'position:absolute;left:136px;top:345px;color:#fff;font-size:104px');
-const s6sub=mk(s6,'abs sub','Reasoning across every mail, meeting<br>and mind — with the sources to prove it.','left:140px;top:600px;width:680px;color:rgba(255,255,255,.65)');
-const Q6='Why was the Brussels payroll cutover moved?';
-const s6ask=mk(s6,'abs glass',`<div style="display:flex;align-items:center;gap:16px;padding:0 26px;height:100%">${svg('search',30,'#1d2830',2.2)}<div class="q" style="font-size:25px;font-weight:500;color:#1d2830;letter-spacing:-.01em"></div><div class="go" style="margin-left:auto;width:48px;height:48px;border-radius:14px;background:#006dd8;display:grid;place-items:center">${svg('spark',24)}</div></div>`,'left:900px;top:70px;width:900px;height:84px;border-radius:24px');
-const A6=['Because the bank\'s file format changes on 1 Nov (SEPA v9).','Ops decided on 6 Oct to move the cutover to 14 Nov,','after Dirk\'s IBAN fix is live.'];
-const s6ans=mk(s6,'abs glass',`<div style="padding:26px 30px"><div style="display:flex;align-items:center;gap:10px;font-family:Mono;font-size:15px;letter-spacing:.12em;color:#006dd8;font-weight:600">${svg('spark',20,'#006dd8',2.2)} ANSWER</div><div class="a" style="margin-top:12px;font-size:23px;line-height:1.45;color:#1d2830;font-weight:500"></div><div class="src" style="display:flex;gap:10px;margin-top:18px"></div></div>`,'left:900px;top:700px;width:900px;border-radius:24px');
-const s6src=s6ans.querySelector('.src');
-[['outlook','Finance mail · 2 Oct'],['meet','Ops weekly · 6 Oct'],['slack','#ops · Dirk']].forEach(([k,txt])=>{mk(s6src,'',`<span style="width:26px;height:26px;border-radius:8px;background:${SRC[k].c};display:grid;place-items:center">${svg(SRC[k].g,16)}</span>${txt}`,'display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:12px;background:#f1f3f7;font-size:16px;font-weight:600;color:#1d2830')});
-const s6ansA=s6ans.querySelector('.a');
-s6ansA.innerHTML=A6.map(l=>l.split(' ').map(w=>`<span class="w" style="display:inline-block">${w}&nbsp;</span>`).join('')).join('<br>');
-const s6w=[...s6ansA.querySelectorAll('.w')];const s6chips=[...s6src.children];
-function s6U(t){
-  fadeIn(s6lab,t,24.75,{out:30.75});
-  ktU(s6h,t,24.8,{st:0.09,out:30.75,acc:'#f2a900'});
-  fadeIn(s6sub,t,25.3,{out:30.75});
-  fadeIn(s6ask,t,25.0,{out:30.75});
-  s6ask.querySelector('.q').innerHTML=typed(Q6,t,25.4,30)+caret(t,25.2,27.0);
-  const go=s6ask.querySelector('.go');const gp=prog(t,27.0,0.3);go.style.transform=`scale(${1-Math.sin(gp*Math.PI)*.15})`;
-  const hlStart=27.2;
-  const lit=id=>{const k=GPATH.indexOf(id);return k>=0&&t>=hlStart+k*0.3};
-  const ctx=s6cv.getContext('2d');
-  drawGraph(ctx,t,{dark:true,appear:i=>i<0?1:prog(t,24.6+i*0.04,0.4),edgeP:()=>1,
-    hl:lit, hlE:(a,b)=>{const ia=GPATH.indexOf(a),ib=GPATH.indexOf(b);return ia>=0&&ib>=0&&Math.abs(ia-ib)==1&&t>=hlStart+Math.max(ia,ib)*0.3},
-    dim:eio(prog(t,hlStart,0.5)),cam:lerp(1.0,0.96,eio(prog(t,24.5,6))),labels:1});
-  // search pulse ring
-  const rp=prog(t,27.05,0.8); if(rp>0&&rp<1){ctx.strokeStyle=`rgba(0,109,216,${1-rp})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(1350,112,ex(rp)*600,0,7);ctx.stroke()}
-  const ap=ex(prog(t,28.4,0.7));
-  S(s6ans,{y:(1-ap)*80,o:ap*(1-eio(prog(t,30.75,0.3))),b:(1-ap)*10});
-  s6w.forEach((w,i)=>{const p=ex(prog(t,28.7+i*0.035,0.4));w.style.opacity=p;w.style.transform=`translateY(${(1-p)*10}px)`;w.style.filter=p<1?`blur(${(1-p)*6}px)`:'none'});
-  s6chips.forEach((c,i)=>{const p=eback(prog(t,29.6+i*0.1,0.45));S(c,{s:lerp(.6,1,clamp(p)),o:clamp(p*2)})});
+// ================= C2 : CONNECT =================
+const c2=$('c2');
+const c2cv=mkCanvas(c2);
+const c2H=chapter(c2,'02','Connect',['Every fact,','*connected.'],'Typed relations — <b style="color:#1d2830">updates, depends on, blocks</b> — across teams, tools and time.',{acc:'#e39a00',top:300,size:104});
+const POS2={cust:[1110,170],price:[1560,200],renew:[1500,360],api:[1030,330],oauth:[1090,500],v3:[1440,540],video:[1720,450],block:[1560,700],idx:[1380,845],sal:[1010,700],car:[960,870]};
+const ORD2=['renew','price','cust','v3','api','oauth','block','idx','video','sal','car'];
+const c2tl=mk(c2,'abs',`<div style="display:flex;justify-content:space-between;font-family:Mono;font-size:14px;color:#8a95a0;letter-spacing:.06em"><span>MAR 2026</span><span>MAY</span><span>JUL</span><span>SEP 2026</span></div><div style="position:relative;height:6px;border-radius:3px;background:#e3e7ec;margin-top:10px"><div class="fill" style="position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#e39a00"></div><div class="knob" style="position:absolute;top:-7px;width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid #e39a00;margin-left:-10px"></div></div>`,'left:960px;top:960px;width:820px');
+const c2tag=mk(c2,'abs',`<b style="color:#e39a00">10 SEP</b> · Kras renewal meeting <b>updates</b> the price agreed in April`,'left:1180px;top:268px;background:#1d2830;color:#fff;font-size:16px;padding:10px 14px;border-radius:12px;white-space:nowrap;box-shadow:0 12px 30px rgba(0,0,0,.2)');
+function c2U(t){
+  const l=t-T.c2;
+  c2H.u(t,T.c2+0.25,T.c3-0.3);
+  const at=id=>T.c2+0.3+ORD2.indexOf(id)*0.28;
+  const tl=ex(prog(t,T.c2+0.5,0.5));S(c2tl,{o:tl*(1-prog(t,T.c3-0.3,0.3)),y:(1-tl)*20});
+  const kp=eio(prog(t,T.c2+0.6,5.2));c2tl.querySelector('.fill').style.width=(kp*100)+'%';c2tl.querySelector('.knob').style.left=(kp*100)+'%';
+  const up=prog(t,T.c2+4.6,0.8);
+  drawGraph(c2cv.getContext('2d'),t,{pos:POS2,appear:id=>prog(t,at(id),0.5),
+    edgeP:(ei,a,b)=>eo(prog(t,Math.max(at(a),at(b))+0.3,0.5)),
+    cam:lerp(0.95,1.02,eio(prog(t,T.c2,8))),labels:ex(prog(t,T.c2+2.4,0.6)),
+    hlE:(a,b)=>up>0&&a==='renew'&&b==='price',hl:id=>up>0&&(id==='renew'),
+    badge:id=>id==='price'&&up>0?{text:'UPDATED',color:'#e39a00',p:up*2}:id==='block'&&t>T.c2+5.4?{text:'BLOCKS v3',color:'#d6003a',p:prog(t,T.c2+5.4,0.4)*2}:null});
+  const tp=ex(prog(t,T.c2+4.9,0.5));S(c2tag,{o:tp*(1-prog(t,T.c3-0.3,0.3)),y:(1-tp)*14});
 }
 
-// ================= SCENE 7 : RESPECT =================
-const s7=$('s7');
-const s7lab=mk(s7,'abs label','<span style="color:#ff3d68">04</span> <span style="opacity:.4">/</span> Respect','left:0;right:0;top:92px;text-align:center;color:rgba(255,255,255,.6)');
-const s7h=kt(s7,['Everything known.','*Nothing *overshared.'],'position:absolute;left:0;right:0;top:136px;text-align:center;color:#fff;font-size:92px');
-function persona(x,k,role,access,accCol){
-  const p=mk(s7,'panel',`
+// ================= C3 : REASON (agent walks the graph) =================
+const c3=$('c3');
+const c3cv=mkCanvas(c3);
+const c3H=chapter(c3,'03','Reason',['Not retrieval.','*Reasoning.'],'',{dark:true,acc:'#f2a900',top:230,size:92});
+const Q3='Can we promise Kras the v3 discount from January?';
+const c3ask=mk(c3,'abs glass',`<div style="display:flex;align-items:center;gap:16px;padding:0 20px 0 18px;height:100%"><span class="dot" style="background:${PEOPLE.B[1]};width:44px;height:44px;font-size:18px;margin:0;border:none">B</span><div class="q" style="font-size:26px;font-weight:500;color:#1d2830;letter-spacing:-.01em"></div><div class="go" style="margin-left:auto;width:50px;height:50px;border-radius:14px;background:#006dd8;display:grid;place-items:center">${svg('spark',24)}</div></div>`,'left:140px;top:80px;width:1640px;height:88px;border-radius:24px');
+const POS3={renew:[1060,300],price:[1560,225],v3:[1400,450],oauth:[1700,360],block:[1600,620],idx:[1150,680],video:[1000,470]};
+const STEPS=[
+ ['renew','START','Kras renewal · 8% discount','Bram\'s meeting, 10 Sep',0],
+ ['v3','DEPENDS ON →','Payroll Cloud v3','GA in March 2027 · roadmap',0],
+ ['block','← BLOCKS','v3 blocked on indexation rules','#payroll-engine · engineering',0],
+ ['idx','RELATES TO →','Indexation 2027','Private · owned by An & Sofie',1],
+];
+const c3trace=mk(c3,'abs',`<div style="font-family:Mono;font-size:14px;letter-spacing:.12em;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:10px"><span class="sp" style="width:13px;height:13px;border-radius:50%;border:2.5px solid #f2a900;border-right-color:transparent;display:inline-block"></span>AGENT TRACE<span class="hop" style="margin-left:auto;color:#f2a900"></span></div><div class="st" style="margin-top:14px;position:relative"></div>`,'left:140px;top:500px;width:640px');
+const stepEls=STEPS.map(([id,rel,title,meta,lk],i)=>mk(c3trace.querySelector('.st'),'',`
+  <div style="width:34px;flex:none;display:flex;flex-direction:column;align-items:center"><div class="n" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:grid;place-items:center;color:#fff;font:600 14px Mono">${i+1}</div></div>
+  <div style="flex:1;padding-bottom:20px"><div style="font:600 13px Mono;letter-spacing:.1em;color:${lk?'#ff3d68':'#f2a900'}">${rel}</div>
+  <div style="font-size:22px;font-weight:650;color:#fff;margin-top:3px;display:flex;align-items:center;gap:8px">${lk?svg('lock',18,'#ff3d68',2.4):''}<span ${lk?'style="filter:blur(0px)"':''}>${title}</span></div>
+  <div style="font-size:16px;color:rgba(255,255,255,.55);margin-top:2px">${meta}</div></div>`,'display:flex;gap:16px'));
+const c3ans=mk(c3,'abs glass',`<div style="padding:24px 28px"><div style="display:flex;align-items:center;gap:10px;font-family:Mono;font-size:14px;letter-spacing:.12em;color:#006dd8;font-weight:600">${svg('spark',20,'#006dd8',2.2)} ANSWER · FOR BRAM<span style="margin-left:auto;color:#8a95a0">4 HOPS · 3 TEAMS · 3 SOURCES</span></div>
+ <div class="a" style="margin-top:10px;font-size:23px;line-height:1.42;color:#1d2830;font-weight:500"></div>
+ <div class="who" style="display:flex;align-items:center;gap:12px;margin-top:16px;padding:12px 14px;border-radius:14px;background:#fff4f6;border:1px solid #ffd3dc">${svg('lock',20,'#d6003a',2.4)}<div style="flex:1;font-size:17px;color:#1d2830"><b>The missing numbers are private.</b> <span style="color:#5f6b76">An Maes knows them.</span></div><span class="ask" style="display:inline-flex;align-items:center;gap:8px;background:#1d2830;color:#fff;font-weight:650;font-size:16px;padding:9px 14px;border-radius:11px"><span class="dot" style="background:${PEOPLE.A[1]};margin:0;width:22px;height:22px;border:none">A</span>Ask An</span></div></div>`,'left:860px;top:770px;width:980px;border-radius:24px');
+const A3='Not from January. The 8% is tied to v3, which launches in <b>March 2027</b> — and v3 is still blocked on the 2027 indexation rules.';
+c3ans.querySelector('.a').innerHTML=A3.split(' ').map(w=>`<span class="w" style="display:inline-block">${w}&nbsp;</span>`).join('');
+const c3w=[...c3ans.querySelectorAll('.a .w')];
+const STEP_T=i=>T.c3+2.7+i*0.95;
+function c3U(t){
+  c3H.u(t,T.c3+0.3,T.c4-0.3);
+  fadeIn(c3ask,t,T.c3+0.1,{out:T.c4-0.3});
+  c3ask.querySelector('.q').innerHTML=typed(Q3,t,T.c3+0.4,34)+caret(t,T.c3+0.3,T.c3+2.2);
+  const gp=prog(t,T.c3+2.1,0.3);c3ask.querySelector('.go').style.transform=`scale(${1-Math.sin(gp*Math.PI)*.15})`;
+  fadeIn(c3trace,t,T.c3+2.4,{out:T.c4-0.3});
+  c3trace.querySelector('.sp').style.transform=`rotate(${t*540}deg)`;
+  c3trace.querySelector('.sp').style.opacity=t<STEP_T(3)+0.6?1:0;
+  const hops=STEPS.filter((s,i)=>t>=STEP_T(i)).length;c3trace.querySelector('.hop').textContent=hops?`HOP ${hops} / 4`:'';
+  stepEls.forEach((el,i)=>{const p=ex(prog(t,STEP_T(i),0.45));S(el,{x:(1-p)*-30,o:p,b:(1-p)*8});
+    const n=el.querySelector('.n');const on=t>=STEP_T(i);n.style.background=on?(STEPS[i][4]?'#d6003a':'#f2a900'):'transparent';n.style.borderColor=on?'transparent':'rgba(255,255,255,.3)';n.style.color=on?'#0c1720':'#fff'});
+  const litIdx=id=>STEPS.findIndex(s=>s[0]===id);
+  const lit=id=>{const k=litIdx(id);return k>=0&&t>=STEP_T(k)};
+  const ctx=c3cv.getContext('2d');
+  drawGraph(ctx,t,{pos:POS3,dark:true,appear:id=>prog(t,T.c3+0.2+Object.keys(POS3).indexOf(id)*0.06,0.4),labels:1,
+    hl:id=>lit(id)&&id!=='idx', hlE:(a,b)=>{const ia=litIdx(a),ib=litIdx(b);return ia>=0&&ib>=0&&Math.abs(ia-ib)==1&&t>=STEP_T(Math.max(ia,ib))&&!(a==='idx'||b==='idx')},
+    locked:id=>id==='idx'?1:0, dim:eio(prog(t,STEP_T(0),0.5)),cam:lerp(1.0,0.97,eio(prog(t,T.c3,10))),
+    badge:id=>id==='idx'&&t>STEP_T(3)?{text:'BRAM HAS NO ACCESS',color:'#d6003a',p:prog(t,STEP_T(3),0.4)*2}:null});
+  // scanning pulse travelling to each new hop
+  for(let i=0;i<4;i++){const rp=prog(t,STEP_T(i),0.7);if(rp>0&&rp<1){const [x,y]=POS3[STEPS[i][0]];ctx.strokeStyle=STEPS[i][4]?`rgba(255,61,104,${1-rp})`:`rgba(242,169,0,${1-rp})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,40+ex(rp)*160,0,7);ctx.stroke()}}
+  const ap=ex(prog(t,T.c3+6.8,0.7));
+  S(c3ans,{y:(1-ap)*80,o:ap*(1-eio(prog(t,T.c4-0.3,0.3))),b:(1-ap)*10});
+  c3w.forEach((w,i)=>{const p=ex(prog(t,T.c3+7.1+i*0.035,0.4));w.style.opacity=p;w.style.transform=`translateY(${(1-p)*10}px)`;w.style.filter=p<1?`blur(${(1-p)*6}px)`:'none'});
+  const wp=eback(prog(t,T.c3+8.1,0.5));S(c3ans.querySelector('.who'),{s:lerp(.9,1,clamp(wp)),o:clamp(wp*2)});
+  const kp=prog(t,T.c3+9.0,0.5);c3ans.querySelector('.ask').style.boxShadow=`0 0 0 ${Math.sin(kp*Math.PI)*9}px rgba(242,169,0,.5)`;
+}
+
+// ================= C4 : RESPECT =================
+const c4=$('c4');
+const c4lab=mk(c4,'abs label','<span style="color:#ff3d68">04</span> <span style="opacity:.4">/</span> Respect','left:0;right:0;top:92px;text-align:center;color:rgba(255,255,255,.6)');
+const c4h=kt(c4,['Everything known.','*Nothing *overshared.'],'position:absolute;left:0;right:0;top:136px;text-align:center;color:#fff;font-size:92px');
+function persona(x,k,full,role,access,accCol){
+  const p=mk(c4,'panel',`
    <div style="display:flex;align-items:center;gap:16px;padding:26px 30px;border-bottom:1px solid rgba(255,255,255,.1)">
      <div style="width:58px;height:58px;border-radius:50%;background:${PEOPLE[k][1]};display:grid;place-items:center;color:#fff;font-weight:700;font-size:24px">${k}</div>
-     <div><div style="color:#fff;font-size:24px;font-weight:650">${PEOPLE[k][0]==='Lotte'?'Lotte Claes':'Tom Wouters'}</div><div style="color:rgba(255,255,255,.6);font-size:17px;margin-top:2px">${role}</div></div>
+     <div><div style="color:#fff;font-size:24px;font-weight:650">${full}</div><div style="color:rgba(255,255,255,.6);font-size:17px;margin-top:2px">${role}</div></div>
      <div style="margin-left:auto;font-family:Mono;font-size:14px;letter-spacing:.08em;padding:8px 12px;border-radius:10px;color:${accCol};border:1px solid ${accCol}55;background:${accCol}18">${access}</div>
    </div>
    <div style="padding:30px">
      <div class="q" style="margin-left:auto;width:max-content;max-width:100%;background:#006dd8;color:#fff;font-size:24px;font-weight:550;padding:16px 22px;border-radius:20px 20px 6px 20px;min-height:62px"></div>
      <div class="think" style="margin-top:22px;display:flex;gap:8px;padding:6px 4px"><i></i><i></i><i></i></div>
      <div class="a" style="margin-top:6px"></div>
-   </div>`,`left:${x}px;top:430px;width:760px;height:450px`);
+   </div>`,`left:${x}px;top:420px;width:760px;height:450px`);
   p.querySelectorAll('.think i').forEach(i=>i.style.cssText='width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.6);display:block');
   return p;
 }
-const pL=persona(170,'L','HR · Payroll lead','ACCESS: HR PAYROLL','#3ddc97');
-const pR=persona(990,'T','Sales · Account manager','ACCESS: SALES','#9fb3c8');
+const pL=persona(170,'S','Sofie Peeters','HR business partner','ACCESS: HR','#3ddc97');
+const pR=persona(990,'T','Timon','Marketing lead','ACCESS: MARKETING','#9fb3c8');
 pL.querySelector('.a').innerHTML=`<div class="glass" style="padding:22px 24px;border-radius:20px 20px 20px 6px">
   <div style="display:flex;align-items:center;gap:10px;font-family:Mono;font-size:14px;letter-spacing:.1em;color:#1a9e66;font-weight:600">${svg('check',20,'#1a9e66',2.6)} ANSWER</div>
-  <div style="font-size:40px;font-weight:700;color:#1d2830;margin-top:8px;letter-spacing:-.02em">€ 4,850 <span style="font-size:22px;font-weight:500;color:#5f6b76">gross / month</span></div>
-  <div style="font-size:17px;color:#5f6b76;margin-top:6px">Raised on 1 Mar after the salary review.</div>
-  <div style="display:flex;gap:8px;margin-top:14px;align-items:center;font-size:15px;font-weight:600;color:#1d2830"><span style="width:24px;height:24px;border-radius:7px;background:#d6003a;display:grid;place-items:center">${svg('lock',14)}</span>HR record · shared with HR Payroll</div></div>`;
+  <div style="font-size:40px;font-weight:700;color:#1d2830;margin-top:8px;letter-spacing:-.02em">€ 4,850 <span style="font-size:22px;font-weight:500;color:#5f6b76">gross / month from Jan</span></div>
+  <div style="font-size:17px;color:#5f6b76;margin-top:6px">Agreed in Victor's salary review, part of the 2027 package.</div>
+  <div style="display:flex;gap:8px;margin-top:14px;align-items:center;font-size:15px;font-weight:600;color:#1d2830"><span style="width:24px;height:24px;border-radius:7px;background:#d6003a;display:grid;place-items:center">${svg('lock',14)}</span>Salary review: Victor · owned by Sofie</div></div>`;
 pR.querySelector('.a').innerHTML=`<div class="glass" style="padding:22px 24px;border-radius:20px 20px 20px 6px">
   <div style="display:flex;align-items:center;gap:10px;font-family:Mono;font-size:14px;letter-spacing:.1em;color:#d6003a;font-weight:600">${svg('lock',20,'#d6003a',2.4)} PRIVATE</div>
   <div style="font-size:30px;font-weight:700;color:#1d2830;margin-top:8px;letter-spacing:-.02em">This is known — but not to you.</div>
-  <div style="font-size:17px;color:#5f6b76;margin-top:6px">Held by Lotte (HR). The value is never shown.</div>
-  <div class="req" style="display:inline-flex;gap:8px;margin-top:14px;align-items:center;font-size:16px;font-weight:650;color:#fff;background:#1d2830;padding:10px 16px;border-radius:12px">${svg('person',16)} Ask Lotte for access</div></div>`;
-const s7cap=mk(s7,'abs sub','Same question. Same company brain. <b style="color:#fff;font-weight:650">Different rights.</b>','left:0;right:0;top:935px;text-align:center;color:rgba(255,255,255,.7);font-size:30px');
-const Q7="What is Victor's salary?";
-function s7U(t){
-  fadeIn(s7lab,t,31.2,{out:37.75});
-  ktU(s7h,t,31.25,{st:0.1,out:37.75,acc:'#ff3d68'});
+  <div style="font-size:17px;color:#5f6b76;margin-top:6px">The fact never left the server. Not even its title.</div>
+  <div class="req" style="display:inline-flex;gap:8px;margin-top:14px;align-items:center;font-size:16px;font-weight:650;color:#fff;background:#1d2830;padding:10px 16px;border-radius:12px">${svg('person',16)} Request access from Sofie</div></div>`;
+const c4cap=mk(c4,'abs sub','Access is checked on <b style="color:#fff;font-weight:650">every fact</b> and <b style="color:#fff;font-weight:650">every connection</b> — before the agent says a word.','left:0;right:0;top:935px;text-align:center;color:rgba(255,255,255,.7);font-size:30px');
+const Q4="What will Victor earn in 2027?";
+function c4U(t){
+  const l=T.c4;
+  fadeIn(c4lab,t,l+0.2,{out:T.c5-0.3});
+  ktU(c4h,t,l+0.25,{st:0.1,out:T.c5-0.3,acc:'#ff3d68'});
   [pL,pR].forEach((p,i)=>{
-    const a=ex(prog(t,31.9+i*0.12,0.7)), q=eio(prog(t,37.75,0.3));
+    const a=ex(prog(t,l+0.8+i*0.12,0.7)), q=eio(prog(t,T.c5-0.3,0.3));
     S(p,{y:(1-a)*120-q*20,o:a*(1-q),b:(1-a)*10+q*10});
-    const qe=p.querySelector('.q');qe.innerHTML=typed(Q7,t,32.6,24)+caret(t,32.5,33.7);
-    qe.style.opacity=t>32.45?1:0;
-    const th=p.querySelector('.think');const tp=t>33.8&&t<34.6;th.style.display=tp?'flex':'none';
+    const qe=p.querySelector('.q');qe.innerHTML=typed(Q4,t,l+1.4,26)+caret(t,l+1.3,l+2.6);
+    qe.style.opacity=t>l+1.25?1:0;
+    const th=p.querySelector('.think');th.style.display=(t>l+2.6&&t<l+3.2)?'flex':'none';
     th.querySelectorAll('i').forEach((d,k)=>{d.style.transform=`translateY(${Math.sin(t*12-k)*4}px)`});
-    const ae=p.querySelector('.a');const ap=eback(prog(t,34.6+i*0.25,0.55));
+    const ae=p.querySelector('.a');const ap=eback(prog(t,l+3.2+i*0.25,0.55));
     S(ae,{y:(1-clamp(ap))*30,s:lerp(.92,1,clamp(ap)),o:clamp(ap*2),b:(1-clamp(ap))*6});
   });
-  const rq=pR.querySelector('.req');const rp=prog(t,36.0,0.8);rq.style.boxShadow=`0 0 0 ${Math.sin(rp*Math.PI)*10}px rgba(242,169,0,.45)`;
-  fadeIn(s7cap,t,35.8,{out:37.75});
+  fadeIn(c4cap,t,l+4.4,{out:T.c5-0.3});
 }
 
-// ================= SCENE 8 : greater than the sum =================
-const s8=$('s8');
-const s8cv=document.createElement('canvas');s8cv.width=W;s8cv.height=H;s8cv.style.cssText='position:absolute;inset:0';s8.appendChild(s8cv);
-const TERMS=['Inboxes','+','Meetings','+','Documents','+','Chats','+','People'];
-const s8row=mk(s8,'abs h1',null,'left:0;right:0;top:470px;text-align:center;color:#fff;font-size:62px;white-space:nowrap');
-const s8t=TERMS.map((w,i)=>{const sp=document.createElement('span');sp.textContent=w;sp.style.cssText=`display:inline-block;margin:0 10px;${w=='+'?'color:#f2a900;font-weight:500':''}`;s8row.appendChild(sp);return sp});
-const s8h=kt(s8,['Greater than','the *sum *of *its *people.'],'position:absolute;left:0;right:0;top:370px;text-align:center;color:#fff;font-size:132px');
-function s8U(t){
-  const ctx=s8cv.getContext('2d');ctx.clearRect(0,0,W,H);
-  // rotating rings + spokes
-  ctx.save();ctx.translate(W/2,H/2);
-  const intro=ex(prog(t,38,0.8));
-  for(let r=0;r<4;r++){ctx.strokeStyle=`rgba(255,255,255,${.07*intro})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,260+r*170,0,7);ctx.stroke()}
-  seed=3;for(let i=0;i<64;i++){const a=i/64*Math.PI*2+t*0.08*(i%2?1:-1);const r0=300+rnd()*300,len=40+rnd()*200;
-    ctx.strokeStyle=`rgba(255,255,255,${(.06+rnd()*.12)*intro})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);ctx.lineTo(Math.cos(a)*(r0+len),Math.sin(a)*(r0+len));ctx.stroke()}
-  ctx.restore();
-  // terms on beats
-  const col=eio(prog(t,40.1,0.45));
-  s8t.forEach((sp,i)=>{
-    const t0=38.1+Math.floor(i/2)*0.4+(i%2)*0.2;
-    const p=ex(prog(t,t0,0.4));
-    const rect=sp.offsetLeft+sp.offsetWidth/2-W/2;
-    sp.style.transform=`translate(${-rect*col}px,${(1-p)*40}px) scale(${lerp(1,0.2,col)})`;
-    sp.style.opacity=p*(1-col);sp.style.filter=`blur(${(1-p)*12+col*10}px)`;
-  });
-  raysU2(ctx,t,40.45);
-  ktU(s8h,t,40.55,{st:0.08,out:42.3,acc:'#f2a900',dy:60});
+// ================= C5 : ROUTE =================
+const c5=$('c5');
+const c5cv=mkCanvas(c5);
+const c5H=chapter(c5,'05','Route',['When it can\'t','tell you, it finds','*who *can.'],'The owner gets your question with a reply <b style="color:#1d2830">already drafted</b> from what they know. They decide who may know.',{acc:'#006dd8',top:240,size:90});
+const c5asker=mk(c5,'abs',`<span class="dot" style="background:${PEOPLE.B[1]};width:52px;height:52px;font-size:20px;margin:0;border:3px solid #fff">B</span><div><div style="font-weight:650;font-size:18px;color:#1d2830">Bram De Smet</div><div style="font-size:14px;color:#5f6b76">asks An, via SD Wise</div></div>`,'left:900px;top:190px;display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3e7ec;border-radius:18px;padding:12px 18px 12px 12px;box-shadow:0 12px 30px rgba(20,30,40,.08)');
+const c5notif=mk(c5,'abs',`<span style="width:36px;height:36px;border-radius:10px;background:#006dd8;display:grid;place-items:center">${svg('spark',20)}</span><div><div style="font-weight:650;font-size:16px;color:#fff">New question for you</div><div style="font-size:14px;color:rgba(255,255,255,.7)">Inbox · 1 pending</div></div>`,'left:1500px;top:188px;display:flex;align-items:center;gap:12px;background:#1d2830;border-radius:16px;padding:12px 18px 12px 12px;box-shadow:0 18px 40px rgba(0,0,0,.25)');
+const DRAFT='Hi Bram! Indexation for PC 200 is 2.1% from 1 January 2027 — confirmed by the sector federation.';
+const c5card=mk(c5,'abs',`
+ <div style="display:flex;align-items:center;gap:12px"><span class="dot" style="background:${PEOPLE.B[1]};width:40px;height:40px;font-size:16px;margin:0;border:none">B</span><div style="flex:1;font-size:17px"><b style="color:#1d2830">Bram De Smet</b> <span style="color:#5f6b76">asked you · Account manager</span></div><span style="font-size:14px;color:#8a95a0">just now</span></div>
+ <div style="font-size:25px;font-weight:650;color:#1d2830;margin-top:16px;letter-spacing:-.01em">When are the 2027 indexation numbers final?</div>
+ <div style="margin-top:18px;font:600 13px Mono;letter-spacing:.1em;color:#006dd8;display:flex;align-items:center;gap:8px">${svg('spark',16,'#006dd8',2.4)} DRAFTED FROM WHAT YOU KNOW</div>
+ <div class="dr" style="margin-top:8px;border:1px solid #e3e7ec;border-radius:14px;padding:14px 16px;font-size:19px;line-height:1.45;color:#1d2830;min-height:84px"></div>
+ <div style="font-size:14px;color:#8a95a0;margin-top:8px">Based on: Indexation 2027 · your mail from 22 Sep</div>
+ <div style="margin-top:16px;font:600 13px Mono;letter-spacing:.1em;color:#5f6b76">WHO CAN KNOW THIS AFTERWARDS</div>
+ <div style="display:flex;gap:12px;margin-top:10px">
+  <div class="o1" style="flex:1;border:2px solid #e3e7ec;border-radius:14px;padding:12px 14px"><div style="font-weight:650;color:#1d2830;display:flex;gap:8px;align-items:center">${svg('lock',16,'#1d2830',2.2)} Only Bram</div><div style="font-size:14px;color:#5f6b76;margin-top:3px">Stays private in the graph.</div></div>
+  <div class="o2" style="flex:1;border:2px solid #e3e7ec;border-radius:14px;padding:12px 14px"><div style="font-weight:650;color:#1d2830;display:flex;gap:8px;align-items:center">${svg('person',16,'#1d2830',2.2)} Everyone</div><div style="font-size:14px;color:#5f6b76;margin-top:3px">It's not a secret anymore.</div></div>
+ </div>
+ <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px"><span style="padding:11px 18px;border-radius:12px;border:1px solid #e3e7ec;font-weight:600;color:#5f6b76">Decline</span><span class="send" style="padding:11px 20px;border-radius:12px;background:#006dd8;color:#fff;font-weight:650">Send to Bram</span></div>`,
+ 'left:900px;top:295px;width:900px;background:#fff;border-radius:24px;padding:26px 30px;border:1px solid #e3e7ec;box-shadow:0 30px 70px rgba(20,30,40,.14)');
+const c5cursor=mk(c5,'abs',`<svg width="34" height="34" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L10 19z" fill="#1d2830" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>`,'left:0;top:0');
+const c5toast=mk(c5,'abs',`${svg('check',20,'#fff',2.6)} Sent · answer added to the graph`,'left:1380px;top:890px;display:flex;align-items:center;gap:10px;background:#14b88a;color:#fff;font-weight:650;font-size:18px;padding:12px 18px;border-radius:14px;box-shadow:0 14px 30px rgba(20,184,138,.35)');
+function c5U(t){
+  const l=T.c5;
+  c5H.u(t,l+0.35,T.c6-0.25);
+  const ap=eback(prog(t,l+0.4,0.5));S(c5asker,{s:lerp(.7,1,clamp(ap)),o:clamp(ap*2)*(1-prog(t,T.c6-0.25,0.25))});
+  const np=ex(prog(t,l+0.9,0.5));S(c5notif,{x:(1-np)*80,o:np*(1-prog(t,l+2.2,0.4)),b:(1-np)*8});
+  const ctx=c5cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  const lp=eo(prog(t,l+0.6,0.6));if(lp>0){ctx.strokeStyle='rgba(0,109,216,.5)';ctx.lineWidth=2.5;ctx.setLineDash([3,8]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(1140,216);ctx.lineTo(lerp(1140,1490,lp),216);ctx.stroke();ctx.setLineDash([])}
+  const cp=ex(prog(t,l+1.4,0.7));S(c5card,{y:(1-cp)*70,o:cp*(1-prog(t,T.c6-0.25,0.25)),b:(1-cp)*10});
+  c5card.querySelector('.dr').innerHTML=typed(DRAFT,t,l+2.1,55)+caret(t,l+2.0,l+4.0);
+  // cursor moves to "Everyone" then "Send"
+  const cen=el=>{const r=el.getBoundingClientRect();return [r.left+r.width*0.45,r.top+r.height*0.55]};const tgtA=cen(c5card.querySelector('.o2')),tgtB=cen(c5card.querySelector('.send')),start=[1300,1100];
+  const m1=eio(prog(t,l+4.1,0.6)),m2=eio(prog(t,l+5.0,0.5));
+  const cx=lerp(lerp(start[0],tgtA[0],m1),tgtB[0],m2),cy=lerp(lerp(start[1],tgtA[1],m1),tgtB[1],m2);
+  const clk1=t>l+4.75,clk2=t>l+5.55;
+  S(c5cursor,{x:cx,y:cy,o:clamp(prog(t,l+4.0,0.2))*(1-prog(t,l+6.2,0.3)),s:(t>l+4.7&&t<l+4.85)||(t>l+5.5&&t<l+5.65)?0.85:1});
+  const o2=c5card.querySelector('.o2');o2.style.borderColor=clk1?'#006dd8':'#e3e7ec';o2.style.background=clk1?'#e6f0fb':'#fff';
+  c5card.querySelector('.send').style.transform=`scale(${clk2&&t<l+5.7?0.94:1})`;
+  const tp=eback(prog(t,l+5.7,0.5));S(c5toast,{y:(1-clamp(tp))*30,o:clamp(tp*2)*(1-prog(t,T.c6-0.25,0.25))});
 }
+
+// ================= C6 : LEARN =================
+const c6=$('c6');
+const c6cv=mkCanvas(c6);
+const c6H=chapter(c6,'06','Learn',['Every answer','makes it','*smarter.'],'Answers flow back into the graph as new facts, linked to what they were based on. Blockers resolve. Knowledge compounds.',{acc:'#14b88a',top:240,size:96});
+const POS6=Object.assign({},POS2,{ans:[1130,975]});
+const c6count=mk(c6,'abs pill','<span style="width:10px;height:10px;border-radius:50%;background:#14b88a;display:inline-block"></span><span class="n">0</span>&nbsp;facts in your company brain','right:90px;top:52px;background:#fff;color:#1d2830;border:1px solid #e3e7ec');
+function c6U(t){
+  const l=T.c6;
+  c6H.u(t,l+0.3,T.f7-0.3);
+  const aIn=ex(prog(t,l+0.6,0.8));
+  const pos=Object.assign({},POS6,{ans:[lerp(1560,1130,aIn),lerp(1080,975,aIn)]});
+  const ub=prog(t,l+2.2,0.5);
+  drawGraph(c6cv.getContext('2d'),t,{pos,appear:id=>id==='ans'?aIn:1,
+    edgeP:(ei,a,b)=>a==='ans'?eo(prog(t,l+1.4+(b==='block'?0.3:0),0.5)):1,labels:1,
+    cam:lerp(1.02,0.9,eio(prog(t,l,6.5))),grow:lerp(1,1,1),
+    hl:id=>id==='ans'&&t<l+2,
+    badge:id=>id==='block'&&ub>0?{text:'UNBLOCKED',color:'#14b88a',p:ub*2}:id==='v3'&&t>l+2.7?{text:'ON TRACK',color:'#14b88a',p:prog(t,l+2.7,0.4)*2}:id==='idx'&&t>l+3.1?{text:'NOW PUBLIC',color:'#006dd8',p:prog(t,l+3.1,0.4)*2}:null});
+  // growth: extra facts popping in
+  const ctx=c6cv.getContext('2d');seed=77;
+  for(let i=0;i<46;i++){const x=860+rnd()*1000,y=120+rnd()*880,t0=l+3.4+rnd()*2.5,k=Object.keys(SRC)[Math.floor(rnd()*8)];const p=eback(prog(t,t0,0.4));if(p<=0)continue;
+    ctx.save();ctx.translate(x,y);ctx.scale(clamp(p)*0.9,clamp(p)*0.9);ctx.fillStyle=SRC[k].c;ctx.globalAlpha=0.9;rr(ctx,-14,-14,28,28,8);ctx.fill();glyph(ctx,SRC[k].g,-9,-9,18,'#fff',2.4);ctx.restore();
+    const rp=prog(t,t0,0.8);if(rp<1){ctx.strokeStyle=`rgba(20,184,138,${(1-rp)*.6})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,14+rp*40,0,7);ctx.stroke()}}
+  c6count.querySelector('.n').textContent=fmt(1284211+Math.floor(Math.pow(prog(t,l+1.2,5),1.4)*2400));
+  c6count.style.opacity=ex(prog(t,l+0.8,0.5))*(1-prog(t,T.f7-0.3,0.3));
+}
+
+// ================= F7 : feature burst =================
+const f7=$('f7');
+const f7cv=mkCanvas(f7);
+const FEAT=['Multi-hop reasoning.','Facts, not files.','Owned by who was there.','Access on every fact.','Private connections.','Time-aware memory.','Routes to people.','Learns from answers.'];
+const f7words=FEAT.map(w=>kt(f7,[w],'position:absolute;left:0;right:0;top:450px;text-align:center;color:#fff;font-size:118px'));
+const f7num=mk(f7,'abs label','','left:0;right:0;top:390px;text-align:center;color:#f2a900;font-size:22px');
+function f7U(t){
+  const l=T.f7,st=0.5;
+  f7words.forEach((e,i)=>ktU(e,t,l+i*st,{st:0.04,d:0.35,dy:60,out:l+(i+1)*st-0.08,od:0.1}));
+  const k=clamp(Math.floor((t-l)/st),0,7);f7num.textContent=`0${k+1} / 08`;f7num.style.opacity=t<T.s8-0.1?1:0;
+  const ctx=f7cv.getContext('2d');ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2);
+  seed=3;for(let i=0;i<72;i++){const a=i/72*Math.PI*2+t*0.12*(i%2?1:-1);const r0=360+rnd()*260+((t-l)*2%1)*40,len=40+rnd()*220;
+    ctx.strokeStyle=`rgba(255,255,255,${.05+rnd()*.12})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);ctx.lineTo(Math.cos(a)*(r0+len),Math.sin(a)*(r0+len));ctx.stroke()}
+  const bp=((t-l)/st)%1;ctx.strokeStyle=`rgba(242,169,0,${(1-bp)*.35})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,300+ex(bp)*500,0,7);ctx.stroke();
+  ctx.restore();
+}
+
+// ================= S8 : greater than the sum =================
+const s8=$('s8');
+const s8cv=mkCanvas(s8);
+const TERMS=['Inboxes','+','Meetings','+','Chats','+','People'];
+const s8row=mk(s8,'abs h1',null,'left:0;right:0;top:470px;text-align:center;color:#fff;font-size:72px;white-space:nowrap');
+const s8t=TERMS.map(w=>{const sp=document.createElement('span');sp.textContent=w;sp.style.cssText=`display:inline-block;margin:0 12px;${w=='+'?'color:#f2a900;font-weight:500':''}`;s8row.appendChild(sp);return sp});
+const s8h=kt(s8,['Greater than','the *sum *of *its *people.'],'position:absolute;left:0;right:0;top:370px;text-align:center;color:#fff;font-size:132px');
 function raysU2(ctx,t,t0){
   const p=prog(t,t0,1.3);if(p<=0||p>=1)return;ctx.save();ctx.translate(W/2,H/2);seed=21;
   for(let i=0;i<110;i++){const a=rnd()*Math.PI*2,sp=.5+rnd()*1.5,len=60+rnd()*300;const r0=ex(p)*sp*1300;
     ctx.strokeStyle=`rgba(255,${200+rnd()*55|0},${120+rnd()*135|0},${(1-p)*.6})`;ctx.lineWidth=1+rnd()*2.5;ctx.beginPath();ctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);ctx.lineTo(Math.cos(a)*(r0+len),Math.sin(a)*(r0+len));ctx.stroke()}
   ctx.restore();
 }
+function s8U(t){
+  const l=T.s8;
+  const ctx=s8cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  ctx.save();ctx.translate(W/2,H/2);const intro=ex(prog(t,l,0.8));
+  for(let r=0;r<4;r++){ctx.strokeStyle=`rgba(255,255,255,${.07*intro})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,260+r*170,0,7);ctx.stroke()}
+  ctx.restore();
+  const col=eio(prog(t,l+1.6,0.4));
+  s8t.forEach((sp,i)=>{
+    const t0=l+0.1+Math.floor(i/2)*0.4+(i%2)*0.2;const p=ex(prog(t,t0,0.4));
+    const rect=sp.offsetLeft+sp.offsetWidth/2-W/2;
+    sp.style.transform=`translate(${-rect*col}px,${(1-p)*40}px) scale(${lerp(1,0.2,col)})`;
+    sp.style.opacity=p*(1-col);sp.style.filter=`blur(${(1-p)*12+col*10}px)`;
+  });
+  raysU2(ctx,t,l+1.9);
+  ktU(s8h,t,l+2.0,{st:0.08,out:T.s9-0.25,acc:'#f2a900',dy:60});
+}
 
-// ================= SCENE 9 : end card =================
+// ================= S9 : end card =================
 const s9=$('s9');
-const s9cv=document.createElement('canvas');s9cv.width=W;s9cv.height=H;s9cv.style.cssText='position:absolute;inset:0';s9.appendChild(s9cv);
-const s9logo=mk(s9,'abs',logo(true),'left:585px;top:330px;width:750px;height:259px');
-const s9tag=mk(s9,'abs',"The collective mind of your company.",'left:0;right:0;top:650px;text-align:center;color:#fff;font-size:40px;font-weight:600;letter-spacing:-.02em');
-const s9sub=mk(s9,'abs label',"Captured · Connected · Private by design",'left:0;right:0;top:722px;text-align:center;color:rgba(255,255,255,.55);font-size:19px');
+const s9cv=mkCanvas(s9);
+const s9logo=mk(s9,'abs',logo(true),'left:585px;top:320px;width:750px;height:259px');
+const s9tag=mk(s9,'abs',"One mind for your whole company.",'left:0;right:0;top:650px;text-align:center;color:#fff;font-size:44px;font-weight:600;letter-spacing:-.02em');
+const s9sub=mk(s9,'abs label',"Listens · Connects · Reasons · Respects · Routes · Learns",'left:0;right:0;top:728px;text-align:center;color:rgba(255,255,255,.55);font-size:19px');
 function s9U(t){
-  barsU(s9logo,t,42.65);
-  raysU(s9cv,t,42.85,0.7,1);
-  S(s9logo,{s:lerp(1.06,1,eo(prog(t,42.5,3)))});
-  fadeIn(s9tag,t,43.6);fadeIn(s9sub,t,44.0);
-  $('fade').style.opacity=eio(prog(t,46.2,0.8));
+  const l=T.s9;
+  barsU(s9logo,t,l+0.15);
+  raysU(s9cv,t,l+0.35,0.7,1);
+  S(s9logo,{s:lerp(1.06,1,eo(prog(t,l,3)))});
+  fadeIn(s9tag,t,l+1.1);fadeIn(s9sub,t,l+1.5);
+  $('fade').style.opacity=eio(prog(t,T.end-0.8,0.8));
+}
+
+// ---------- wipe (brand slashes) ----------
+const wipe=$('wipe');
+const WB=[mk(wipe,'',null,'width:220px;background:#7b86a2'),mk(wipe,'',null,'width:220px;background:#d6003a'),mk(wipe,'',null,'width:260px;background:#f2a900'),mk(wipe,'',null,'width:5200px')];
+function wipeU(t,tc,finalColor,dir=1){
+  if(Math.abs(t-tc)>0.9)return false;
+  WB[3].style.background=finalColor;
+  const v=6200,bigW=5200,cx=(t-tc)*v*dir;
+  const pos=[cx+dir*(bigW/2+620),cx+dir*(bigW/2+380),cx+dir*(bigW/2+130),cx];
+  WB.forEach((d,i)=>{const w=parseFloat(d.style.width);d.style.left=(W/2+pos[i]-w/2)+'px';d.style.transform='skewX(-18deg)'});
+  return true;
 }
 
 // ---------- master ----------
-const DUR=47;
 function render(t){
-  const s1v=scene(s1,t,0,9.95,{inD:0.01,inFx:'cut',outFx:'cut'});
-  if(s1v)s1U(t);
-  if(scene(s2,t,5.95,9.95,{inFx:'cut',outFx:'cut'}))s2U(t); s2.style.opacity=1;
-  if(t>=5.95&&t<9.95){s2.style.display='block'}
-  if(scene(s3,t,10.0,12.5,{inD:0.01,inFx:'cut',outFx:'cut'}))s3U(t);
-  if(t>=9.5&&t<10){s1.style.display='block'}
-  if(scene(s4,t,12.5,18.35,{inD:0.01,inFx:'cut',outD:0.3}))s4U(t);
-  if(scene(s5,t,18.4,24.5,{inD:0.5,inFx:'zoom',outFx:'cut'}))s5U(t);
-  if(scene(s6,t,24.5,30.8,{inD:0.01,inFx:'cut',outD:0.3}))s6U(t);
-  if(scene(s7,t,31.0,37.8,{inD:0.5,inFx:'zoom',outD:0.3}))s7U(t);
-  if(scene(s8,t,38.0,42.3,{inD:0.5,inFx:'zoom',outD:0.3}))s8U(t);
-  if(scene(s9,t,42.5,48,{inD:0.5,inFx:'fade'}))s9U(t);
-  const w1=wipeU(t,12.5,'#f4f5f8',1), w2=wipeU(t,24.5,'#0e1d2a',1);
-  wipe.style.display=(w1||w2)?'block':'none';
+  if(scene(s1,t,0,T.s3-0.01,{inD:0.01,inFx:'cut',outFx:'cut'}))s1U(t);
+  if(scene(s2,t,T.s2-0.05,T.s3-0.01,{inD:0.01,inFx:'cut',outFx:'cut'}))s2U(t);
+  if(scene(s3,t,T.s3,T.c1,{inD:0.01,inFx:'cut',outFx:'cut'}))s3U(t);
+  if(scene($('c1'),t,T.c1,T.c2-0.15,{inD:0.01,inFx:'cut',outD:0.3}))c1U(t);
+  if(scene($('c2'),t,T.c2-0.1,T.c3,{inD:0.45,inFx:'zoom',outFx:'cut'}))c2U(t);
+  if(scene($('c3'),t,T.c3,T.c4-0.2,{inD:0.01,inFx:'cut',outD:0.3}))c3U(t);
+  if(scene($('c4'),t,T.c4-0.05,T.c5,{inD:0.45,inFx:'zoom',outFx:'cut'}))c4U(t);
+  if(scene($('c5'),t,T.c5,T.c6-0.15,{inD:0.01,inFx:'cut',outD:0.3}))c5U(t);
+  if(scene($('c6'),t,T.c6-0.1,T.f7,{inD:0.45,inFx:'zoom',outFx:'cut'}))c6U(t);
+  if(scene(f7,t,T.f7,T.s8,{inD:0.01,inFx:'cut',outFx:'cut'}))f7U(t);
+  if(scene(s8,t,T.s8,T.s9-0.2,{inD:0.3,inFx:'zoom',outD:0.3}))s8U(t);
+  if(scene(s9,t,T.s9,T.end+1,{inD:0.5,inFx:'fade'}))s9U(t);
+  const w=wipeU(t,T.c1,'#f4f5f8')||wipeU(t,T.c3,'#0e1d2a')||wipeU(t,T.c5,'#f4f5f8')||wipeU(t,T.f7,'#0e1d2a');
+  wipe.style.display=w?'block':'none';
 }
 window.render=render;window.DUR=DUR;
-Promise.all(['600 20px Inter','500 20px Mono','560 20px OpenSansL','700 11px Inter'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(()=>{window.READY=true;render(parseFloat(location.hash.slice(1)||'0'))});
+Promise.all(['600 20px Inter','500 20px Mono','560 20px OpenSansL','700 11px Inter','600 13px Mono'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(()=>{window.READY=true;render(parseFloat(location.hash.slice(1)||'0'))});
 </script>
 </body>
 </html>

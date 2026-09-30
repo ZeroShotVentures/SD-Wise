@@ -1,11 +1,11 @@
 # my-app
 
-Next.js scaffold with authentication, account management, Postgres, transactional email and optional Stripe subscriptions.
+Next.js scaffold with authentication, account management, Postgres, and transactional email.
 
 ## Stack
 
 - [Next.js 16](https://nextjs.org) (App Router) with React 19 and Tailwind CSS 4
-- [Better Auth](https://www.better-auth.com) for email/password and Google sign-in, with the Stripe plugin for subscriptions (off by default)
+- [Better Auth](https://www.better-auth.com) for email/password and Google sign-in
 - [Resend](https://resend.com) for password reset and email verification emails
 - [Prisma 7](https://www.prisma.io) on PostgreSQL (via `@prisma/adapter-pg`)
 - [t3-env](https://env.t3.gg) + [Zod](https://zod.dev) for typed, validated environment variables
@@ -18,7 +18,6 @@ Next.js scaffold with authentication, account management, Postgres, transactiona
 - Node.js 24 (see `.nvmrc`)
 - pnpm 12 (version pinned in `package.json`)
 - Docker (for the local database)
-- [Stripe CLI](https://docs.stripe.com/stripe-cli) (only when billing is enabled)
 
 ## Getting started
 
@@ -49,10 +48,6 @@ All variables are declared and validated in `src/env.ts`. The app refuses to bui
 | `RESEND_API_KEY` | Resend API key (`re_...`). Without it, emails are logged to the console in development and email features are disabled in production. |
 | `EMAIL_FROM` | Sender for outgoing email, e.g. `my-app <hello@example.com>`. Must use a domain verified in Resend. |
 | `ADMIN_EMAILS` | Optional, comma-separated. The only way to make someone an admin: listed accounts are admins once their email is verified, everyone else is a regular user. |
-| `BILLING_ENABLED` | `true` to enable Stripe subscriptions. Defaults to `false`. |
-| `STRIPE_SECRET_KEY` | Stripe secret key (`sk_...`). Required when billing is enabled. |
-| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_...`). Required when billing is enabled. |
-| `STRIPE_PRICE_*` | Stripe price IDs (`price_...`) per plan. Monthly prices are required when billing is enabled, annual prices are optional. |
 
 ## Routes and auth checks
 
@@ -79,7 +74,7 @@ Protect data on the server, not in the browser:
 - Change their email (only when email is enabled). Verified users get a confirmation link at their *old* address before anything changes, so a hijacked session can't silently take over the account.
 - Change their password (only for users who have one). This signs out their other devices.
 - See active sessions and revoke one or all other devices.
-- Delete their account. Password users must enter their password; Google-only users must have signed in within the last day. When billing is enabled, active Stripe subscriptions are canceled immediately (no refund) before the user is deleted, since the Stripe plugin doesn't do this and Stripe would keep charging.
+- Delete their account. Password users must enter their password; Google-only users must have signed in within the last day.
 
 ## Admin portal
 
@@ -91,7 +86,7 @@ Built on the Better Auth [admin plugin](https://www.better-auth.com/docs/plugins
 - **Ban** them for a set time or permanently, with a reason. Banning signs them out everywhere and blocks sign-in until the ban is lifted or expires.
 - See and revoke their **sessions**.
 - Set a new **password**, or give a Google-only user one.
-- **Delete** them. When billing is enabled, active Stripe subscriptions are canceled first, same as self-service deletion (the cleanup runs in a `databaseHooks.user.delete` hook, which covers both paths).
+- **Delete** them.
 
 Admins can't take these actions on their own account.
 
@@ -130,81 +125,21 @@ Without `RESEND_API_KEY`, emails (including their links) are printed to the serv
 
 To send real email, [verify a domain](https://resend.com/domains) in Resend, create an [API key](https://resend.com/api-keys) and set `RESEND_API_KEY` and `EMAIL_FROM`. Before a domain is verified, the default `onboarding@resend.dev` sender only delivers to your own Resend account address.
 
-Like the billing flag, whether Google and email are enabled is read at build time, so changing them requires a rebuild/redeploy.
+Whether Google and email are enabled is read at build time, so changing them requires a rebuild/redeploy.
 
-## Billing
+### Gating features
 
-Billing is off by default. With `BILLING_ENABLED=false`, the Stripe plugin is not loaded, no Stripe customers are created, the webhook endpoint does not exist and the dashboard hides the plans. The `Subscription` table and `user.stripeCustomerId` column stay in the schema, so enabling billing later needs no migration.
-
-Changing the flag requires a rebuild/redeploy.
-
-To enable billing locally:
-
-1. Create products and prices in the [Stripe dashboard](https://dashboard.stripe.com/test/products) and fill in the `STRIPE_*` variables.
-2. Set `BILLING_ENABLED=true`.
-3. Forward webhooks to the local Better Auth endpoint and copy the printed `whsec_...` secret into `STRIPE_WEBHOOK_SECRET`:
-
-   ```bash
-   stripe listen --forward-to localhost:3000/api/auth/stripe/webhook
-   ```
-
-In production, add a webhook endpoint in the Stripe dashboard pointing at `https://<your-domain>/api/auth/stripe/webhook`.
-
-Plans (display data and limits) are defined in `src/lib/plans.ts`, ordered from lowest to highest tier. Their Stripe price IDs are mapped from env in `src/lib/auth.ts`.
-
-After checkout, Stripe sends users back to `/dashboard?checkout=success` (or `canceled`), which shows a confirmation banner. The subscription itself appears once the webhook arrives.
-
-### Gating features by plan
-
-Check what a user may do with `getEntitlements(userId)` from `@/lib/entitlements`, never by reading subscriptions inline:
+Check what a user may do with `getEntitlements(userId)` from `@/lib/entitlements`:
 
 ```ts
 const { user } = await requireSession();
 const { limits } = await getEntitlements(user.id);
 if (projectCount >= limits.projects) {
-  // show upgrade prompt
+  // enforce limit
 }
 ```
 
-The current policy, in `resolveEntitlements`:
-
-- Billing disabled: everyone is `unlimited`.
-- An `active` or `trialing` subscription grants that plan's limits (the highest plan wins).
-- Anything else, including `past_due` and `canceled`, falls back to the free plan (`freePlan` in `src/lib/plans.ts`).
-
-Change the policy there (grace periods, grandfathering, trials) and every check follows.
-
-### Enabling billing on an existing app
-
-> [!WARNING]
-> Turning billing on for an app that already has users is a product decision, not just a config change. Decide the following before flipping the flag.
-
-**What works out of the box**
-
-- No migration: the billing tables already exist.
-- Existing users have no Stripe customer (customers are only created on sign-up while billing is on). The Stripe plugin creates one on the fly the first time a user subscribes, so no backfill is needed.
-
-**What you need to decide: what do existing users get?**
-
-Once any feature is gated by plan, every existing user suddenly has no subscription. If "no subscription" means "no access", you lock out your whole user base in one deploy. Options:
-
-- **Free tier**: users without a subscription keep a limited free plan and can upgrade.
-- **Grandfathering**: users created before a cutoff date keep full access (e.g. check `user.createdAt`).
-- **Trial**: give existing users a trial period before gating kicks in.
-
-Whichever you pick, implement it in `resolveEntitlements` (see [Gating features by plan](#gating-features-by-plan)). The default is a free tier.
-
-**Turning billing off again is the dangerous direction**
-
-Stripe keeps charging active subscriptions after you disable billing, but the webhook endpoint no longer exists, so cancellations and failed payments stop syncing to the database. Cancel or migrate all active subscriptions in Stripe *before* setting `BILLING_ENABLED=false`.
-
-**Checklist**
-
-1. Create live products and prices in Stripe.
-2. Add the production webhook endpoint in the Stripe dashboard.
-3. Implement the access policy for existing users (see above).
-4. Set `BILLING_ENABLED=true` and the `STRIPE_*` variables, then redeploy.
-5. Tell existing users what changes for them.
+By default every signed-in user has unlimited entitlements. Adjust the policy in `src/lib/entitlements.ts` when you add plan-based limits.
 
 ## Scripts
 
@@ -251,7 +186,7 @@ src/
     (app)/             signed-in pages: dashboard, settings, admin
     api/auth/          Better Auth handler
   components/          React components (+ colocated tests)
-  lib/                 auth, session helpers, entitlements, email, plans, Prisma client
+  lib/                 auth, session helpers, entitlements, email, Prisma client
   proxy.ts             optimistic redirect for signed-out visitors
   instrumentation.ts   syncs admin roles with ADMIN_EMAILS at startup
   env.ts               environment schema

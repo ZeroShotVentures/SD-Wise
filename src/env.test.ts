@@ -7,27 +7,12 @@ const baseEnv = {
   BETTER_AUTH_URL: "http://localhost:3000",
 };
 
-const billingEnv = {
-  BILLING_ENABLED: "true",
-  STRIPE_SECRET_KEY: "sk_test_123",
-  STRIPE_WEBHOOK_SECRET: "whsec_123",
-  STRIPE_PRICE_BASIC_MONTHLY: "price_basic",
-  STRIPE_PRICE_PRO_MONTHLY: "price_pro",
-};
-
 // Blanked before each load so values from the host (e.g. CI job env) don't leak in.
 const isolatedKeys = [
   "BETTER_AUTH_SECRET",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
   "RESEND_API_KEY",
-  "BILLING_ENABLED",
-  "STRIPE_SECRET_KEY",
-  "STRIPE_WEBHOOK_SECRET",
-  "STRIPE_PRICE_BASIC_MONTHLY",
-  "STRIPE_PRICE_BASIC_ANNUAL",
-  "STRIPE_PRICE_PRO_MONTHLY",
-  "STRIPE_PRICE_PRO_ANNUAL",
   "ADMIN_EMAILS",
 ];
 
@@ -53,24 +38,6 @@ describe("env", () => {
     vi.restoreAllMocks();
   });
 
-  it("disables billing by default and needs no Stripe variables", async () => {
-    const env = await loadEnv(baseEnv);
-    expect(env.BILLING_ENABLED).toBe(false);
-  });
-
-  it("parses a valid billing environment", async () => {
-    const env = await loadEnv({ ...baseEnv, ...billingEnv });
-    expect(env.BILLING_ENABLED).toBe(true);
-    expect(env.STRIPE_PRICE_PRO_MONTHLY).toBe("price_pro");
-    expect(env.STRIPE_PRICE_PRO_ANNUAL).toBeUndefined();
-  });
-
-  it("requires Stripe variables when billing is enabled", async () => {
-    await expect(
-      loadEnv({ ...baseEnv, ...billingEnv, STRIPE_SECRET_KEY: "" }),
-    ).rejects.toThrow("Invalid environment variables");
-  });
-
   it("uses a dev-only auth secret outside production", async () => {
     const { BETTER_AUTH_SECRET: _, ...withoutSecret } = baseEnv;
     const env = await loadEnv(withoutSecret);
@@ -87,16 +54,6 @@ describe("env", () => {
   it("rejects a short auth secret", async () => {
     await expect(
       loadEnv({ ...baseEnv, BETTER_AUTH_SECRET: "short" }),
-    ).rejects.toThrow("Invalid environment variables");
-  });
-
-  it("rejects a malformed price id", async () => {
-    await expect(
-      loadEnv({
-        ...baseEnv,
-        ...billingEnv,
-        STRIPE_PRICE_BASIC_MONTHLY: "prod_123",
-      }),
     ).rejects.toThrow("Invalid environment variables");
   });
 

@@ -1,77 +1,12 @@
-import { stripe } from "@better-auth/stripe";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
-import { Stripe } from "stripe";
 import { env } from "@/env";
 import { roleFor } from "./admin-role";
 import { sendEmail } from "./email";
 import { emailEnabled } from "./features";
-import { type PlanName, subscriptionPlans } from "./plans";
 import { prisma } from "./prisma";
-
-const stripeClient = env.BILLING_ENABLED
-  ? new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: "2026-08-26.dahlia" })
-  : null;
-
-const billingPlugins = () => {
-  if (!env.BILLING_ENABLED || !stripeClient) return [];
-
-  const stripePrices: Record<
-    PlanName,
-    { priceId: string; annualDiscountPriceId?: string }
-  > = {
-    basic: {
-      priceId: env.STRIPE_PRICE_BASIC_MONTHLY,
-      annualDiscountPriceId: env.STRIPE_PRICE_BASIC_ANNUAL,
-    },
-    pro: {
-      priceId: env.STRIPE_PRICE_PRO_MONTHLY,
-      annualDiscountPriceId: env.STRIPE_PRICE_PRO_ANNUAL,
-    },
-  };
-
-  return [
-    stripe({
-      stripeClient,
-      stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET,
-      createCustomerOnSignUp: true,
-      subscription: {
-        enabled: true,
-        plans: subscriptionPlans.map(({ name, limits }) => ({
-          name,
-          limits,
-          priceId: stripePrices[name].priceId,
-          annualDiscountPriceId: stripePrices[name].annualDiscountPriceId,
-        })),
-      },
-    }),
-  ];
-};
-
-const endedStatuses = ["canceled", "incomplete_expired"];
-
-// The Stripe plugin does not react to user deletion, and Stripe keeps charging
-// live subscriptions whose user no longer exists.
-async function cancelSubscriptions(userId: string) {
-  if (!stripeClient) return;
-  const live = await prisma.subscription.findMany({
-    where: {
-      referenceId: userId,
-      status: { notIn: endedStatuses },
-      stripeSubscriptionId: { not: null },
-    },
-    select: { stripeSubscriptionId: true },
-  });
-  await Promise.all(
-    live.map(({ stripeSubscriptionId }) =>
-      stripeSubscriptionId
-        ? stripeClient.subscriptions.cancel(stripeSubscriptionId)
-        : null,
-    ),
-  );
-}
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -140,16 +75,6 @@ export const auth = betterAuth({
           await prisma.user.update({ where: { id: user.id }, data: { role } });
         },
       },
-      delete: {
-        before: async (user) => {
-          await cancelSubscriptions(user.id);
-        },
-        after: async (user) => {
-          await prisma.subscription.deleteMany({
-            where: { referenceId: user.id },
-          });
-        },
-      },
     },
   },
   socialProviders:
@@ -162,9 +87,5 @@ export const auth = betterAuth({
         }
       : undefined,
   // nextCookies must stay last so it sees cookies set by the other plugins.
-  plugins: [
-    ...billingPlugins(),
-    admin({ impersonationSessionDuration: 60 * 60 }),
-    nextCookies(),
-  ],
+  plugins: [admin({ impersonationSessionDuration: 60 * 60 }), nextCookies()],
 });

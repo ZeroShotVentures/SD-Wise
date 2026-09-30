@@ -166,9 +166,6 @@ importers:
 
   .:
     dependencies:
-      '@better-auth/stripe':
-        specifier: 1.7.5
-        version: 1.7.5(@better-auth/core@1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3))(better-auth@1.7.5(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(mysql2@3.15.3)(next@16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@25.9.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.1(@types/node@25.9.7)(jsdom@30.0.1(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@25.9.7)(jiti@2.7.0)(yaml@2.9.1))))(better-call@1.4.0(zod@4.6.5))(stripe@22.6.2(@types/node@25.9.7))
       '@prisma/adapter-pg':
         specifier: ^7.10.0
         version: 7.10.0
@@ -199,9 +196,6 @@ importers:
       resend:
         specifier: ^6.28.1
         version: 6.28.1
-      stripe:
-        specifier: 22.6.2
-        version: 22.6.2(@types/node@25.9.7)
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -414,14 +408,6 @@ packages:
         optional: true
       prisma:
         optional: true
-
-  '@better-auth/stripe@1.7.5':
-    resolution: {integrity: sha512-wxKo2xh9+nVxpJPaGlSwo2AfLxw47X/mrW+qzvIs8MZ2Za1kqTTomDp88UQ2kWvIQc6hiXSBsgappm/VhQ6uPQ==}
-    peerDependencies:
-      '@better-auth/core': ^1.7.5
-      better-auth: ^1.7.5
-      better-call: 1.4.0
-      stripe: ^18 || ^19 || ^20 || ^21 || ^22
 
   '@better-auth/telemetry@1.7.5':
     resolution: {integrity: sha512-e/REPqMy9Em+gC6G0xWBikiMLRuy532Er7jqdoNkPBa65FbywgWcm1cZbgdW5CnHsrM3OLZsmKn14yeGoDISeg==}
@@ -2537,15 +2523,6 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  stripe@22.6.2:
-    resolution: {integrity: sha512-PwRE2scocvXqDKPiskMa5vRJEAEkq46W69XyUYmAwrNSLr675lQnfqLwnsndAWizwgihOWw/irLmoFRo3ez7ew==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      '@types/node': '>=18'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-
   styled-jsx@5.1.6:
     resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
     engines: {node: '>= 12.0.0'}
@@ -2950,15 +2927,6 @@ snapshots:
     optionalDependencies:
       '@prisma/client': 7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2)
       prisma: 7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2)
-
-  '@better-auth/stripe@1.7.5(@better-auth/core@1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3))(better-auth@1.7.5(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(mysql2@3.15.3)(next@16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@25.9.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.1(@types/node@25.9.7)(jsdom@30.0.1(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@25.9.7)(jiti@2.7.0)(yaml@2.9.1))))(better-call@1.4.0(zod@4.6.5))(stripe@22.6.2(@types/node@25.9.7))':
-    dependencies:
-      '@better-auth/core': 1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3)
-      better-auth: 1.7.5(@prisma/client@7.10.0(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(typescript@7.0.2))(mysql2@3.15.3)(next@16.3.5(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@25.9.7)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(pg@8.23.0)(prisma@7.10.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@7.0.2))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.1(@types/node@25.9.7)(jsdom@30.0.1(@noble/hashes@2.4.0))(vite@8.3.0(@types/node@25.9.7)(jiti@2.7.0)(yaml@2.9.1)))
-      better-call: 1.4.0(zod@4.6.5)
-      defu: 6.1.7
-      stripe: 22.6.2(@types/node@25.9.7)
-      zod: 4.6.5
 
   '@better-auth/telemetry@1.7.5(@better-auth/core@1.7.5(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)':
     dependencies:
@@ -4666,10 +4634,6 @@ snapshots:
   strip-indent@3.0.0:
     dependencies:
       min-indent: 1.0.1
-
-  stripe@22.6.2(@types/node@25.9.7):
-    optionalDependencies:
-      '@types/node': 25.9.7
 
   styled-jsx@5.1.6(@babel/core@7.29.7(supports-color@7.2.0))(react@19.3.0):
     dependencies:

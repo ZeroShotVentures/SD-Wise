@@ -1,0 +1,610 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(inter.woff2) format('woff2');font-weight:100 900}
+@font-face{font-family:'Geist Mono';src:url(geistmono.woff2) format('woff2');font-weight:100 900}
+@font-face{font-family:LogoSans;src:url(logo.woff2) format('woff2');font-weight:500}
+.wm text{font-family:LogoSans !important}
+:root{
+  --ink:#0e1318; --ink2:#1d2830; --slate:#596273; --bar:#7d86a0;
+  --red:#e0003a; --amber:#f5ab00; --canvas:#f4f5f8; --muted:#6b7682; --line:#e3e7ec;
+  --green:#22c493; --blue:#006dd8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--ink);font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
+.scene{position:absolute;inset:0;overflow:hidden;visibility:hidden}
+.abs{position:absolute}
+.dark{background:var(--ink);color:#fff}
+.light{background:var(--canvas);color:var(--ink2)}
+.bgglow{position:absolute;inset:-10%;background:
+  radial-gradient(900px 700px at 18% 12%, rgba(224,0,58,.20), transparent 60%),
+  radial-gradient(1000px 800px at 88% 95%, rgba(245,171,0,.16), transparent 60%),
+  radial-gradient(1200px 900px at 60% 40%, #1a232c, transparent 70%)}
+.plane{position:absolute;inset:0;background:rgba(255,255,255,.025)}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1.2px,transparent 1.3px);background-size:32px 32px}
+.light .dots{background-image:radial-gradient(rgba(29,40,48,.07) 1.2px,transparent 1.3px)}
+.lightglow{position:absolute;inset:0;background:
+  radial-gradient(900px 700px at 90% 10%, rgba(245,171,0,.10), transparent 60%),
+  radial-gradient(900px 700px at 5% 100%, rgba(224,0,58,.07), transparent 60%)}
+.chap{font-family:'Geist Mono',monospace;font-size:22px;letter-spacing:.28em;text-transform:uppercase;display:flex;align-items:center;gap:18px}
+.chap::before{content:"";width:56px;height:1.5px;background:currentColor;display:block}
+.dark .chap{color:rgba(255,255,255,.6)}
+.light .chap{color:var(--muted)}
+.h{font-weight:700;font-size:118px;line-height:1.02;letter-spacing:-.045em}
+.h .ln{display:block;white-space:nowrap}
+.grad{background:linear-gradient(95deg,var(--amber),#ff6a3d 55%,var(--red));-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.06em}
+.redtxt{color:var(--red)}
+.card{background:#fff;border-radius:22px;box-shadow:0 30px 80px rgba(10,15,20,.28),0 2px 6px rgba(10,15,20,.08);color:var(--ink2)}
+.light .card{box-shadow:0 30px 70px rgba(29,40,48,.12),0 2px 6px rgba(29,40,48,.06)}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex:none}
+.mono{font-family:'Geist Mono',monospace}
+.pill{border-radius:999px}
+/* swarm cards */
+.sw{position:absolute;left:0;top:0;width:330px;padding:16px 18px;border-radius:16px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.35);display:flex;gap:12px;color:var(--ink2)}
+.sw .av{width:38px;height:38px;font-size:14px}
+.sw .n{font-size:15px;font-weight:600;display:flex;justify-content:space-between;width:250px}
+.sw .n span{font-weight:400;color:#9aa3ad;font-size:12px;font-family:'Geist Mono',monospace}
+.sw .m{font-size:14px;color:#4b5661;margin-top:4px;line-height:1.35}
+.sw .src{font-size:11px;color:#9aa3ad;margin-top:6px;font-family:'Geist Mono',monospace;letter-spacing:.04em}
+.hl{border-radius:6px;padding:0 3px;margin:0 -3px;outline:1.5px dashed transparent;outline-offset:1px}
+.chip{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:20px;font-weight:600;color:var(--ink2)}
+.chip .k{font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.14em;color:#9aa3ad;text-transform:uppercase;font-weight:400;width:120px}
+.node{position:absolute;display:flex;align-items:center;gap:12px;padding:14px 20px 14px 16px;background:#fff;border-radius:16px;border:1px solid var(--line);box-shadow:0 14px 34px rgba(29,40,48,.10);font-size:19px;font-weight:600;white-space:nowrap;transform-origin:center}
+.node .d{width:14px;height:14px;border-radius:50%;flex:none}
+.node .s{font-family:'Geist Mono',monospace;font-size:11px;color:#9aa3ad;letter-spacing:.1em;text-transform:uppercase;font-weight:400;display:block;margin-top:2px}
+.elab{position:absolute;font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.08em;color:var(--muted);background:var(--canvas);padding:3px 8px;border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+.tile{position:absolute;width:128px;height:128px;border-radius:32px;background:#fff;box-shadow:0 20px 50px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+.tile .g{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:34px;letter-spacing:-.04em}
+.tlab{position:absolute;width:200px;text-align:center;font-family:'Geist Mono',monospace;font-size:15px;letter-spacing:.12em;color:rgba(255,255,255,.65);text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<!-- ================= S1: scattered knowledge ================= -->
+<div class="scene dark" id="s1">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" id="s1world" style="inset:0;perspective:1100px;perspective-origin:50% 50%">
+    <div id="s1stage" class="abs" style="left:960px;top:540px;transform-style:preserve-3d"></div>
+  </div>
+  <div class="abs mono" id="s1count" style="left:0;right:0;top:64px;text-align:center;font-size:20px;letter-spacing:.14em;color:rgba(255,255,255,.55)"></div>
+  <div class="abs" id="s1words" style="left:0;right:0;top:0;bottom:0"></div>
+</div>
+
+<!-- ================= S2: logo sting ================= -->
+<div class="scene dark" id="s2">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" id="s2logo" style="left:50%;top:50%;width:1100px;height:380px;margin-left:-550px;margin-top:-190px"></div>
+</div>
+
+<!-- ================= S3: capture ================= -->
+<div class="scene dark" id="s3">
+  <div class="bgglow"></div><div class="plane" id="s3plane"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="s3chap">01 / Capture</div>
+    <div class="h" id="s3h" style="margin-top:34px"><span class="ln"><span class="grad">Capture</span></span><span class="ln">what nobody</span><span class="ln">wrote down.</span></div>
+  </div>
+  <div class="card abs" id="s3chat" style="left:790px;top:250px;width:590px;height:580px;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 30px;border-bottom:1px solid var(--line)">
+      <div style="font-size:20px;font-weight:600"># payroll-team</div>
+      <div class="mono" style="font-size:14px;color:#9aa3ad">3 people</div>
+    </div>
+    <div id="s3msgs" style="padding:10px 30px"></div>
+  </div>
+  <div class="card abs" id="s3facts" style="left:1420px;top:200px;width:410px;height:680px;padding:28px;background:rgba(255,255,255,.96)">
+    <div id="s3mini" style="height:40px"></div>
+    <div style="font-size:16px;color:var(--muted);margin-top:26px;display:flex;align-items:center;gap:10px">Facts extracted <span id="s3spark" style="color:var(--amber)">&#10022;</span></div>
+    <div id="s3chips" style="margin-top:18px;display:flex;flex-direction:column;gap:14px"></div>
+  </div>
+</div>
+
+<!-- ================= S4: graph ================= -->
+<div class="scene light" id="s4">
+  <div class="lightglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:110px">
+    <div class="chap" id="s4chap">02 / Connect</div>
+    <div class="h" id="s4h" style="margin-top:28px;font-size:104px"><span class="ln"><span class="redtxt">Facts,</span> not documents.</span></div>
+    <div id="s4sub" style="margin-top:22px;font-size:30px;color:var(--muted);letter-spacing:-.01em">Every conversation becomes linked knowledge.</div>
+  </div>
+  <div class="abs" id="s4graph" style="left:0;top:0;width:1920px;height:1080px">
+    <svg id="s4svg" width="1920" height="1080" style="position:absolute;left:0;top:0;overflow:visible"></svg>
+  </div>
+</div>
+
+<!-- ================= S5: ask ================= -->
+<div class="scene light" id="s5">
+  <div class="lightglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:340px">
+    <div class="chap" id="s5chap">03 / Ask</div>
+    <div class="h" id="s5h" style="margin-top:34px"><span class="ln"><span class="redtxt">An answer.</span></span><span class="ln">Or the person</span><span class="ln">who knows.</span></div>
+  </div>
+  <div class="card abs pill" id="s5bar" style="left:1000px;top:200px;width:800px;height:96px;display:flex;align-items:center;padding:0 34px;gap:20px">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9aa3ad" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <div id="s5q" style="font-size:28px;font-weight:500;letter-spacing:-.01em;white-space:nowrap"></div>
+  </div>
+  <div class="card abs" id="s5ans" style="left:1000px;top:340px;width:800px;padding:34px 38px;border-left:6px solid var(--green)">
+    <div class="mono" style="font-size:14px;letter-spacing:.16em;color:var(--green);text-transform:uppercase">Answer</div>
+    <div style="font-size:34px;font-weight:600;margin-top:12px;letter-spacing:-.02em;line-height:1.2">Launch moved to March.<br>Pilot customers go first.</div>
+    <div style="display:flex;gap:10px;margin-top:22px">
+      <div class="mono pill" style="font-size:14px;padding:8px 14px;background:#fff6dd;color:#9a6a00">MEETING · 2 DAYS AGO</div>
+      <div class="mono pill" style="font-size:14px;padding:8px 14px;background:#fde8ee;color:#b0002d">EMAIL · LAST WEEK</div>
+    </div>
+  </div>
+  <div class="card abs" id="s5ppl" style="left:1000px;top:690px;width:800px;padding:30px 38px">
+    <div class="mono" style="font-size:14px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase">Others know more</div>
+    <div style="display:flex;align-items:center;margin-top:18px;gap:18px">
+      <div class="av" style="width:64px;height:64px;background:var(--red);font-size:22px">LJ</div>
+      <div style="flex:1"><div style="font-size:26px;font-weight:600">Lotte Janssens</div><div style="font-size:18px;color:var(--muted)">Product lead · Payroll Cloud</div></div>
+      <div id="s5btn" class="pill" style="background:var(--ink2);color:#fff;font-size:20px;font-weight:600;padding:16px 26px">Ask Lotte &rarr;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= S6: private ================= -->
+<div class="scene dark" id="s6">
+  <div class="bgglow"></div><div class="plane" id="s6plane"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="s6chap">04 / Trust</div>
+    <div class="h" id="s6h" style="margin-top:34px"><span class="ln"><span class="grad">Private</span></span><span class="ln">by default.</span></div>
+    <div id="s6sub" style="margin-top:30px;font-size:28px;line-height:1.4;color:rgba(255,255,255,.6);width:640px">Every fact is owned by the people who were in the room.</div>
+  </div>
+  <div class="card abs" id="s6card" style="left:1010px;top:300px;width:720px;padding:40px 44px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="mono" id="s6tag" style="font-size:14px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase">Locked fact</div>
+      <div style="display:flex"><div class="av" style="width:44px;height:44px;background:var(--red);font-size:15px;border:3px solid #fff">LJ</div><div class="av" style="width:44px;height:44px;background:var(--slate);font-size:15px;border:3px solid #fff;margin-left:-12px">PC</div></div>
+    </div>
+    <div id="s6body" style="margin-top:20px">
+      <div style="font-size:34px;font-weight:600;letter-spacing:-.02em">Kras: custom rate agreed</div>
+      <div style="font-size:22px;color:var(--muted);margin-top:12px;line-height:1.45">Confirmed in the Q3 call with their CFO. Applies from January, reviewed yearly.</div>
+    </div>
+    <div id="s6lock" class="abs" style="left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center">
+      <div style="width:92px;height:92px;border-radius:50%;background:var(--ink2);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.25)">
+        <svg id="s6lockic" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path id="s6shackle" d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>
+      </div>
+    </div>
+    <div style="margin-top:30px;display:flex;justify-content:flex-end">
+      <div id="s6btn" class="pill" style="background:var(--red);color:#fff;font-size:21px;font-weight:600;padding:16px 28px">Request access</div>
+    </div>
+  </div>
+  <div class="card abs" id="s6toast" style="left:1180px;top:130px;width:560px;padding:22px 26px;display:flex;align-items:center;gap:18px">
+    <div class="av" style="width:52px;height:52px;background:var(--red);font-size:18px">LJ</div>
+    <div style="flex:1"><div style="font-size:21px;font-weight:600">Lotte shared this with you</div><div style="font-size:16px;color:var(--muted);margin-top:2px">Just now</div></div>
+    <div style="width:40px;height:40px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  </div>
+  <svg id="s6cursor" class="abs" width="44" height="44" viewBox="0 0 24 24" style="left:0;top:0"><path d="M4 2l15 10.5-6.8 1.2L16 21l-3 1.4-3.6-7.4L4 19z" fill="#fff" stroke="#0e1318" stroke-width="1.4" stroke-linejoin="round"/></svg>
+</div>
+
+<!-- ================= S7: integrations ================= -->
+<div class="scene dark" id="s7">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:380px">
+    <div class="chap" id="s7chap">05 / Plug in</div>
+    <div class="h" id="s7h" style="margin-top:34px"><span class="ln">Works where</span><span class="ln"><span class="grad">you talk.</span></span></div>
+  </div>
+  <svg id="s7svg" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="s7tiles"></div>
+</div>
+
+<!-- ================= S8: burst ================= -->
+<div class="scene dark" id="s8">
+  <div class="bgglow"></div>
+  <svg id="s8svg" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="s8t1" class="abs h" style="left:0;right:0;top:380px;text-align:center;font-size:150px"></div>
+  <div id="s8t2" class="abs h" style="left:0;right:0;top:560px;text-align:center;font-size:150px"></div>
+</div>
+
+<!-- ================= S9: end card ================= -->
+<div class="scene dark" id="s9">
+  <div class="bgglow"></div><div class="plane" id="s9plane"></div><div class="dots"></div>
+  <div id="s9parts"></div>
+  <div class="abs" id="s9logo" style="left:50%;top:270px;width:900px;height:311px;margin-left:-450px"></div>
+  <div class="abs" id="s9tag" style="left:0;right:0;top:650px;text-align:center;font-size:44px;font-weight:500;letter-spacing:-.02em;line-height:1.3">
+    <div id="s9l1">Ask your company brain.</div>
+    <div id="s9l2" style="color:rgba(255,255,255,.55)">Get an answer, or the person who knows.</div>
+  </div>
+  <div class="abs pill" id="s9pill" style="left:50%;top:840px;transform:translateX(-50%);background:#fff;color:var(--ink2);font-size:26px;font-weight:600;padding:18px 20px 18px 34px;display:flex;align-items:center;gap:18px;white-space:nowrap">
+    Try SD Wise
+    <div style="width:44px;height:44px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+  </div>
+</div>
+
+<div id="flash" class="abs" style="inset:0;background:#fff;opacity:0;pointer-events:none"></div>
+
+<script>
+// ---------- helpers ----------
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const P=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const e5=x=>1-Math.pow(1-x,5);
+const ex=x=>x>=1?1:1-Math.pow(2,-10*x);
+const ei=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eback=x=>{const c=1.70158,c3=c+1;return 1+c3*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,k)=>a+(b-a)*k;
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
+
+// logo svg (recreated from the SD Wise logo), mode 'dark' = white wordmark
+function logoSVG(mode, id){
+  const txt = mode==='dark' ? '#ffffff' : '#596273';
+  const gray = mode==='dark' ? '#9aa2bb' : '#7d86a0';
+  return `<svg id="${id}" viewBox="0 0 2000 690" width="100%" height="100%" style="overflow:visible">
+    <polygon class="b1" points="0,348 86,348 119,537 34,537" fill="${gray}"/>
+    <polygon class="b2" points="193,192 286,192 229,690 137,690" fill="#e0003a"/>
+    <polygon class="b3" points="407,0 502,0 383,537 291,537" fill="#f5ab00"/>
+    <g class="wm"><text x="492" y="537" font-family="Open Sans" font-weight="500" font-size="498" fill="${txt}" textLength="1508" lengthAdjust="spacing">sd wise</text></g>
+  </svg>`;
+}
+function markSVG(w,gray='#9aa2bb'){
+  return `<svg viewBox="0 0 502 690" width="${w}" style="overflow:visible"><polygon points="0,348 86,348 119,537 34,537" fill="${gray}"/><polygon points="193,192 286,192 229,690 137,690" fill="#e0003a"/><polygon points="407,0 502,0 383,537 291,537" fill="#f5ab00"/></svg>`;
+}
+
+// enter/exit for a block of text lines
+function lines(el,t,tin,tout,{stagger=.08,dy=60,blur=16,dur=.7}={}){
+  const ls=el.querySelectorAll('.ln');
+  (ls.length?ls:[el]).forEach((l,i)=>{
+    const a=e5(P(t,tin+i*stagger,tin+i*stagger+dur));
+    const b=tout==null?0:ei(P(t,tout+i*stagger*.5,tout+i*stagger*.5+.45));
+    l.style.opacity=a*(1-b);
+    l.style.transform=`translateY(${(1-a)*dy - b*40}px)`;
+    l.style.filter=`blur(${(1-a)*blur + b*14}px)`;
+    if(!ls.length) l.style.display='';
+    else l.style.display='block';
+  });
+}
+function fadeEl(el,t,tin,tout,{dx=0,dy=40,s=1,blur=12,dur=.8,e=e5}={}){
+  const a=e(P(t,tin,tin+dur));
+  const b=tout==null?0:ei(P(t,tout,tout+.45));
+  el.style.opacity=a*(1-b);
+  el.style.transform=`translate(${(1-a)*dx}px,${(1-a)*dy - b*30}px) scale(${lerp(s,1,a)*(1-b*.04)})`;
+  el.style.filter=`blur(${Math.max(0,(1-a)*blur+b*12)}px)`;
+}
+
+// scene windows [start,end] (seconds)
+const SC={s1:[0,4.55],s2:[4.4,5.75],s3:[5.6,10.8],s4:[10.6,15.6],s5:[15.4,20.6],s6:[20.4,24.9],s7:[24.7,27.6],s8:[27.4,30.0],s9:[29.8,34.5]};
+const WIPE={s3:'wipe',s4:'wipe',s5:'fade',s6:'wipe',s7:'wipe',s8:'fade',s9:'fade'};
+const DURATION=34.5;
+
+function sceneVis(t){
+  let z=1;
+  for(const k in SC){
+    const [a,b]=SC[k]; const el=$(k);
+    const on=t>=a&&t<b;
+    el.style.visibility=on?'visible':'hidden';
+    el.style.zIndex=z++;
+    el.style.clipPath='none'; el.style.opacity=1; el.style.filter='none'; el.style.transform='none';
+    if(!on) continue;
+    const m=WIPE[k];
+    if(m==='wipe'){
+      const k2=ei(P(t,a,a+.55));
+      if(k2<1){ const x=lerp(118,-18,k2); el.style.clipPath=`polygon(${x}% 0, 140% 0, 140% 100%, ${x-18}% 100%)`; }
+    } else if(m==='fade'){
+      const k2=eo(P(t,a,a+.35)); el.style.opacity=k2;
+    }
+  }
+}
+
+// ---------- S1 build ----------
+const PEOPLE=[['LJ','#e0003a','Lotte Janssens'],['PC','#596273','Pieter Claes'],['SP','#f5ab00','Sofie Peeters'],['BD','#006dd8','Bram De Smet'],['AM','#22c493','An Maes'],['KW','#7d86a0','Kobe Willems']];
+const MSGS=[
+ ['Who knows the Kras rate?','SLACK · #sales'],['Double holiday pay is 92%, right?','TEAMS · HR'],['Is the v3 launch still March?','SLACK · #payroll'],
+ ['Can someone resend the SLA?','OUTLOOK'],['Ask Lotte, she was in that call','TEAMS · CHAT'],['Notes from Tuesday\'s sync →','GOOGLE MEET'],
+ ['We decided that last quarter','ZOOM · RECORDING'],['Where is the latest policy?','GMAIL'],['Pieter has the context on this','SLACK · DM'],
+ ['Wait, didn\'t we change that?','TEAMS · CHAT'],['I\'ll dig through my inbox…','OUTLOOK'],['Who owns the onboarding flow?','SLACK · #ops']];
+const swarm=[];
+(function(){
+  const st=$('s1stage'); let h='';
+  for(let i=0;i<78;i++){
+    const p=PEOPLE[i%6], m=MSGS[(i*5)%MSGS.length];
+    h+=`<div class="sw" id="sw${i}"><div class="av" style="background:${p[1]}">${p[0]}</div><div><div class="n">${p[2]}<span>${String(8+i%4).padStart(2,'0')}:${String((i*7)%60).padStart(2,'0')}</span></div><div class="m">${m[0]}</div><div class="src">${m[1]}</div></div></div>`;
+    const ang=rnd()*Math.PI*2, r=560+rnd()*700;
+    swarm.push({x:Math.cos(ang)*r*1.35,y:Math.sin(ang)*r*.75,ts:-1.2+ (i/78)*5.2 + rnd()*.3,rot:(rnd()-.5)*30,rz:(rnd()-.5)*10,sp:1500+rnd()*900});
+  }
+  st.innerHTML=h;
+  $('s1words').innerHTML=`
+   <div class="abs h" id="w1" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Chats.</div>
+   <div class="abs h" id="w2" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Emails.</div>
+   <div class="abs h" id="w3" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Meetings.</div>
+   <div class="abs h" id="w4" style="left:0;right:0;top:380px;text-align:center;font-size:140px;text-shadow:0 10px 60px rgba(0,0,0,.6)"><span class="ln">Knowledge, lost in</span><span class="ln"><span class="grad">conversations.</span></span></div>`;
+})();
+function wordPop(el,t,a,b){
+  const k=e5(P(t,a,a+.35)), o=ei(P(t,b-.18,b));
+  el.style.opacity=k*(1-o);
+  el.style.transform=`scale(${lerp(1.25,1,k)*(1+o*.12)}) translateY(${(1-k)*20}px)`;
+  el.style.filter=`blur(${(1-k)*18+o*20}px)`;
+}
+function S1(t){
+  swarm.forEach((c,i)=>{
+    const el=$('sw'+i); const age=t-c.ts;
+    const speed=c.sp*(1+t*.18);
+    const z=-3200+age*speed;
+    if(age<0||z>1000){el.style.opacity=0;return;}
+    const o=cl((z+3200)/900)*cl((1000-z)/300);
+    el.style.opacity=o;
+    el.style.transform=`translate(-165px,-50px) translate3d(${c.x}px,${c.y}px,${z}px) rotateY(${c.rot}deg) rotateZ(${c.rz}deg)`;
+    el.style.filter= z>500?`blur(${(z-500)/60}px)`:(z<-2000?`blur(${(-2000-z)/400}px)`:'none');
+  });
+  const n=Math.round(12+Math.pow(P(t,0,4.3),2.2)*2835);
+  $('s1count').textContent=`● ${n.toLocaleString('en-US')} UNREAD MESSAGES`;
+  $('s1count').style.opacity=eo(P(t,.1,.6));
+  wordPop($('w1'),t,.15,1.0); wordPop($('w2'),t,1.0,1.75); wordPop($('w3'),t,1.75,2.55);
+  lines($('w4'),t,2.5,4.15,{stagger:.12,dy:40,blur:20,dur:.6});
+  $('s1stage').style.transform=`rotateZ(${t*1.2}deg)`;
+}
+
+// ---------- S2 logo sting ----------
+$('s2logo').innerHTML=logoSVG('dark','lg2');
+function S2(t){
+  const L=$('lg2'); const b=['b1','b2','b3'];
+  b.forEach((c,i)=>{
+    const k=e5(P(t,4.5+i*.07,4.5+i*.07+.45));
+    const el=L.querySelector('.'+c);
+    el.style.transform=`translate(${(1-k)*-260}px,${(1-k)*-900}px)`;
+    el.style.opacity=k; el.style.filter=`blur(${(1-k)*6}px)`;
+  });
+  const w=e5(P(t,4.72,5.15)); const wm=L.querySelector('.wm');
+  wm.style.clipPath=`inset(0 ${100-w*100}% 0 0)`; wm.style.transform=`translateX(${(1-w)*-80}px)`; wm.style.opacity=w;
+  const z=Math.pow(P(t,5.3,5.75),2.4);
+  $('s2logo').style.transform=`scale(${1+z*26})`;
+  $('s2logo').style.transformOrigin='18% 60%';
+  $('s2logo').style.filter=`blur(${z*10}px)`;
+}
+
+// ---------- S3 capture ----------
+(function(){
+  $('s3msgs').innerHTML=[
+   ['LJ','#e0003a','Lotte','Heads-up: <span class="hl" id="hl0">v3 launch moves to March</span>. Pilot customers first.'],
+   ['PC','#596273','Pieter','Noted. And Kras? <span class="hl" id="hl1">They keep their custom rate</span>, agreed on the call.'],
+   ['SP','#f5ab00','Sofie','Also for HR: <span class="hl" id="hl2">double holiday pay is 92%</span> of the monthly wage.']
+  ].map((m,i)=>`<div id="s3m${i}" style="display:flex;gap:16px;padding:22px 0;border-bottom:1px solid ${i<2?'var(--line)':'transparent'}">
+    <div class="av" style="width:50px;height:50px;background:${m[1]};font-size:17px">${m[0]}</div>
+    <div><div style="font-size:19px;font-weight:600">${m[2]} <span class="mono" style="font-size:13px;color:#9aa3ad;font-weight:400;margin-left:6px">09:4${i+1}</span></div>
+    <div style="font-size:21px;line-height:1.5;color:#3b4650;margin-top:4px">${m[3]}</div></div></div>`).join('');
+  $('s3mini').innerHTML=`<div style="width:170px;height:59px">${logoSVG('light','lg3')}</div>`;
+  $('s3chips').innerHTML=[
+   ['Launch','v3 → March','#006dd8','CHAT'],['Kras','Custom rate kept','#e0003a','CHAT'],['Holiday pay','92% of wage','#f5ab00','CHAT']
+  ].map((c,i)=>`<div class="chip" id="s3c${i}"><div style="flex:1"><div class="k">${c[0]}</div><div style="margin-top:4px">${c[1]}</div></div><div class="d" style="width:12px;height:12px;border-radius:50%;background:${c[2]}"></div></div>`).join('')+
+  `<div id="s3own" style="margin-top:22px;padding-top:22px;border-top:1px solid var(--line)"><div class="k mono" style="font-size:12px;letter-spacing:.14em;color:#9aa3ad">OWNED BY</div>
+   <div style="display:flex;margin-top:12px">${PEOPLE.slice(0,3).map((p,i)=>`<div class="av" style="width:46px;height:46px;background:${p[1]};font-size:15px;border:3px solid #fff;margin-left:${i?-12:0}px">${p[0]}</div>`).join('')}</div></div>`;
+})();
+function S3(t){
+  const T=5.6;
+  $('s3chap').style.opacity=eo(P(t,T+.35,T+.9));
+  $('s3chap').style.transform=`translateX(${(1-eo(P(t,T+.35,T+.9)))*-30}px)`;
+  lines($('s3h'),t,T+.45,10.25);
+  fadeEl($('s3chat'),t,T+.55,10.3,{dx:120,dy:0,blur:10,s:.96,dur:1});
+  fadeEl($('s3facts'),t,T+1.3,10.35,{dx:140,dy:0,blur:10,s:.96,dur:1});
+  for(let i=0;i<3;i++){
+    const m=$('s3m'+i); const k=e5(P(t,T+.8+i*.45,T+1.3+i*.45));
+    m.style.opacity=k; m.style.transform=`translateY(${(1-k)*24}px)`;
+    const h=$('hl'+i); const hk=P(t,T+1.9+i*.5,T+2.2+i*.5);
+    h.style.background=`rgba(245,171,0,${.22*hk})`; h.style.outlineColor=`rgba(224,120,0,${.9*hk})`;
+    const c=$('s3c'+i); const ck=eback(P(t,T+2.25+i*.5,T+2.75+i*.5));
+    c.style.opacity=cl(ck); c.style.transform=`translateX(${(1-ck)*-60}px) scale(${lerp(.9,1,cl(ck))})`;
+  }
+  const ok=e5(P(t,T+3.7,T+4.2)); $('s3own').style.opacity=ok; $('s3own').style.transform=`translateY(${(1-ok)*20}px)`;
+  $('s3spark').style.transform=`rotate(${t*90}deg)`;
+  $('s3plane').style.clipPath=`polygon(${55+Math.sin(t*.6)*3}% 0,100% 0,100% 100%,${35+Math.sin(t*.6)*3}% 100%)`;
+  // slow camera drift
+  const d=(t-T);
+  $('s3chat').style.translate=`${-d*6}px ${-d*3}px`; $('s3facts').style.translate=`${-d*10}px ${-d*4}px`;
+}
+
+// ---------- S4 graph ----------
+const NODES=[
+ {id:'c',x:1240,y:600,t:'Payroll Cloud v3 launch',s:'Chat',c:'#006dd8',big:1},
+ {id:'a',x:1560,y:440,t:'Launch moved to March',s:'Meeting',c:'#f5ab00'},
+ {id:'b',x:1590,y:780,t:'Pilot customers first',s:'Chat',c:'#006dd8'},
+ {id:'d',x:900,y:820,t:'Release notes v3',s:'Document',c:'#8fa3b3'},
+ {id:'e',x:820,y:500,t:'v3 pricing for Kras',s:'Answer',c:'#22c493'},
+ {id:'f',x:500,y:720,t:'Kras custom rate',s:'Email',c:'#e0003a'},
+ {id:'g',x:1260,y:930,t:'Onboarding checklist',s:'Document',c:'#8fa3b3'},
+ {id:'h',x:440,y:960,t:'Double holiday pay: 92%',s:'Meeting',c:'#f5ab00'},
+ {id:'i',x:1680,y:980,t:'Support rota Q1',s:'Chat',c:'#006dd8'},
+];
+const EDGES=[['a','c','Updates'],['c','b','Depends on'],['e','c','Answers'],['c','d','Relates to'],['f','e','Relates to'],['d','g','Relates to'],['f','h',''],['b','i','']];
+(function(){
+  const g=$('s4graph'); const svg=$('s4svg'); let h='', s='';
+  EDGES.forEach((e,i)=>{s+=`<line id="e${i}" stroke="#c3cbd4" stroke-width="2.2" stroke-dasharray="6 7"/>`;});
+  s+=`<circle id="s4ring" cx="1240" cy="600" r="10" fill="none" stroke="#e0003a" stroke-width="2"/><circle id="s4ring2" cx="1240" cy="600" r="10" fill="none" stroke="#f5ab00" stroke-width="2"/>`;
+  svg.innerHTML=s;
+  EDGES.forEach((e,i)=>{ if(e[2]) h+=`<div class="elab" id="el${i}">${e[2].toUpperCase()}</div>`;});
+  NODES.forEach((n,i)=>{h+=`<div class="node" id="n${n.id}" style="${n.big?'font-size:24px;padding:18px 26px 18px 20px;border:2px solid #1d2830':''}"><div class="d" style="background:${n.c}"></div><div>${n.t}<span class="s">${n.s}</span></div></div>`;});
+  g.insertAdjacentHTML('beforeend',h);
+})();
+function S4(t){
+  const T=10.6;
+  $('s4chap').style.opacity=eo(P(t,T+.4,T+.9));
+  lines($('s4h'),t,T+.5,15.2);
+  fadeEl($('s4sub'),t,T+.8,15.25,{dy:20});
+  const cam=(t-T); const g=$('s4graph');
+  const zo=e5(P(t,T+.3,T+2.2));
+  g.style.transform=`translate(${-cam*8}px,${40-cam*6}px) scale(${lerp(.9,1.02,zo)})`; g.style.transformOrigin='1240px 640px';
+  g.style.opacity=cl(P(t,15.2,15.6)>0?1-P(t,15.2,15.6):1);
+  const pos={};
+  NODES.forEach((n,i)=>{
+    const el=$('n'+n.id); const delay=n.big?0:(.25+i*.18);
+    const k=eback(P(t,T+.7+delay,T+1.2+delay));
+    const fx=Math.sin(t*.9+i)*6, fy=Math.cos(t*.8+i*1.7)*6;
+    pos[n.id]=[n.x+fx,n.y+fy];
+    el.style.left=(n.x+fx)+'px'; el.style.top=(n.y+fy)+'px';
+    el.style.transform=`translate(-50%,-50%) scale(${cl(k,0,1.2)})`;
+    el.style.opacity=cl(k*2);
+  });
+  EDGES.forEach((e,i)=>{
+    const l=$('e'+i); const [x1,y1]=pos[e[0]], [x2,y2]=pos[e[1]];
+    const k=e5(P(t,T+1.5+i*.2,T+2.1+i*.2));
+    l.setAttribute('x1',x1);l.setAttribute('y1',y1);
+    l.setAttribute('x2',lerp(x1,x2,k));l.setAttribute('y2',lerp(y1,y2,k));
+    l.style.opacity=k>0?1:0;
+    l.setAttribute('stroke-dashoffset',-t*30);
+    const lb=$('el'+i); if(lb){ const lk=e5(P(t,T+1.9+i*.2,T+2.3+i*.2)); lb.style.left=((x1+x2)/2)+'px'; lb.style.top=((y1+y2)/2)+'px'; lb.style.transform=`translate(-50%,-50%) scale(${lerp(.7,1,lk)})`; lb.style.opacity=lk;}
+  });
+  [['s4ring',0],['s4ring2',.6]].forEach(([id,off])=>{
+    const ph=((t-T-2+off)%1.2+1.2)%1.2/1.2; const on=t>T+2.4;
+    const r=$(id); r.setAttribute('r',40+ph*260); r.style.opacity=on?(1-ph)*.6:0;
+  });
+}
+
+// ---------- S5 ask ----------
+const Q='When does Payroll Cloud v3 launch?';
+function S5(t){
+  const T=15.4;
+  $('s5chap').style.opacity=eo(P(t,T+.3,T+.8));
+  lines($('s5h'),t,T+.4,20.2);
+  fadeEl($('s5bar'),t,T+.5,20.25,{dy:50,s:.94});
+  const n=Math.floor(P(t,T+1.0,T+2.3)*Q.length);
+  const cur=(Math.floor(t*3)%2===0||t<T+2.4)?'<span style="display:inline-block;width:3px;height:32px;background:#e0003a;vertical-align:-5px;margin-left:3px"></span>':'';
+  $('s5q').innerHTML=Q.slice(0,n)+cur;
+  fadeEl($('s5ans'),t,T+2.55,20.3,{dy:60,s:.95,blur:14});
+  fadeEl($('s5ppl'),t,T+3.1,20.35,{dy:60,s:.95,blur:14});
+  const pk=P(t,T+4.0,T+4.3); $('s5btn').style.transform=`scale(${1-Math.sin(pk*Math.PI)*.08})`;
+  $('s5btn').style.background=pk>.5?'#e0003a':'#1d2830';
+}
+
+// ---------- S6 private ----------
+function S6(t){
+  const T=20.4;
+  $('s6chap').style.opacity=eo(P(t,T+.35,T+.9));
+  lines($('s6h'),t,T+.45,24.45);
+  fadeEl($('s6sub'),t,T+.9,24.5,{dy:20});
+  fadeEl($('s6card'),t,T+.6,24.5,{dx:100,dy:0,s:.95});
+  const unlock=e5(P(t,T+2.9,T+3.4));
+  $('s6body').style.filter=`blur(${10*(1-unlock)}px)`; $('s6body').style.opacity=lerp(.55,1,unlock);
+  $('s6lock').style.opacity=1-P(t,T+3.1,T+3.4); $('s6lock').style.transform=`scale(${1+P(t,T+3.1,T+3.4)*.3})`;
+  $('s6shackle').setAttribute('d', t>T+2.95?'M8 11V7.5a4 4 0 0 1 7.8-1.2':'M8 11V7.5a4 4 0 0 1 8 0V11');
+  $('s6tag').textContent= t>T+3.0?'Shared with you':'Locked fact';
+  $('s6tag').style.color= t>T+3.0?'#22c493':'';
+  // cursor
+  const ck=ei(P(t,T+1.3,T+2.0));
+  const cx=lerp(1900,1600,ck), cy=lerp(1100,700,ck);
+  $('s6cursor').style.transform=`translate(${cx}px,${cy}px)`; $('s6cursor').style.opacity=cl(P(t,T+1.2,T+1.4))*(1-P(t,T+3.0,T+3.3));
+  const press=P(t,T+2.1,T+2.35); $('s6btn').style.transform=`scale(${1-Math.sin(press*Math.PI)*.08})`;
+  $('s6btn').textContent= t>T+2.25?'Request sent':'Request access';
+  $('s6btn').style.background= t>T+2.25?'#1d2830':'#e0003a';
+  fadeEl($('s6toast'),t,T+2.55,24.45,{dy:-40,s:.95,blur:8,e:eback});
+  $('s6plane').style.clipPath=`polygon(0 ${60+Math.sin(t)*2}%,100% ${30+Math.sin(t)*2}%,100% 100%,0 100%)`;
+}
+
+// ---------- S7 integrations ----------
+const APPS=[['Slack','#611f69','#'],['Teams','#5059c9','T'],['Outlook','#0f6cbd','O'],['Gmail','#ea4335','M'],['Meet','#00897b','▶'],['Zoom','#0b5cff','Z'],['Teams calls','#464eb8','☎']];
+const HUB=[1330,540];
+(function(){
+  let h=`<div class="tile" id="hub" style="width:190px;height:190px;border-radius:48px;left:${HUB[0]-95}px;top:${HUB[1]-95}px;background:#1d2830;border:1.5px solid rgba(255,255,255,.14)">${markSVG(86)}</div>`;
+  let s='';
+  APPS.forEach((a,i)=>{
+    const ang=-Math.PI/2+i*(Math.PI*2/APPS.length); const R=360;
+    const x=HUB[0]+Math.cos(ang)*R*1.12, y=HUB[1]+Math.sin(ang)*R*.95;
+    a.x=x;a.y=y;
+    h+=`<div class="tile" id="tl${i}" style="left:${x-64}px;top:${y-64}px"><div class="g" style="background:${a[1]}">${a[2]}</div></div><div class="tlab" id="tb${i}" style="left:${x-100}px;top:${y+76}px">${a[0]}</div>`;
+    s+=`<line id="ln${i}" x1="${HUB[0]}" y1="${HUB[1]}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.22)" stroke-width="2" stroke-dasharray="4 8"/>`;
+    for(let j=0;j<2;j++) s+=`<circle id="dt${i}_${j}" r="5" fill="${j?'#f5ab00':'#e0003a'}"/>`;
+  });
+  s+=`<circle id="hubring" cx="${HUB[0]}" cy="${HUB[1]}" r="100" fill="none" stroke="rgba(245,171,0,.5)" stroke-width="2"/>`;
+  $('s7svg').innerHTML=s; $('s7tiles').innerHTML=h;
+})();
+function S7(t){
+  const T=24.7;
+  $('s7chap').style.opacity=eo(P(t,T+.3,T+.8));
+  lines($('s7h'),t,T+.4,27.25);
+  const hk=eback(P(t,T+.4,T+.9)); $('hub').style.transform=`scale(${cl(hk,0,1.2)})`;
+  APPS.forEach((a,i)=>{
+    const k=eback(P(t,T+.7+i*.1,T+1.15+i*.1));
+    const tl=$('tl'+i); tl.style.transform=`scale(${cl(k,0,1.2)}) translateY(${Math.sin(t*1.4+i)*6}px)`;
+    const lk=e5(P(t,T+.9+i*.1,T+1.4+i*.1));
+    $('tb'+i).style.opacity=lk;
+    const ln=$('ln'+i); ln.style.opacity=lk; ln.setAttribute('stroke-dashoffset',t*40);
+    for(let j=0;j<2;j++){
+      const ph=((t*.8+i*.13+j*.5)%1); const d=$('dt'+i+'_'+j);
+      d.setAttribute('cx',lerp(a.x,HUB[0],ph)); d.setAttribute('cy',lerp(a.y,HUB[1],ph)); d.style.opacity=lk*Math.sin(ph*Math.PI);
+    }
+  });
+  const ph=((t-T)%1)/1; $('hubring').setAttribute('r',100+ph*120); $('hubring').style.opacity=(1-ph)*cl(P(t,T+1,T+1.3));
+  const out=ei(P(t,27.2,27.6));
+  $('s7tiles').style.opacity=1-out; $('s7svg').style.opacity=1-out;
+  $('s7tiles').style.transform=`scale(${1+out*.15})`; $('s7tiles').style.transformOrigin=`${HUB[0]}px ${HUB[1]}px`;
+}
+
+// ---------- S8 burst ----------
+(function(){
+  let s='';
+  for(let i=0;i<64;i++) s+=`<line id="ry${i}" stroke="${i%3==0?'rgba(245,171,0,.55)':(i%3==1?'rgba(224,0,58,.5)':'rgba(255,255,255,.35)')}" stroke-width="${1+ (i%4==0?1.5:0)}" stroke-linecap="round"/>`;
+  s+=`<circle id="r8a" cx="960" cy="540" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/><circle id="r8b" cx="960" cy="540" fill="none" stroke="rgba(245,171,0,.25)" stroke-width="1.5"/>`;
+  $('s8svg').innerHTML=s;
+})();
+const GLY='ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&?';
+function scramble(str,k,sd){
+  let o='';for(let i=0;i<str.length;i++){const ch=str[i]; if(ch===' '||k*str.length*1.4>i+ (i*.3)){o+=ch;} else o+=GLY[Math.floor((Math.sin((i+1)*sd*12.9898+Math.floor(k*40))*43758.5453%1+1)%1*GLY.length)];}
+  return o;
+}
+function S8(t){
+  const T=27.4;
+  for(let i=0;i<64;i++){
+    const a=i/64*Math.PI*2 + (t-T)*.25; const sd=(Math.sin(i*91.7)*.5+.5);
+    const k=e5(P(t,T+.05+sd*.2,T+.9+sd*.2));
+    const r1=lerp(40,260+sd*240,k), r2=r1+lerp(10,200+sd*400,k);
+    const l=$('ry'+i);
+    l.setAttribute('x1',960+Math.cos(a)*r1);l.setAttribute('y1',540+Math.sin(a)*r1);
+    l.setAttribute('x2',960+Math.cos(a)*r2);l.setAttribute('y2',540+Math.sin(a)*r2);
+    l.style.opacity=k*(1-P(t,29.4,29.9));
+  }
+  const rk=e5(P(t,T,T+1.6)); $('r8a').setAttribute('r',80+rk*520); $('r8a').style.opacity=1-P(t,29.3,29.8);
+  $('r8b').setAttribute('r',60+e5(P(t,T+.3,T+2))*380);
+  const k1=P(t,T+.2,T+.85), k2=P(t,T+.9,T+1.55);
+  const t1=$('s8t1'), t2=$('s8t2');
+  t1.innerHTML=scramble('Every question',k1,1); t2.innerHTML=`<span class="grad">${scramble('makes it smarter.',k2,2)}</span>`;
+  t1.style.opacity=cl(k1*4)*(1-P(t,29.4,29.8)); t2.style.opacity=cl(k2*4)*(1-P(t,29.4,29.8));
+  t1.style.filter=`blur(${(1-e5(k1))*8 + P(t,29.4,29.8)*16}px)`; t2.style.filter=`blur(${(1-e5(k2))*8+P(t,29.4,29.8)*16}px)`;
+  const s=1+(t-T)*.03; t1.style.transform=`scale(${s})`; t2.style.transform=`scale(${s})`;
+}
+
+// ---------- S9 end ----------
+$('s9logo').innerHTML=logoSVG('dark','lg9');
+(function(){let h='';for(let i=0;i<30;i++){h+=`<div class="abs" id="pt${i}" style="width:${2+rnd()*4}px;height:${2+rnd()*4}px;border-radius:50%;background:rgba(255,255,255,${.15+rnd()*.3})"></div>`}$('s9parts').innerHTML=h;})();
+const PTS=[...Array(30)].map(()=>({x:rnd()*1920,y:rnd()*1080,v:10+rnd()*25}));
+function S9(t){
+  const T=29.8;
+  const L=$('lg9');
+  ['b1','b2','b3'].forEach((c,i)=>{
+    const k=e5(P(t,T+.05+i*.07,T+.6+i*.07));
+    const el=L.querySelector('.'+c); el.style.transform=`translate(${(1-k)*-160}px,${(1-k)*-700}px)`; el.style.opacity=k; el.style.filter=`blur(${(1-k)*6}px)`;
+  });
+  const w=e5(P(t,T+.35,T+.95)); const wm=L.querySelector('.wm');
+  wm.style.clipPath=`inset(0 ${100-w*100}% 0 0)`; wm.style.transform=`translateX(${(1-w)*-80}px)`;
+  const s=1+(t-T)*.012; $('s9logo').style.transform=`scale(${s})`;
+  fadeEl($('s9l1'),t,T+.9,null,{dy:30,blur:12});
+  fadeEl($('s9l2'),t,T+1.1,null,{dy:30,blur:12});
+  const pk=e5(P(t,T+1.5,T+2.1)); const pill=$('s9pill');
+  pill.style.opacity=pk; pill.style.transform=`translateX(-50%) translateY(${(1-pk)*30}px) scale(${lerp(.9,1,pk)})`;
+  pill.style.filter=`blur(${(1-pk)*10}px)`;
+  PTS.forEach((p,i)=>{const e=$('pt'+i); e.style.transform=`translate(${p.x}px,${(p.y-(t-T)*p.v+1080)%1080}px)`;});
+  $('s9plane').style.clipPath=`polygon(0 ${70-(t-T)}%,100% ${40-(t-T)}%,100% 100%,0 100%)`;
+}
+
+function flash(t){
+  // brief white flash on the logo impact moments
+  const f=Math.max(Math.exp(-Math.pow((t-5.72)/.05,2))*.5, 0);
+  $('flash').style.opacity=f;
+  // global fade out at end
+  const out=P(t,DURATION-.6,DURATION);
+  document.body.style.filter = out>0?`brightness(${1-out})`:'';
+}
+
+window.render=function(t){
+  sceneVis(t);
+  if(t<SC.s1[1])S1(t);
+  if(t>=SC.s2[0]&&t<SC.s2[1])S2(t);
+  if(t>=SC.s3[0]&&t<SC.s3[1])S3(t);
+  if(t>=SC.s4[0]&&t<SC.s4[1])S4(t);
+  if(t>=SC.s5[0]&&t<SC.s5[1])S5(t);
+  if(t>=SC.s6[0]&&t<SC.s6[1])S6(t);
+  if(t>=SC.s7[0]&&t<SC.s7[1])S7(t);
+  if(t>=SC.s8[0]&&t<SC.s8[1])S8(t);
+  if(t>=SC.s9[0])S9(t);
+  flash(t);
+};
+window.DURATION=DURATION;
+Promise.all(['500 100px LogoSans','700 100px Inter','600 100px Inter','500 100px Inter','400 20px "Geist Mono"']. map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(()=>{window.READY=true; if(location.hash) render(parseFloat(location.hash.slice(1)));});
+</script>
+</body>
+</html>

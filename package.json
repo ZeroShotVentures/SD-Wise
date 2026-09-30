@@ -5,7 +5,7 @@
   "packageManager": "pnpm@12.4.2",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "oxlint --deny-warnings && biome check",
     "fix": "oxlint --fix && biome check --write",
@@ -21,6 +21,7 @@
     "db:reset": "prisma migrate reset",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:seed:demo": "tsx prisma/seed-demo.ts",
     "db:embed": "tsx prisma/embed-nodes.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate",

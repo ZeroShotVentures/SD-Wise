@@ -11,11 +11,14 @@ export default async function AppLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
-  const person = session ? personFor(session.user) : null;
+  const person = session ? await personFor(session.user.id) : null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
-      <Sidebar person={person} pending={person ? pendingCount(person) : 0} />
+      <Sidebar
+        person={person}
+        pending={person ? await pendingCount(person) : 0}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <ImpersonationBanner />
         <main className="relative min-h-0 flex-1 overflow-y-auto">

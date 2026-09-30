@@ -1,25 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signIn, signUp } from "@/lib/auth-client";
-import { defaultRedirect } from "@/lib/redirect";
+import { signIn } from "@/lib/auth-client";
 
 type AuthFormProps = {
-  mode: "sign-in" | "sign-up";
   callbackURL: string;
 };
 
-export function AuthForm({ mode, callbackURL }: AuthFormProps) {
+export function AuthForm({ callbackURL }: AuthFormProps) {
   const router = useRouter();
-  const isSignUp = mode === "sign-up";
-  const togglePath = isSignUp ? "/sign-in" : "/sign-up";
-  const toggleHref =
-    callbackURL === defaultRedirect
-      ? togglePath
-      : `${togglePath}?${new URLSearchParams({ callbackURL })}`;
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,13 +21,9 @@ export function AuthForm({ mode, callbackURL }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const res = isSignUp
-        ? await signUp.email({ name, email, password })
-        : await signIn.email({ email, password });
+      const res = await signIn.email({ email, password });
       if (res.error) {
-        setError(
-          res.error.message ?? (isSignUp ? "Sign up failed" : "Sign in failed"),
-        );
+        setError(res.error.message ?? "Sign in failed");
         setLoading(false);
         return;
       }
@@ -52,36 +38,14 @@ export function AuthForm({ mode, callbackURL }: AuthFormProps) {
     <div className="w-full max-w-sm space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="space-y-1">
         <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          {isSignUp ? "Create an account" : "Sign in"}
+          Sign in
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {isSignUp
-            ? "Enter your details to get started"
-            : "Enter your credentials to continue"}
+          Enter your credentials to continue
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {isSignUp && (
-          <div className="space-y-2">
-            <label
-              htmlFor="name"
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400"
-            />
-          </div>
-        )}
-
         <div className="space-y-2">
           <label
             htmlFor="email"
@@ -127,19 +91,9 @@ export function AuthForm({ mode, callbackURL }: AuthFormProps) {
           disabled={loading}
           className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          {loading ? "Loading..." : isSignUp ? "Sign up" : "Sign in"}
+          {loading ? "Loading..." : "Sign in"}
         </button>
       </form>
-
-      <div className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-        {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-        <Link
-          href={toggleHref}
-          className="font-medium text-zinc-900 hover:underline dark:text-zinc-50"
-        >
-          {isSignUp ? "Sign in" : "Sign up"}
-        </Link>
-      </div>
     </div>
   );
 }

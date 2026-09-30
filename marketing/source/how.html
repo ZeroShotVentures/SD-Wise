@@ -1,0 +1,531 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="base.css">
+<style>
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:96px 96px}
+.light .grid{background-image:linear-gradient(rgba(29,40,48,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(29,40,48,.045) 1px,transparent 1px)}
+.sub{font-size:28px;line-height:1.45;letter-spacing:-.01em;width:680px}
+.dark .sub{color:rgba(255,255,255,.62)}
+.light .sub{color:var(--muted)}
+.badge{font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.12em;padding:6px 10px;border-radius:8px;font-weight:500;white-space:nowrap}
+.pub{background:#dcf6ec;color:#12805f}.pri{background:#fff1cc;color:#8a5f00}.res{background:#fde3ea;color:#b0002d}
+.fid{font-family:'Geist Mono',monospace;font-size:14px;color:#9aa3ad;letter-spacing:.06em}
+.row{display:grid;grid-template-columns:120px 1fr 140px 130px 150px;align-items:center;padding:0 34px;height:66px;border-top:1px solid var(--line);font-size:21px}
+.th{font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.16em;color:#9aa3ad;text-transform:uppercase;height:54px;border-top:none}
+.fc{position:absolute;background:#fff;border-radius:16px;padding:14px 18px;box-shadow:0 16px 40px rgba(0,0,0,.25);color:var(--ink2);width:300px}
+.fc .t{font-size:18px;font-weight:600;margin-top:4px;white-space:nowrap}
+.light .fc{box-shadow:0 14px 34px rgba(29,40,48,.12);border:1px solid var(--line)}
+.col{position:absolute;border-radius:24px;border:1.5px dashed #cfd6de;padding:22px}
+.colh{font-family:'Geist Mono',monospace;font-size:15px;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.rail{position:absolute;left:50%;top:44px;display:flex;align-items:center;gap:0;transform-origin:50% 0}
+.ri{display:flex;align-items:center;gap:12px;padding:10px 20px 10px 10px;border-radius:999px;background:rgba(22,30,38,.92);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);font-size:18px;font-weight:600;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.ri .num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:14px;background:rgba(255,255,255,.1);color:#fff}
+.rl{width:34px;height:2px;background:rgba(150,160,175,.45)}
+.cite{font-family:'Geist Mono',monospace;font-size:14px;padding:3px 8px;border-radius:6px;background:#eef1f5;color:#596273;vertical-align:3px;margin-left:6px}
+.btn{border-radius:999px;font-size:19px;font-weight:600;padding:14px 22px;white-space:nowrap}
+.tree text{font-family:Inter}
+</style>
+</head>
+<body>
+
+<!-- H0 intro -->
+<div class="scene dark" id="h0">
+  <div class="bgglow"></div><div class="grid"></div>
+  <div class="abs" style="left:0;right:0;top:350px;text-align:center">
+    <div class="chap" id="h0chap" style="justify-content:center">How SD Wise works</div>
+    <div class="h" id="h0h" style="margin-top:34px;font-size:136px"><span class="ln">Not a promise.</span><span class="ln"><span class="grad">An architecture.</span></span></div>
+  </div>
+</div>
+
+<!-- H1 bigger than its parts -->
+<div class="scene dark" id="h1">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:300px">
+    <div class="chap" id="h1chap">The idea</div>
+    <div class="h" id="h1h" style="margin-top:34px"><span class="ln">Bigger than</span><span class="ln"><span class="grad">its parts.</span></span></div>
+    <div class="sub" id="h1sub" style="margin-top:30px">Not the documents. Not the file system. Not the people. The brain holds all of it, private and public.</div>
+  </div>
+  <svg id="h1svg" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="h1cards"></div>
+  <div class="abs" id="h1brain" style="left:1500px;top:420px;width:240px;height:240px;border-radius:60px;background:#1d2830;border:1.5px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;box-shadow:0 30px 90px rgba(0,0,0,.5)"></div>
+  <div class="abs mono" id="h1bl" style="left:1420px;top:690px;width:400px;text-align:center;font-size:16px;letter-spacing:.14em;color:rgba(255,255,255,.7)">SD WISE · <span id="h1pct">0</span>% OF THE KNOWLEDGE</div>
+  <div id="h1frags"></div>
+</div>
+
+<!-- H2 fact store -->
+<div class="scene light" id="h2">
+  <div class="lightglow"></div><div class="grid"></div>
+  <div class="abs" style="left:120px;top:96px">
+    <div class="chap" id="h2chap">The foundation</div>
+    <div class="h" id="h2h" style="margin-top:26px;font-size:96px"><span class="ln"><span class="redtxt">Every fact,</span> with its rights.</span></div>
+    <div class="sub" id="h2sub" style="margin-top:18px;width:1200px">One store holds each data point, who owns it and who may see it.</div>
+  </div>
+  <div class="card abs" id="h2table" style="left:120px;top:400px;width:1680px;padding:0 0 10px;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 34px">
+      <div class="mono" style="font-size:16px;letter-spacing:.08em;color:var(--ink2)">knowledge.facts</div>
+      <div class="mono" id="h2count" style="font-size:15px;color:#9aa3ad"></div>
+    </div>
+    <div class="row th"><div>ID</div><div>Fact</div><div>Source</div><div>Owners</div><div>Rights</div></div>
+    <div id="h2rows"></div>
+  </div>
+</div>
+
+<!-- H3 question + pipeline -->
+<div class="scene dark" id="h3">
+  <div class="bgglow"></div><div class="grid"></div>
+  <div class="abs" style="left:0;right:0;top:120px;text-align:center">
+    <div class="chap" id="h3chap" style="justify-content:center">The flow</div>
+    <div class="h" id="h3h" style="margin-top:26px;font-size:96px"><span class="ln">Five agents. <span class="grad">One answer.</span></span></div>
+  </div>
+  <div class="card abs pill" id="h3q" style="left:50%;top:380px;transform:translateX(-50%);display:flex;align-items:center;gap:18px;padding:16px 34px 16px 16px;white-space:nowrap">
+    <div class="av" style="width:56px;height:56px;background:var(--amber);font-size:19px">SP</div>
+    <div><div class="mono" style="font-size:13px;letter-spacing:.14em;color:#9aa3ad">SOFIE · SALES ASKS</div><div id="h3qt" style="font-size:28px;font-weight:600;letter-spacing:-.01em;margin-top:2px"></div></div>
+  </div>
+</div>
+
+<!-- H4 agent 01 connect -->
+<div class="scene dark" id="h4">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h4chap">Agent 01</div>
+    <div class="h" id="h4h" style="margin-top:34px"><span class="ln"><span class="grad">Connect</span></span><span class="ln">the dots.</span></div>
+    <div class="sub" id="h4sub" style="margin-top:30px;width:620px">Searches the whole graph, private facts included, for everything relevant.</div>
+  </div>
+  <svg id="h4svg" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="h4nodes"></div>
+  <div class="abs mono" id="h4count" style="left:1040px;top:960px;font-size:18px;letter-spacing:.12em;color:rgba(255,255,255,.7)"></div>
+</div>
+
+<!-- H5 agent 02 rights -->
+<div class="scene light" id="h5">
+  <div class="lightglow"></div><div class="grid"></div>
+  <div class="abs" style="left:120px;top:190px">
+    <div class="chap" id="h5chap">Agent 02</div>
+    <div class="h" id="h5h" style="margin-top:26px;font-size:100px"><span class="ln"><span class="redtxt">Check</span> the rights.</span></div>
+    <div class="sub" id="h5sub" style="margin-top:18px;width:1300px">Every fact is checked against who is asking. Nothing locked leaves the brain.</div>
+  </div>
+  <div class="col" id="h5c0" style="left:120px;top:520px;width:540px;height:440px"><div class="colh" style="color:#12805f"><span style="width:10px;height:10px;border-radius:50%;background:#22c493"></span>Accessible to Sofie</div></div>
+  <div class="col" id="h5c1" style="left:690px;top:520px;width:540px;height:440px"><div class="colh" style="color:#8a5f00"><span style="width:10px;height:10px;border-radius:50%;background:#f5ab00"></span>Needs the owner's OK</div></div>
+  <div class="col" id="h5c2" style="left:1260px;top:520px;width:540px;height:440px"><div class="colh" style="color:#b0002d"><span style="width:10px;height:10px;border-radius:50%;background:#e0003a"></span>Not authorized</div><div class="mono" style="position:absolute;left:0;right:0;top:200px;text-align:center;color:#b8c0c8;font-size:18px;letter-spacing:.1em">0 FACTS</div></div>
+  <div id="h5facts"></div>
+</div>
+
+<!-- H6 agent 03 decide -->
+<div class="scene dark" id="h6">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h6chap">Agent 03</div>
+    <div class="h" id="h6h" style="margin-top:34px"><span class="ln"><span class="grad">Decide</span></span><span class="ln">how to answer.</span></div>
+  </div>
+  <svg id="h6svg" class="abs tree" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="h6nodes"></div>
+</div>
+
+<!-- H7 agent 04 answer -->
+<div class="scene light" id="h7">
+  <div class="lightglow"></div><div class="grid"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h7chap">Agent 04</div>
+    <div class="h" id="h7h" style="margin-top:34px"><span class="ln"><span class="redtxt">Answer</span></span><span class="ln">what's allowed.</span></div>
+    <div class="sub" id="h7sub" style="margin-top:30px;width:620px">A useful first answer right away, built only from facts Sofie may see.</div>
+  </div>
+  <div class="card abs" id="h7card" style="left:960px;top:250px;width:840px;padding:38px 42px">
+    <div style="display:flex;align-items:center;gap:14px"><div id="h7mark" style="width:44px;height:44px"></div><div class="mono" style="font-size:14px;letter-spacing:.16em;color:var(--muted)">SD WISE → SOFIE</div></div>
+    <div style="font-size:33px;font-weight:600;letter-spacing:-.02em;line-height:1.35;margin-top:22px">v3 launches in March<span class="cite">F-0412</span>, pilot customers go first<span class="cite">F-0413</span>.</div>
+    <div id="h7pend" style="margin-top:26px;padding:22px 24px;border-radius:16px;background:#fff7e0;border:1px solid #f7dc92;display:flex;gap:18px;align-items:center">
+      <div class="av" style="width:52px;height:52px;background:var(--slate);font-size:18px">PC</div>
+      <div style="flex:1;font-size:21px;line-height:1.4;color:#5c4300">The Kras rate is owned by <b>Pieter Claes</b>. I've asked him to share it.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:22px" class="mono"><span id="h7dot" style="width:10px;height:10px;border-radius:50%;background:var(--amber)"></span><span style="font-size:15px;letter-spacing:.1em;color:var(--muted)">REQUEST SENT · WAITING FOR PIETER</span></div>
+  </div>
+</div>
+
+<!-- H8 agent 05 request -->
+<div class="scene dark" id="h8">
+  <div class="bgglow"></div><div class="dots"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h8chap">Agent 05</div>
+    <div class="h" id="h8h" style="margin-top:34px"><span class="ln"><span class="grad">Ask</span></span><span class="ln">the owner.</span></div>
+    <div class="sub" id="h8sub" style="margin-top:30px;width:620px">The question goes to the person who knows, with a drafted answer ready to share.</div>
+  </div>
+  <div class="card abs" id="h8card" style="left:960px;top:200px;width:840px;padding:34px 40px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="mono" style="font-size:14px;letter-spacing:.16em;color:var(--muted)">PIETER'S INBOX</div><div class="badge pri">ACCESS REQUEST</div></div>
+    <div style="display:flex;gap:16px;align-items:center;margin-top:22px"><div class="av" style="width:52px;height:52px;background:var(--amber);font-size:18px">SP</div><div style="font-size:26px;font-weight:600">Sofie asks: "What rate do we give Kras?"</div></div>
+    <div style="margin-top:24px;padding:22px 24px;border-radius:16px;background:#f4f5f8;border:1px solid var(--line)">
+      <div class="mono" style="font-size:13px;letter-spacing:.14em;color:#9aa3ad">DRAFTED FROM WHAT YOU KNOW</div>
+      <div style="font-size:23px;line-height:1.45;margin-top:10px">Kras keeps their custom rate, agreed in the Q3 call<span class="cite">F-0977</span>. Renewal is in January<span class="cite">F-0980</span>.</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:26px">
+      <div class="btn" id="h8b1" style="background:var(--red);color:#fff">Share with Sofie</div>
+      <div class="btn" style="background:#eef1f5;color:var(--ink2)">Share with everyone</div>
+      <div class="btn" style="color:var(--muted)">Decline</div>
+    </div>
+  </div>
+  <div class="card abs" id="h8toast" style="left:1100px;top:830px;width:700px;padding:20px 26px;display:flex;align-items:center;gap:18px">
+    <div style="width:44px;height:44px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <div style="flex:1"><div style="font-size:21px;font-weight:600">Sofie has her full answer</div><div style="font-size:16px;color:var(--muted);margin-top:2px">Saved as a new fact · the brain just grew</div></div>
+    <div class="badge pub">F-1305</div>
+  </div>
+  <svg id="h8cursor" class="abs" width="44" height="44" viewBox="0 0 24 24" style="left:0;top:0"><path d="M4 2l15 10.5-6.8 1.2L16 21l-3 1.4-3.6-7.4L4 19z" fill="#fff" stroke="#0e1318" stroke-width="1.4" stroke-linejoin="round"/></svg>
+</div>
+
+<!-- H9 option C -->
+<div class="scene dark" id="h9">
+  <div class="bgglow"></div><div class="grid"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h9chap">Agent 03, again</div>
+    <div class="h" id="h9h" style="margin-top:34px"><span class="ln">And sometimes</span><span class="ln"><span class="grad">it says no.</span></span></div>
+  </div>
+  <div class="card abs pill" id="h9q" style="left:960px;top:240px;display:flex;align-items:center;gap:18px;padding:16px 34px 16px 16px;white-space:nowrap">
+    <div class="av" style="width:56px;height:56px;background:var(--bar);font-size:19px">KW</div>
+    <div><div class="mono" style="font-size:13px;letter-spacing:.14em;color:#9aa3ad">KOBE · SUPPORT ASKS</div><div style="font-size:28px;font-weight:600;margin-top:2px">What is Victor's salary?</div></div>
+  </div>
+  <div class="abs" id="h9steps" style="left:960px;top:400px;display:flex;gap:12px"></div>
+  <div class="card abs" id="h9no" style="left:960px;top:520px;width:820px;padding:38px 42px;border-left:6px solid var(--red)">
+    <div style="font-size:84px;font-weight:700;letter-spacing:-.04em;color:var(--red);line-height:1">No.</div>
+    <div style="font-size:25px;line-height:1.45;margin-top:16px;color:#3b4650">That's restricted HR information and you're not authorized. I won't share it, and I won't route the question.</div>
+  </div>
+</div>
+
+<!-- H10 grounded -->
+<div class="scene light" id="h10">
+  <div class="lightglow"></div><div class="grid"></div>
+  <div class="abs" style="left:120px;top:330px">
+    <div class="chap" id="h10chap">Why you can trust it</div>
+    <div class="h" id="h10h" style="margin-top:34px"><span class="ln"><span class="redtxt">No fact,</span></span><span class="ln">no claim.</span></div>
+    <div class="sub" id="h10sub" style="margin-top:30px;width:640px">Every sentence traces back to a stored fact and its rights. Nothing is made up.</div>
+  </div>
+  <div class="card abs" id="h10ans" style="left:960px;top:190px;width:840px;padding:32px 38px">
+    <div class="mono" style="font-size:13px;letter-spacing:.14em;color:#9aa3ad">ANSWER</div>
+    <div style="font-size:28px;font-weight:600;line-height:1.5;margin-top:10px;letter-spacing:-.01em">
+      <span id="g0" class="hl">v3 launches in March</span>, <span id="g1" class="hl">pilot customers first</span>. <span id="g2" class="hl">Kras keeps their custom rate</span>.
+      <span id="g3" style="position:relative;color:#9aa3ad">Launch day is 12 March.<span id="g3x" style="position:absolute;left:0;top:52%;height:3px;background:var(--red);width:0"></span></span>
+    </div>
+  </div>
+  <svg id="h10svg" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="h10facts"></div>
+  <div class="abs" id="h10rej" style="left:1500px;top:470px;padding:10px 16px;border-radius:12px;background:#fde3ea;color:#b0002d;font-family:'Geist Mono',monospace;font-size:15px;letter-spacing:.08em;white-space:nowrap">NO SOURCE → NOT SAID</div>
+</div>
+
+<!-- H11 end -->
+<div class="scene dark" id="h11">
+  <div class="bgglow"></div><div class="plane" id="h11plane"></div><div class="dots"></div>
+  <div class="abs" id="h11logo" style="left:50%;top:250px;width:900px;height:311px;margin-left:-450px"></div>
+  <div class="abs" style="left:0;right:0;top:640px;text-align:center;font-size:48px;font-weight:600;letter-spacing:-.03em;line-height:1.25">
+    <div id="h11l1">The company brain is</div>
+    <div id="h11l2"><span class="grad">bigger than its parts.</span></div>
+  </div>
+  <div class="abs pill" id="h11pill" style="left:50%;top:850px;background:#fff;color:var(--ink2);font-size:26px;font-weight:600;padding:18px 20px 18px 34px;display:flex;align-items:center;gap:18px;white-space:nowrap">
+    Try SD Wise
+    <div style="width:44px;height:44px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+  </div>
+</div>
+
+<!-- persistent agent rail -->
+<div class="rail" id="rail"></div>
+
+<script src="helpers.js"></script>
+<script>
+const SC={h0:[0,4.0],h1:[3.8,9.8],h2:[9.6,15.2],h3:[15.0,19.8],h4:[19.6,24.8],h5:[24.6,30.0],h6:[29.8,35.0],h7:[34.8,39.8],h8:[39.6,46.0],h9:[45.8,50.6],h10:[50.4,56.0],h11:[55.8,62.0]};
+const WIPE={h1:'wipe',h2:'wipe',h3:'wipe',h4:'fade',h5:'wipe',h6:'wipe',h7:'wipe',h8:'wipe',h9:'fade',h10:'wipe',h11:'wipe'};
+const DURATION=62.0;
+$('h7mark').innerHTML=markSVG(32,'#7d86a0');
+function sceneVis(t){
+  let z=1;
+  for(const k in SC){
+    const [a,b]=SC[k]; const el=$(k); const on=t>=a&&t<b;
+    el.style.visibility=on?'visible':'hidden'; el.style.zIndex=z++;
+    el.style.clipPath='none'; el.style.opacity=1;
+    if(!on) continue;
+    const m=WIPE[k];
+    if(m==='wipe'){const k2=ei(P(t,a,a+.55)); if(k2<1){const x=lerp(118,-18,k2); el.style.clipPath=`polygon(${x}% 0, 140% 0, 140% 100%, ${x-18}% 100%)`;}}
+    else if(m==='fade'){el.style.opacity=eo(P(t,a,a+.35));}
+  }
+}
+const chapIn=(id,t,T)=>{const k=eo(P(t,T+.35,T+.9));$(id).style.opacity=k;$(id).style.transform=`translateX(${(1-k)*-30}px)`;};
+
+// ---------- H0 ----------
+function H0(t){chapIn('h0chap',t,-.1); lines($('h0h'),t,.35,3.55,{stagger:.18}); $('h0h').style.transform=`scale(${1+t*.012})`;}
+
+// ---------- H1 ----------
+const SRC=[
+ {k:'Documents',s:'Policies, contracts, notes',ic:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',x:1000,y:200},
+ {k:'File systems',s:'Drives, folders, exports',ic:'<path d="M3 7h6l2 2h10v10H3z"/>',x:1000,y:470},
+ {k:'People',s:'Chats, calls, memory',ic:'<circle cx="9" cy="9" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14c3 0 5 2 5 5"/>',x:1000,y:740},
+];
+(function(){
+  let h='',s='';
+  SRC.forEach((c,i)=>{
+    h+=`<div class="card abs" id="h1c${i}" style="left:${c.x}px;top:${c.y}px;width:360px;padding:22px 24px;display:flex;gap:18px;align-items:center">
+      <div style="width:56px;height:56px;border-radius:16px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;flex:none"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#596273" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${c.ic}</svg></div>
+      <div style="flex:1"><div style="font-size:23px;font-weight:600">${c.k}</div><div style="font-size:15px;color:var(--muted);margin-top:2px">${c.s}</div>
+      <div style="height:6px;border-radius:3px;background:#eef1f5;margin-top:12px;overflow:hidden"><div id="h1bar${i}" style="height:100%;background:#9aa3ad;width:${[34,22,44][i]}%"></div></div></div>
+      <div class="mono" id="h1p${i}" style="font-size:14px;color:#9aa3ad">${[34,22,44][i]}%</div></div>`;
+    s+=`<path id="h1l${i}" d="M${c.x+360} ${c.y+60} C ${c.x+470} ${c.y+60}, 1420 540, 1500 540" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2" stroke-dasharray="4 8"/>`;
+  });
+  $('h1cards').innerHTML=h; $('h1svg').innerHTML=s;
+  $('h1brain').innerHTML=markSVG(110);
+  let f='';for(let i=0;i<54;i++){const c=['#e0003a','#f5ab00','#9aa2bb','#22c493','#006dd8'][i%5];f+=`<div class="abs" id="fr${i}" style="width:12px;height:12px;border-radius:50%;background:${c};box-shadow:0 0 12px ${c}"></div>`;}
+  $('h1frags').innerHTML=f;
+})();
+const FR=[...Array(54)].map((_,i)=>({src:i%3,d:rnd()*.9,ox:(rnd()-.5)*60,oy:(rnd()-.5)*40,bend:(rnd()-.5)*220}));
+function H1(t){
+  const T=3.8;
+  chapIn('h1chap',t,T); lines($('h1h'),t,T+.45,9.35); fadeEl($('h1sub'),t,T+.8,9.4,{dy:20});
+  SRC.forEach((c,i)=>{
+    const el=$('h1c'+i); fadeEl(el,t,T+.6+i*.15,9.4,{dx:80,dy:0,s:.95});
+    const dim=P(t,T+2.2,T+3.2); if(dim>0) el.style.opacity=lerp(1,.45,dim)*(1-ei(P(t,9.4,9.85)));
+    $('h1l'+i).style.opacity=e5(P(t,T+1.3,T+1.8))*(1-P(t,9.3,9.6)); $('h1l'+i).setAttribute('stroke-dashoffset',-t*40);
+  });
+  const bk=eback(P(t,T+1.1,T+1.7)); $('h1brain').style.transform=`scale(${cl(bk,0,1.2)*(1+Math.sin(Math.max(0,t-T-3.4)*5)*.02*P(t,T+3.2,T+3.6))})`;
+  $('h1brain').style.boxShadow=`0 30px 90px rgba(0,0,0,.5),0 0 ${120*P(t,T+2.6,T+3.6)}px rgba(245,171,0,${.35*P(t,T+2.6,T+3.6)})`;
+  $('h1bl').style.opacity=e5(P(t,T+1.4,T+1.9))*(1-P(t,9.3,9.6));
+  $('h1pct').textContent=Math.round(100*ei(P(t,T+1.9,T+3.6)));
+  if(t>9.3){$('h1brain').style.opacity=1-P(t,9.3,9.7);}
+  FR.forEach((f,i)=>{
+    const c=SRC[f.src]; const k=ei(P(t,T+1.8+f.d*1.3,T+2.6+f.d*1.3));
+    const x0=c.x+180+f.ox, y0=c.y+60+f.oy, x1=1620, y1=540;
+    const x=lerp(x0,x1,k), y=lerp(y0,y1,k)+Math.sin(k*Math.PI)*f.bend;
+    const e=$('fr'+i); e.style.transform=`translate(${x-6}px,${y-6}px) scale(${1-k*.6})`; e.style.opacity=(k>0&&k<1)?1:0;
+  });
+  ['0','1','2'].forEach(i=>{const k=P(t,T+2.2,T+3.2); const w=[34,22,44][i]; $('h1bar'+i).style.width=lerp(w,0,k)+'%'; $('h1p'+i).textContent=Math.round(lerp(w,0,k))+'%';});
+}
+
+// ---------- H2 ----------
+const FACTS=[
+ ['F-0412','v3 launch moved to March','Meeting',['LJ','PC'],'pub'],
+ ['F-0413','Pilot customers go first','Chat',['LJ'],'pub'],
+ ['F-0977','Kras keeps their custom rate','Email',['PC'],'pri'],
+ ['F-0980','Kras renewal in January','Email',['PC'],'pri'],
+ ['F-1024','Double holiday pay: 92%','Meeting',['SP'],'pub'],
+ ['F-1102','Salary review: Victor','Meeting',['HR'],'res'],
+ ['F-1150','Onboarding checklist v2','Document',['AM'],'pub'],
+];
+const RL={pub:'PUBLIC',pri:'PRIVATE',res:'RESTRICTED'};
+const AVC={LJ:'#e0003a',PC:'#596273',SP:'#f5ab00',HR:'#1d2830',AM:'#22c493'};
+$('h2rows').innerHTML=FACTS.map((f,i)=>`<div class="row" id="h2r${i}"><div class="fid">${f[0]}</div><div style="font-weight:600">${f[1]}</div><div style="color:var(--muted);font-size:18px">${f[2]}</div><div style="display:flex">${f[3].map((o,j)=>`<div class="av" style="width:36px;height:36px;font-size:12px;background:${AVC[o]};border:2px solid #fff;margin-left:${j?-10:0}px">${o}</div>`).join('')}</div><div><span class="badge ${f[4]}">${f[4]!=='pub'?'🔒 ':''}${RL[f[4]]}</span></div></div>`).join('');
+function H2(t){
+  const T=9.6;
+  chapIn('h2chap',t,T); lines($('h2h'),t,T+.45,14.75); fadeEl($('h2sub'),t,T+.7,14.8,{dy:20});
+  fadeEl($('h2table'),t,T+.7,14.8,{dy:80,s:.97});
+  FACTS.forEach((f,i)=>{const r=$('h2r'+i); const k=e5(P(t,T+1.2+i*.16,T+1.7+i*.16)); r.style.opacity=k; r.style.transform=`translateX(${(1-k)*-40}px)`;
+    const hi=f[4]!=='pub'?P(t,T+3.0,T+3.4)*(1-P(t,T+4.4,T+4.8)):0; r.style.background=`rgba(245,171,0,${hi*.10})`;});
+  const n=Math.round(48210*e5(P(t,T+1.0,T+3.2))); $('h2count').textContent=`${n.toLocaleString('en-US')} FACTS · 100% WITH OWNERS & RIGHTS`;
+}
+
+// ---------- rail ----------
+const AG=[['01','Connect'],['02','Rights'],['03','Decide'],['04','Answer'],['05','Request']];
+$('rail').innerHTML=AG.map((a,i)=>`${i?'<div class="rl" id="rl'+i+'"></div>':''}<div class="ri" id="ri${i}"><div class="num" id="rn${i}">${a[0]}</div>${a[1]}</div>`).join('');
+function railActive(i,done){ // i active index
+  AG.forEach((_,j)=>{const r=$('ri'+j),n=$('rn'+j);
+    const act=j===i, dn=done.includes(j);
+    r.style.background=act?'linear-gradient(95deg,#f5ab00,#ff6a3d 55%,#e0003a)':'rgba(22,30,38,.92)';
+    r.style.color=act?'#fff':(dn?'rgba(255,255,255,.85)':'rgba(255,255,255,.5)');
+    r.style.borderColor=act?'transparent':'rgba(255,255,255,.12)';
+    n.style.background=act?'rgba(255,255,255,.25)':(dn?'#22c493':'rgba(255,255,255,.1)');
+    n.innerHTML=dn&&!act?'✓':AG[j][0];
+    r.style.transform=`scale(${act?1.06:1})`;
+  });
+}
+const RAILMAP=[[19.6,0,[]],[24.6,1,[0]],[29.8,2,[0,1]],[34.8,3,[0,1,2]],[39.6,4,[0,1,2,3]],[45.8,2,[]]];
+function Rail(t){
+  const r=$('rail');
+  if(t<16.2||t>=50.6){r.style.opacity=0;return;}
+  // morph from big centered (H3) to top rail
+  const m=ei(P(t,19.0,19.7));
+  const big={y:640,s:1.45}, top={y:0,s:1};
+  r.style.transform=`translateX(-50%) translateY(${lerp(big.y,top.y,m)}px) scale(${lerp(big.s,top.s,m)})`;
+  let o=1; if(t<19.7) o=e5(P(t,16.3,16.9)); if(t>50.1) o=1-P(t,50.1,50.5); r.style.opacity=o;
+  // item pop-in during H3
+  AG.forEach((_,j)=>{const k=eback(P(t,16.4+j*.14,16.9+j*.14)); const it=$('ri'+j); it.style.opacity=cl(k*2); it.dataset.s=cl(k,0,1.2);
+    if(j){$('rl'+j).style.opacity=e5(P(t,16.6+j*.14,17.0+j*.14));}});
+  if(t<19.6){ // packet travels in H3
+    const p=P(t,17.4,19.0)*5; const i=Math.min(4,Math.floor(p)); railActive(t<17.4?-1:i,[...Array(Math.max(0,i)).keys()]);
+  } else {
+    let cur=RAILMAP[0]; for(const e of RAILMAP) if(t>=e[0]) cur=e; railActive(cur[1],cur[2]);
+    if(t>=45.8){ // option C: 01,02 done quickly, 03 active
+      const q=t-45.8; railActive(q<1.2?0:(q<2.0?1:2), q<1.2?[]:(q<2.0?[0]:[0,1]));
+    }
+  }
+  AG.forEach((_,j)=>{const it=$('ri'+j); if(t<17.5) it.style.transform=`scale(${it.dataset.s})`;});
+}
+
+// ---------- H3 ----------
+const Q3='What rate do we give Kras, and when does v3 launch?';
+function H3(t){
+  const T=15.0;
+  chapIn('h3chap',t,T); lines($('h3h'),t,T+.4,18.6);
+  const q=$('h3q'); const k=e5(P(t,T+.6,T+1.2)); const out=ei(P(t,18.6,19.0));
+  q.style.opacity=k*(1-out); q.style.transform=`translateX(-50%) translateY(${(1-k)*30-out*30}px) scale(${lerp(.94,1,k)})`;
+  const n=Math.floor(P(t,T+1.0,T+2.3)*Q3.length);
+  $('h3qt').innerHTML=Q3.slice(0,n)+((t<T+2.4||Math.floor(t*3)%2)?'<span style="display:inline-block;width:3px;height:30px;background:#e0003a;vertical-align:-5px;margin-left:3px"></span>':'');
+}
+
+// ---------- H4 connect ----------
+const GN=[
+ [1180,200,'F-0021','Office move plan',0],[1560,170,'F-0412','v3 launch → March',1],[1420,380,'F-0413','Pilot customers first',1],
+ [1080,520,'F-0344','Team offsite',0],[1700,520,'F-0977','Kras custom rate',2],[1300,700,'F-0980','Kras renewal: Jan',2],
+ [1620,800,'F-1150','Onboarding v2',0],[1060,830,'F-1024','Holiday pay 92%',0],[1760,340,'F-0508','Release notes v3',0],
+];
+const QP=[1420,560];
+(function(){
+  let h=`<div class="abs" id="h4q" style="left:${QP[0]-34}px;top:${QP[1]-34}px;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#f5ab00,#e0003a);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:26px;box-shadow:0 0 50px rgba(245,120,0,.6)">?</div>`, s='';
+  GN.forEach((g,i)=>{
+    h+=`<div class="fc" id="gn${i}" style="left:${g[0]-150}px;top:${g[1]-40}px;width:290px"><div style="display:flex;justify-content:space-between"><span class="fid">${g[2]}</span>${g[4]===2?'<span class="badge pri" style="font-size:11px;padding:3px 7px">🔒 PRIVATE</span>':(g[4]===1?'<span class="badge pub" style="font-size:11px;padding:3px 7px">PUBLIC</span>':'')}</div><div class="t">${g[3]}</div></div>`;
+    s+=`<line id="gl${i}" x1="${QP[0]}" y1="${QP[1]}" x2="${g[0]}" y2="${g[1]}" stroke="${g[4]===2?'#f5ab00':'#ffffff'}" stroke-width="2.5" stroke-dasharray="5 7"/>`;
+  });
+  s+=`<circle id="h4ring" cx="${QP[0]}" cy="${QP[1]}" fill="none" stroke="rgba(245,171,0,.6)" stroke-width="2"/>`;
+  $('h4nodes').innerHTML=h; $('h4svg').innerHTML=s;
+})();
+function H4(t){
+  const T=19.6;
+  chapIn('h4chap',t,T); lines($('h4h'),t,T+.45,24.35); fadeEl($('h4sub'),t,T+.8,24.4,{dy:20});
+  const out=ei(P(t,24.3,24.7));
+  GN.forEach((g,i)=>{
+    const el=$('gn'+i); const k=eback(P(t,T+.5+i*.07,T+1.0+i*.07));
+    const rel=g[4]>0; const lit=P(t,T+2.0+(rel?i*.12:0),T+2.4+(rel?i*.12:0));
+    el.style.transform=`scale(${cl(k,0,1.2)*(rel?1+lit*.06:1-lit*.06)}) translateY(${Math.sin(t+i)*5}px)`;
+    el.style.opacity=cl(k*2)*(rel?1:lerp(1,.28,lit))*(1-out);
+    el.style.boxShadow=rel&&lit>0?`0 0 0 ${3*lit}px ${g[4]===2?'#f5ab00':'#22c493'}, 0 16px 40px rgba(0,0,0,.3)`:'';
+    const l=$('gl'+i); const lk=e5(P(t,T+2.0+i*.12,T+2.5+i*.12));
+    l.style.opacity=rel?lk*(1-out):0; l.setAttribute('x2',lerp(QP[0],g[0],lk)); l.setAttribute('y2',lerp(QP[1],g[1],lk)); l.setAttribute('stroke-dashoffset',-t*30);
+  });
+  const qk=eback(P(t,T+1.2,T+1.7)); $('h4q').style.transform=`scale(${cl(qk,0,1.2)})`; $('h4q').style.opacity=(1-out);
+  const ph=((t-T)%1.1)/1.1; $('h4ring').setAttribute('r',34+ph*170); $('h4ring').style.opacity=(1-ph)*P(t,T+1.6,T+2)*(1-out);
+  const n=Math.round(lerp(48210,4,ex(P(t,T+1.8,T+3.2))));
+  $('h4count').textContent=`SCANNED 48,210 FACTS → ${n.toLocaleString('en-US')} RELEVANT`; $('h4count').style.opacity=e5(P(t,T+1.6,T+2))*(1-out);
+}
+
+// ---------- H5 rights ----------
+const RF=[['F-0412','v3 launch → March','pub',0,0],['F-0413','Pilot customers first','pub',0,1],['F-0977','Kras custom rate','pri',1,0],['F-0980','Kras renewal: Jan','pri',1,1]];
+$('h5facts').innerHTML=RF.map((f,i)=>`<div class="fc" id="rf${i}" style="left:0;top:0;width:490px;padding:18px 22px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[2]}" id="rb${i}">${f[2]==='pri'?'🔒 OWNER: PIETER':'✓ PUBLIC'}</span></div><div class="t" style="font-size:22px">${f[1]}</div></div>`).join('');
+function H5(t){
+  const T=24.6;
+  chapIn('h5chap',t,T); lines($('h5h'),t,T+.45,29.55); fadeEl($('h5sub'),t,T+.7,29.6,{dy:20});
+  [0,1,2].forEach(i=>fadeEl($('h5c'+i),t,T+.8+i*.12,29.6,{dy:40,s:.97}));
+  RF.forEach((f,i)=>{
+    const el=$('rf'+i);
+    const sx=715+ (i%2)*0, sy=610+i*80; // start: stacked in middle column
+    const tx=145+f[3]*570, ty=600+f[4]*120;
+    const k=ei(P(t,T+2.2+i*.12,T+3.0+i*.12));
+    const a=eback(P(t,T+1.2+i*.1,T+1.7+i*.1));
+    el.style.transform=`translate(${lerp(sx,tx,k)}px,${lerp(sy,ty,k)}px) scale(${cl(a,0,1.2)}) rotate(${Math.sin(k*Math.PI)*(f[3]?3:-3)}deg)`;
+    el.style.opacity=cl(a*2)*(1-ei(P(t,29.5,29.9)));
+    $('rb'+i).style.opacity=P(t,T+2.9,T+3.2);
+  });
+}
+
+// ---------- H6 decide ----------
+const TR={root:[1460,260],A:[1150,620],B:[1460,620],C:[1770,620]};
+(function(){
+  const br=[['A','All accessible','→ Answer (Agent 04)','#22c493'],['B','Needs access','→ Answer + ask owner (05)','#f5ab00'],['C','Not authorized','→ Say no','#e0003a']];
+  let s=''; ['A','B','C'].forEach((k,i)=>{s+=`<path id="tp${i}" d="M${TR.root[0]} ${TR.root[1]+50} C ${TR.root[0]} 420, ${TR[k][0]} 380, ${TR[k][0]} ${TR[k][1]-70}" fill="none" stroke="${br[i][3]}" stroke-width="3" stroke-linecap="round"/>`;});
+  $('h6svg').innerHTML=s;
+  let h=`<div class="card abs pill" id="troot" style="left:${TR.root[0]-190}px;top:${TR.root[1]-44}px;width:380px;height:88px;display:flex;align-items:center;justify-content:center;gap:14px;font-size:24px;font-weight:600"><span class="mono" style="font-size:14px;color:#9aa3ad">IN:</span> 2 accessible · 2 locked</div>`;
+  br.forEach((b,i)=>{const [x,y]=TR[b[0]]; h+=`<div class="card abs" id="tb${i}" style="left:${x-145}px;top:${y-70}px;width:290px;padding:22px 22px;border-top:6px solid ${b[3]}"><div class="mono" style="font-size:14px;letter-spacing:.14em;color:${b[3]}">OPTION ${b[0]}</div><div style="font-size:26px;font-weight:700;margin-top:8px;letter-spacing:-.02em">${b[1]}</div><div style="font-size:18px;color:var(--muted);margin-top:6px">${b[2]}</div></div>`;});
+  h+=`<div class="abs mono" id="tsel" style="left:1030px;top:860px;width:860px;text-align:center;font-size:16px;letter-spacing:.12em;color:#fff;padding:16px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)">DECISION → A + B: ANSWER NOW, ASK PIETER FOR THE REST</div>`;
+  $('h6nodes').innerHTML=h;
+})();
+function H6(t){
+  const T=29.8;
+  chapIn('h6chap',t,T); lines($('h6h'),t,T+.45,34.55);
+  const out=ei(P(t,34.5,34.9));
+  const rk=eback(P(t,T+.6,T+1.1)); $('troot').style.transform=`scale(${cl(rk,0,1.2)})`; $('troot').style.opacity=cl(rk*2)*(1-out);
+  [0,1,2].forEach(i=>{
+    const p=$('tp'+i); const L=p.getTotalLength(); const k=e5(P(t,T+1.1+i*.12,T+1.8+i*.12));
+    p.style.strokeDasharray=L; p.style.strokeDashoffset=L*(1-k);
+    const sel=P(t,T+2.8,T+3.2); const chosen=i<2;
+    p.style.opacity=(chosen?1:lerp(1,.25,sel))*(1-out);
+    const b=$('tb'+i); const bk=eback(P(t,T+1.6+i*.12,T+2.1+i*.12));
+    b.style.transform=`scale(${cl(bk,0,1.2)*(chosen?1+sel*.04:1-sel*.05)})`; b.style.opacity=cl(bk*2)*(chosen?1:lerp(1,.35,sel))*(1-out);
+  });
+  fadeEl($('tsel'),t,T+3.2,34.5,{dy:20});
+}
+
+// ---------- H7 answer ----------
+function H7(t){
+  const T=34.8;
+  chapIn('h7chap',t,T); lines($('h7h'),t,T+.45,39.35); fadeEl($('h7sub'),t,T+.8,39.4,{dy:20});
+  fadeEl($('h7card'),t,T+.7,39.4,{dx:100,dy:0,s:.96});
+  fadeEl($('h7pend'),t,T+1.9,null,{dy:20,blur:8});
+  $('h7dot').style.opacity=.4+.6*Math.abs(Math.sin(t*4));
+}
+
+// ---------- H8 request ----------
+function H8(t){
+  const T=39.6;
+  chapIn('h8chap',t,T); lines($('h8h'),t,T+.45,45.55); fadeEl($('h8sub'),t,T+.8,45.6,{dy:20});
+  fadeEl($('h8card'),t,T+.7,45.6,{dx:100,dy:0,s:.96});
+  const ck=ei(P(t,T+2.2,T+3.0)); const cx=lerp(1900,1130,ck), cy=lerp(1100,700,ck);
+  $('h8cursor').style.transform=`translate(${cx}px,${cy}px)`; $('h8cursor').style.opacity=cl(P(t,T+2.1,T+2.3))*(1-P(t,T+3.9,T+4.2));
+  const pr=P(t,T+3.1,T+3.35); $('h8b1').style.transform=`scale(${1-Math.sin(pr*Math.PI)*.08})`;
+  $('h8b1').textContent=t>T+3.25?'✓ Shared with Sofie':'Share with Sofie'; $('h8b1').style.background=t>T+3.25?'#22c493':'#e0003a';
+  fadeEl($('h8toast'),t,T+3.6,45.6,{dy:40,s:.95,blur:8,e:eback});
+}
+
+// ---------- H9 option C ----------
+(function(){
+  $('h9steps').innerHTML=[['01','Found F-1102','#9aa3ad'],['02','RESTRICTED · HR only','#e0003a'],['03','Option C','#e0003a']].map((s,i)=>`<div id="hs${i}" class="mono pill" style="padding:10px 16px;font-size:15px;letter-spacing:.08em;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;display:flex;gap:10px;align-items:center"><span style="color:${s[2]}">${s[0]}</span>${s[1]}</div>`).join('');
+})();
+function H9(t){
+  const T=45.8;
+  chapIn('h9chap',t,T); lines($('h9h'),t,T+.45,50.15);
+  fadeEl($('h9q'),t,T+.5,50.2,{dx:80,dy:0,s:.96});
+  [0,1,2].forEach(i=>fadeEl($('hs'+i),t,T+1.1+i*.4,50.2,{dy:14,blur:6,dur:.5}));
+  const nk=eback(P(t,T+2.5,T+3.0)); const no=$('h9no');
+  no.style.opacity=cl(nk*2)*(1-ei(P(t,50.2,50.6))); no.style.transform=`scale(${lerp(.85,1,cl(nk,0,1.1))}) translateX(${Math.sin(P(t,T+3.0,T+3.4)*Math.PI*4)*8*(1-P(t,T+3.0,T+3.4))}px)`;
+}
+
+// ---------- H10 grounded ----------
+const GF=[['F-0412','v3 launch → March','PUBLIC','pub',1060,560],['F-0413','Pilot customers first','PUBLIC','pub',1300,720],['F-0977','Kras custom rate','SHARED BY PIETER','pri',1540,880]];
+$('h10facts').innerHTML=GF.map((f,i)=>`<div class="fc" id="gf${i}" style="left:${f[4]-150}px;top:${f[5]-45}px;width:330px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[3]}" style="font-size:11px;padding:3px 7px">✓ ${f[2]}</span></div><div class="t">${f[1]}</div></div>`).join('');
+function H10(t){
+  const T=50.4;
+  chapIn('h10chap',t,T); lines($('h10h'),t,T+.45,55.55); fadeEl($('h10sub'),t,T+.8,55.6,{dy:20});
+  fadeEl($('h10ans'),t,T+.6,55.6,{dx:100,dy:0,s:.96});
+  const A=$('h10ans').getBoundingClientRect();
+  let s='';
+  GF.forEach((f,i)=>{
+    const g=$('g'+i); const hk=P(t,T+1.6+i*.35,T+1.9+i*.35);
+    g.style.background=`rgba(245,171,0,${.22*hk})`; g.style.outlineColor=`rgba(224,120,0,${.9*hk})`;
+    const el=$('gf'+i); const k=eback(P(t,T+1.8+i*.35,T+2.3+i*.35));
+    el.style.opacity=cl(k*2)*(1-ei(P(t,55.6,56))); el.style.transform=`scale(${cl(k,0,1.2)})`;
+    const r=g.getBoundingClientRect(); const lk=e5(P(t,T+1.9+i*.35,T+2.4+i*.35));
+    const x1=r.left+r.width/2, y1=r.bottom+4, x2=f[4], y2=f[5]-48;
+    if(lk>0) s+=`<path d="M${x1} ${y1} C ${x1} ${y1+90}, ${x2} ${y2-90}, ${lerp(x1,x2,lk)} ${lerp(y1,y2,lk)}" fill="none" stroke="#f5ab00" stroke-width="2.5" stroke-dasharray="5 6" opacity="${1-ei(P(t,55.6,56))}"/>`;
+  });
+  $('h10svg').innerHTML=s;
+  const xk=e5(P(t,T+3.2,T+3.6)); $('g3x').style.width=(xk*100)+'%';
+  const rj=$('h10rej'); const g3=$('g3').getBoundingClientRect();
+  rj.style.left=(g3.left)+'px'; rj.style.top=(A.bottom+16)+'px';
+  const rk=eback(P(t,T+3.5,T+4.0)); rj.style.opacity=cl(rk*2)*(1-ei(P(t,55.6,56))); rj.style.transform=`scale(${cl(rk,0,1.2)})`;
+}
+
+// ---------- H11 end ----------
+$('h11logo').innerHTML=logoSVG('dark','lg11');
+function H11(t){
+  const T=55.8; const L=$('lg11');
+  ['b1','b2','b3'].forEach((c,i)=>{const k=e5(P(t,T+.3+i*.07,T+.85+i*.07)); const el=L.querySelector('.'+c); el.style.transform=`translate(${(1-k)*-160}px,${(1-k)*-700}px)`; el.style.opacity=k; el.style.filter=`blur(${(1-k)*6}px)`;});
+  const w=e5(P(t,T+.6,T+1.2)); const wm=L.querySelector('.wm'); wm.style.clipPath=`inset(0 ${100-w*100}% 0 0)`; wm.style.transform=`translateX(${(1-w)*-80}px)`;
+  $('h11logo').style.transform=`scale(${1+(t-T)*.012})`;
+  fadeEl($('h11l1'),t,T+1.1,null,{dy:30,blur:12}); fadeEl($('h11l2'),t,T+1.3,null,{dy:30,blur:12});
+  const pk=e5(P(t,T+1.8,T+2.4)); const p=$('h11pill'); p.style.opacity=pk; p.style.transform=`translateX(-50%) translateY(${(1-pk)*30}px) scale(${lerp(.9,1,pk)})`; p.style.filter=`blur(${(1-pk)*10}px)`;
+  $('h11plane').style.clipPath=`polygon(0 ${70-(t-T)}%,100% ${40-(t-T)}%,100% 100%,0 100%)`;
+}
+
+const FN={h0:H0,h1:H1,h2:H2,h3:H3,h4:H4,h5:H5,h6:H6,h7:H7,h8:H8,h9:H9,h10:H10,h11:H11};
+window.render=function(t){
+  sceneVis(t);
+  for(const k in SC){const [a,b]=SC[k]; if(t>=a&&t<b) FN[k](t);}
+  Rail(t);
+  $('rail').style.zIndex=50;
+  const fi=P(t,0,.5), fo=P(t,DURATION-.8,DURATION);
+  document.body.style.filter=(fi<1||fo>0)?`brightness(${fi*(1-fo)})`:'';
+};
+window.DURATION=DURATION;
+Promise.all(['500 100px LogoSans','700 100px Inter','600 100px Inter','400 20px "Geist Mono"'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(()=>{window.READY=true;});
+</script>
+</body>
+</html>

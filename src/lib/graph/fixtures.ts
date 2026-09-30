@@ -5,12 +5,11 @@ import type {
   KnowledgeNode,
   KnowledgeSource,
   Person,
-  Query,
   Visibility,
 } from "./types";
 
-// Mock company brain for SD Worx. Replaced by the seed script once the graph
-// schema lands.
+// Mock company brain for SD Worx. The people are also seeded as Person rows
+// (pnpm db:seed:demo) so questions between them can be stored for real.
 
 export const people: Person[] = [
   { id: "p-dario", name: "Dario", role: "Product lead", department: "IT" },
@@ -59,9 +58,15 @@ export const people: Person[] = [
   },
   {
     id: "p-kobe",
-    name: "Kobe Willems",
+    name: "Kobe Verdonck",
     role: "Platform lead",
     department: "IT",
+  },
+  {
+    id: "p-filip",
+    name: "Filip Dierckx",
+    role: "Payroll operations lead",
+    department: "PRODUCTION",
   },
 ];
 
@@ -402,6 +407,49 @@ const nodeSeeds: NodeSeed[] = [
     owners: ["p-timon", "p-dario"],
     at: "2026-09-30",
   },
+  // Payroll operations
+  {
+    id: "n-cutoff-december",
+    title: "December payroll cut-off",
+    summary:
+      "The December 2026 payroll cut-off is 14 December, a week earlier than usual because of the holiday closure.",
+    content:
+      "Filip: the December cut-off moves to 14 December because of the holiday closure. Changes after that go into the January run, together with the new indexation.",
+    source: "EMAIL",
+    integrationId: "i-outlook",
+    from: "Email: December payroll planning",
+    visibility: "PRIVATE",
+    owners: ["p-filip"],
+    at: "2026-09-23",
+  },
+  {
+    id: "n-year-end-run",
+    title: "Year-end payroll run",
+    summary:
+      "The year-end payroll run on 28 December pays the end-of-year bonus for all Belgian clients.",
+    content:
+      "Filip: year-end run is 28 December, right after the December cut-off, and includes the end-of-year bonus. Lotte: cash for the bonus run is reserved.",
+    source: "MEETING",
+    integrationId: "i-teams-meetings",
+    from: "Meeting: Year-end payroll planning",
+    visibility: "PRIVATE",
+    owners: ["p-filip", "p-lotte"],
+    at: "2026-09-17",
+  },
+  {
+    id: "n-payroll-sla",
+    title: "Payroll processing SLA",
+    summary:
+      "Payslips are processed within two working days after each cut-off.",
+    content:
+      "Filip: our SLA stays at two working days from cut-off to payslip. Pieter: support quotes this to every customer who asks.",
+    source: "MESSAGE",
+    integrationId: "i-slack",
+    from: "#payroll-ops",
+    visibility: "PUBLIC",
+    owners: ["p-filip", "p-pieter"],
+    at: "2026-07-08",
+  },
   // Finance and platform
   {
     id: "n-ai-budget",
@@ -443,6 +491,36 @@ const nodeSeeds: NodeSeed[] = [
     visibility: "PUBLIC",
     owners: ["p-kobe", "p-sofie"],
     at: "2026-09-25",
+  },
+  // Platform and payroll operations: what Kobe and Filip know about each
+  // other's work, so each has a reason to ask the other.
+  {
+    id: "n-deploy-freeze",
+    title: "Deploy freeze over the holidays",
+    summary:
+      "No platform deploys from 14 December to 4 January, so the payroll engine stays stable for the year-end run.",
+    content:
+      "Kobe: we freeze all platform deploys from 14 December to 4 January. The OAuth go-live ships the week before, hotfixes only after that and they need my sign-off.",
+    source: "MESSAGE",
+    integrationId: "i-slack",
+    from: "#platform",
+    visibility: "PRIVATE",
+    owners: ["p-kobe"],
+    at: "2026-09-26",
+  },
+  {
+    id: "n-engine-capacity",
+    title: "Year-end engine capacity",
+    summary:
+      "The payroll engine runs with double the workers from 14 to 30 December to handle the year-end volume.",
+    content:
+      "Filip: December volume is about 30% higher than a normal month, bonuses included. Kobe: we double the payroll engine workers from 14 to 30 December and I'm on call for the year-end run.",
+    source: "MEETING",
+    integrationId: "i-teams-meetings",
+    from: "Meeting: Kobe & Filip, year-end readiness",
+    visibility: "PRIVATE",
+    owners: ["p-kobe", "p-filip"],
+    at: "2026-09-29",
   },
 ];
 
@@ -522,6 +600,39 @@ const edgeSeeds: [string, string, EdgeKind, string][] = [
   ["n-llm-vendors", "n-wise-search", "RELATES_TO", "Model used for search"],
   ["n-ai-budget", "n-kras-pricing", "RELATES_TO", "Finance owns both"],
   ["n-payslip-bug", "n-v3-launch", "RELATES_TO", "Fixed before v3"],
+  [
+    "n-year-end-run",
+    "n-cutoff-december",
+    "DEPENDS_ON",
+    "Runs after the cut-off",
+  ],
+  [
+    "n-cutoff-december",
+    "n-indexation-2027",
+    "RELATES_TO",
+    "Late changes land with the new indexation",
+  ],
+  [
+    "n-cutoff-december",
+    "n-payroll-sla",
+    "RELATES_TO",
+    "SLA counts from cut-off",
+  ],
+  [
+    "n-payroll-sla",
+    "n-payslip-bug",
+    "RELATES_TO",
+    "Both about payslip delivery",
+  ],
+  [
+    "n-deploy-freeze",
+    "n-year-end-run",
+    "RELATES_TO",
+    "Keeps the platform stable for the run",
+  ],
+  ["n-deploy-freeze", "n-api-oauth", "DEPENDS_ON", "OAuth ships before it"],
+  ["n-engine-capacity", "n-year-end-run", "RELATES_TO", "Capacity for the run"],
+  ["n-engine-capacity", "n-deploy-freeze", "RELATES_TO", "Same holiday window"],
 ];
 
 export const edges: KnowledgeEdge[] = edgeSeeds.map(
@@ -532,85 +643,4 @@ export const edges: KnowledgeEdge[] = edgeSeeds.map(
     kind,
     description,
   }),
-);
-
-type QuerySeed = Pick<
-  Query,
-  "id" | "kind" | "askerId" | "recipientId" | "question" | "nodeIds"
-> &
-  Partial<Query>;
-
-const querySeeds: QuerySeed[] = [
-  {
-    id: "q-1",
-    kind: "QUESTION",
-    askerId: "p-timon",
-    recipientId: "p-victor",
-    question: "When does the Payroll API switch to OAuth?",
-    nodeIds: ["n-api-oauth"],
-    createdAt: "2026-09-29T09:12:00Z",
-  },
-  {
-    id: "q-2",
-    kind: "ACCESS",
-    askerId: "p-julien",
-    recipientId: "p-bram",
-    question: "Can I see the Kras pricing?",
-    nodeIds: ["n-kras-pricing"],
-    createdAt: "2026-09-29T14:40:00Z",
-  },
-  {
-    id: "q-3",
-    kind: "QUESTION",
-    askerId: "p-dario",
-    recipientId: "p-julien",
-    question: "How does the graph search pick where to start?",
-    nodeIds: ["n-wise-search"],
-    createdAt: "2026-09-30T08:05:00Z",
-  },
-  {
-    id: "q-4",
-    kind: "QUESTION",
-    askerId: "p-victor",
-    recipientId: "p-dario",
-    question: "Did we agree on a renewal discount for Kras?",
-    nodeIds: ["n-kras-renewal"],
-    createdAt: "2026-09-30T10:30:00Z",
-  },
-  {
-    id: "q-5",
-    kind: "QUESTION",
-    askerId: "p-victor",
-    recipientId: "p-timon",
-    question: "What's the main metric in our pitch?",
-    nodeIds: ["n-pitch-metric"],
-    createdAt: "2026-09-30T11:02:00Z",
-  },
-  {
-    id: "q-6",
-    kind: "QUESTION",
-    askerId: "p-julien",
-    recipientId: "p-kobe",
-    question: "Is the AI tooling budget approved?",
-    nodeIds: ["n-ai-budget"],
-    status: "ANSWERED",
-    answer:
-      "Yes, €40k is approved for Q4. We need to pick a vendor before November.",
-    shareScope: "ASKER",
-    createdAt: "2026-09-26T15:20:00Z",
-    resolvedAt: "2026-09-26T16:01:00Z",
-  },
-];
-
-const queryDefaults = {
-  status: "PENDING",
-  answer: null,
-  shareScope: null,
-  answerNodeId: null,
-  createdAt: "2026-09-30T00:00:00Z",
-  resolvedAt: null,
-} satisfies Omit<Query, keyof QuerySeed & keyof Query> & Partial<Query>;
-
-export const queries: Query[] = querySeeds.map((q) =>
-  Object.assign({}, queryDefaults, q),
 );

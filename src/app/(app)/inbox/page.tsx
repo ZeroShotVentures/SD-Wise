@@ -13,7 +13,7 @@ export default async function Page({
 }) {
   const me = await requirePerson();
   const { tab } = await searchParams;
-  const inbox = getInbox(me);
+  const inbox = await getInbox(me);
 
   return (
     <PageShell

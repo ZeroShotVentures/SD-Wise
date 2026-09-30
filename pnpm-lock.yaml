@@ -176,7 +176,7 @@ importers:
         specifier: ^0.13.11
         version: 0.13.11(typescript@7.0.2)(valibot@1.4.2(typescript@7.0.2))(zod@4.6.5)
       ai:
-        specifier: ^7.0.122
+        specifier: ^7.0.120
         version: 7.0.122(zod@4.6.5)
       better-auth:
         specifier: ^1.7.5

@@ -36,8 +36,8 @@ Sign-up is disabled. `pnpm db:seed:demo` creates the only two accounts and **del
 
 | Email | Password | Person |
 | --- | --- | --- |
-| `kobe@sdwise.be` | `password123` | Kobe Willems, Platform lead |
-| `filip@sdwise.be` | `password123` | Filip Jacobs, Payroll operations lead |
+| `kobe@sdwise.be` | `password123` | Kobe Verdonck, Platform lead |
+| `filip@sdwise.be` | `password123` | Filip Dierckx, Payroll operations lead |
 
 It also upserts the people from `src/lib/graph/fixtures.ts` as `Person` rows and adds a few demo questions. Re-running it is safe; `pnpm db:seed:demo --reset` also deletes every question, to start a demo from a clean inbox. Against production: `DATABASE_URL=... pnpm db:seed:demo`.
 

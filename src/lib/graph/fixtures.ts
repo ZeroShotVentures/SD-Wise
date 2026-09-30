@@ -58,13 +58,13 @@ export const people: Person[] = [
   },
   {
     id: "p-kobe",
-    name: "Kobe Willems",
+    name: "Kobe Verdonck",
     role: "Platform lead",
     department: "IT",
   },
   {
     id: "p-filip",
-    name: "Filip Jacobs",
+    name: "Filip Dierckx",
     role: "Payroll operations lead",
     department: "PRODUCTION",
   },

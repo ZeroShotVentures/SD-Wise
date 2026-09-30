@@ -5,7 +5,7 @@ Next.js scaffold with authentication, account management, and Postgres.
 ## Stack
 
 - [Next.js 16](https://nextjs.org) (App Router) with React 19 and Tailwind CSS 4
-- [Better Auth](https://www.better-auth.com) for email/password sign-in
+- [Better Auth](https://www.better-auth.com) for email/password sign-in (sign-up disabled)
 - [Prisma 7](https://www.prisma.io) on PostgreSQL (via `@prisma/adapter-pg`)
 - [t3-env](https://env.t3.gg) + [Zod](https://zod.dev) for typed, validated environment variables
 - [oxlint](https://oxc.rs/docs/guide/usage/linter) for linting, [Biome](https://biomejs.dev) for formatting and import sorting
@@ -24,10 +24,29 @@ Next.js scaffold with authentication, account management, and Postgres.
 pnpm install
 pnpm db:up             # start Postgres in Docker
 pnpm db:migrate        # apply migrations
+pnpm db:seed:demo      # demo accounts, people and questions
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). `/` redirects to `/dashboard` when signed in and to `/sign-in` otherwise.
+Open [http://localhost:3000](http://localhost:3000). `/` redirects to `/graph` when signed in and to `/sign-in` otherwise.
+
+### Demo accounts
+
+Sign-up is disabled. `pnpm db:seed:demo` creates the only two accounts and **deletes every other account**:
+
+| Email | Password | Person |
+| --- | --- | --- |
+| `kobe@sdwise.be` | `password123` | Kobe Willems, Platform lead |
+| `filip@sdwise.be` | `password123` | Filip Jacobs, Payroll operations lead |
+
+It also upserts the people from `src/lib/graph/fixtures.ts` as `Person` rows and adds a few demo questions. Re-running it is safe; `pnpm db:seed:demo --reset` also deletes every question, to start a demo from a clean inbox. Against production: `DATABASE_URL=... pnpm db:seed:demo`.
+
+Demo script: sign in as Kobe, ask "When is the payroll cut-off in December?", click **Ask Filip** and send. Sign in as Filip: the question is in his inbox with a drafted answer. Send it, and Kobe sees the answer under Inbox → Sent and as a new node in the graph.
+
+### What is real and what is mocked
+
+- **Real (Postgres):** accounts, the `Person` behind each account (`user.personId`), and questions and access requests between people (`Question` table). Asking, answering, declining and approving access work across server instances.
+- **Mocked:** the knowledge graph and integrations (`src/lib/graph/fixtures.ts`). Answers and access grants from the database are layered onto the fixture graph on every read (`src/lib/graph/answers.ts`). Connecting or disconnecting an integration only lives in server memory.
 
 ### Environment variables
 
@@ -49,8 +68,8 @@ All variables are declared and validated in `src/env.ts`. The app refuses to bui
 
 | Route | Access |
 | --- | --- |
-| `/sign-in`, `/sign-up` | Public. Signed-in users are redirected to `callbackURL` (default `/dashboard`). |
-| `/dashboard`, `/settings` | Signed-in users. Grouped under `src/app/(app)` with a shared header. |
+| `/sign-in` | Public. Signed-in users are redirected to `callbackURL` (default `/graph`). |
+| `/graph`, `/inbox`, `/integrations`, `/settings` | Signed-in users with a linked `Person` (others get a 404). Grouped under `src/app/(app)` with a shared sidebar. |
 | `/admin`, `/admin/users/[id]` | Admins only. Everyone else gets a 404. See [Admin portal](#admin-portal). |
 
 Protect data on the server, not in the browser:
@@ -88,7 +107,7 @@ Admins can't take these actions on their own account.
 
 Admins are defined only by `ADMIN_EMAILS`, a comma-separated list of addresses (in `.env` locally, or in the host environment in production). Roles can't be changed from the portal; to add or remove an admin, edit the variable and restart or redeploy.
 
-A listed user is an admin only once their email is verified, so nobody can become an admin just by signing up with a listed address. The app sends no email, so verify an admin by hand after they sign up:
+A listed user is an admin only once their email is verified. The demo accounts are created verified; for any other account, verify it by hand:
 
 ```sql
 UPDATE "user" SET "emailVerified" = true WHERE email = 'admin@example.com';
@@ -96,7 +115,7 @@ UPDATE "user" SET "emailVerified" = true WHERE email = 'admin@example.com';
 
 Then restart the server so the startup sync grants the role (direct database writes skip the update hook).
 
-The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set on sign-up, re-checked on every user update (so changes apply immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
+The role is stored on the user and kept in sync by `src/lib/admin-role.ts`: it's set when a user is created, re-checked on every user update (so changes apply immediately), and re-applied to all users at server startup via `src/instrumentation.ts`, which is how removals from the list take effect.
 
 To add finer-grained roles (e.g. support staff who can impersonate but not delete), define them with `createAccessControl`, pass `ac`/`roles` to both `admin()` in `src/lib/auth.ts` and `adminClient()` in `src/lib/auth-client.ts`, and extend `roleFor()` in `src/lib/admin-role.ts` to assign them.
 
@@ -106,7 +125,7 @@ Better Auth rate-limits its endpoints in production (not in development). Counte
 
 ## Email
 
-The app sends no email. Signing up with email and password needs no verification: the account is usable immediately. There's no password reset or email change; admins can set a new password for a user from the admin portal.
+The app sends no email and nobody can sign up: accounts come from `pnpm db:seed:demo`. There's no password reset or email change; admins can set a new password for a user from the admin portal.
 
 ### Gating features
 
@@ -137,6 +156,8 @@ By default every signed-in user has unlimited entitlements. Adjust the policy in
 | `pnpm db:deploy` | Apply pending migrations (production) |
 | `pnpm db:reset` | Drop the database and re-apply all migrations |
 | `pnpm db:push` | Push the schema without a migration (prototyping only) |
+| `pnpm db:seed:demo` | Create the demo accounts (deletes all others), people and questions. `--reset` clears questions first |
+| `pnpm db:seed` | Generate AI demo knowledge (needs `AI_GATEWAY_API_KEY`; not used by the app yet) |
 | `pnpm db:studio` | Open Prisma Studio |
 | `pnpm db:generate` | Regenerate the Prisma client (also runs on install) |
 
@@ -153,7 +174,8 @@ The pre-commit hook runs oxlint and Biome on staged files.
 
 1. Set the production environment variables (at least `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`).
 2. Run `pnpm db:deploy` against the production database before (or as part of) each release.
-3. `pnpm build && pnpm start`, or let your host build the app.
+3. Once (or before each demo): `pnpm db:seed:demo` against the production database.
+4. `pnpm build && pnpm start`, or let your host build the app.
 
 ## Project structure
 
@@ -163,11 +185,12 @@ prisma/
   migrations/          SQL migrations
 src/
   app/
-    (auth)/            sign-in, sign-up, password reset
-    (app)/             signed-in pages: dashboard, settings, admin
+    (auth)/            sign-in
+    (app)/             signed-in pages: graph, inbox, integrations, settings, admin
     api/auth/          Better Auth handler
   components/          React components (+ colocated tests)
   lib/                 auth, session helpers, entitlements, Prisma client
+  lib/graph/           mocked graph (fixtures), DB-backed questions (service)
   proxy.ts             optimistic redirect for signed-out visitors
   instrumentation.ts   syncs admin roles with ADMIN_EMAILS at startup
   env.ts               environment schema

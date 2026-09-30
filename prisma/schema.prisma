@@ -135,6 +135,8 @@ model Person {
   department Department
   user       User?
   knowledge  KnowledgeNode[]
+  asked      Question[]      @relation("QuestionAsker")
+  received   Question[]      @relation("QuestionRecipient")
 }
 
 model KnowledgeNode {
@@ -168,4 +170,44 @@ model KnowledgeEdge {
 
   @@unique([sourceId, targetId])
   @@index([targetId])
+}
+
+enum QuestionKind {
+  QUESTION
+  ACCESS
+}
+
+enum QuestionStatus {
+  PENDING
+  ANSWERED
+  DECLINED
+}
+
+enum ShareScope {
+  ASKER
+  PUBLIC
+}
+
+/// A question (or access request) routed from one person to another.
+model Question {
+  id          String         @id @default(uuid())
+  kind        QuestionKind
+  askerId     String
+  asker       Person         @relation("QuestionAsker", fields: [askerId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   Person         @relation("QuestionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  question    String
+  /// QUESTION: nodes the search matched. ACCESS: the node being requested.
+  /// No relation: the graph is still mocked, so these are fixture ids.
+  nodeIds     String[]
+  status      QuestionStatus @default(PENDING)
+  answer      String?
+  shareScope  ShareScope?
+  createdAt   DateTime       @default(now())
+  resolvedAt  DateTime?
+  /// When the asker first looked at the answer or granted node.
+  seenAt      DateTime?
+
+  @@index([recipientId, status])
+  @@index([askerId])
 }

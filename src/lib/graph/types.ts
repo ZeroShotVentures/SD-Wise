@@ -1,6 +1,12 @@
-import type { Department, KnowledgeSource } from "@/generated/prisma/enums";
+import type {
+  Department,
+  KnowledgeSource,
+  QuestionKind,
+  QuestionStatus,
+  ShareScope,
+} from "@/generated/prisma/enums";
 
-export type { Department, KnowledgeSource };
+export type { Department, KnowledgeSource, QuestionStatus, ShareScope };
 
 // Shapes mirror prisma/schema.prisma so the mock service can be swapped for a
 // Prisma-backed one. Fields marked "proposal" don't exist in the schema yet.
@@ -58,13 +64,13 @@ export type KnowledgeEdge = {
   description: string;
 };
 
-// proposal: questions and access requests routed between people.
-export type QueryStatus = "PENDING" | "ANSWERED" | "DECLINED";
-export type ShareScope = "ASKER" | "PUBLIC";
+// Questions and access requests routed between people. Stored in the
+// Question table; dates are ISO strings so they can cross to the client.
+export type QueryStatus = QuestionStatus;
 
 export type Query = {
   id: string;
-  kind: "QUESTION" | "ACCESS";
+  kind: QuestionKind;
   askerId: string;
   recipientId: string;
   question: string;
@@ -76,6 +82,7 @@ export type Query = {
   answerNodeId: string | null;
   createdAt: string;
   resolvedAt: string | null;
+  seenAt: string | null;
 };
 
 // What a viewer receives. Locked nodes never carry content to the client.

@@ -8,6 +8,7 @@ import {
   KnowledgeSource,
   PrismaClient,
 } from "../src/generated/prisma/client";
+import { people as demoPeople } from "../src/lib/graph/fixtures";
 
 config({ path: [".env.local", ".env", ".env.example"], quiet: true });
 
@@ -217,7 +218,10 @@ async function main() {
   await prisma.knowledgeEdge.deleteMany();
   await prisma.knowledgeNode.deleteMany();
   await prisma.integrations.deleteMany();
-  await prisma.person.deleteMany();
+  // Keep the demo people: accounts and questions point at them.
+  await prisma.person.deleteMany({
+    where: { id: { notIn: demoPeople.map(({ id }) => id) } },
+  });
 
   const integrations = Object.fromEntries(
     await Promise.all(

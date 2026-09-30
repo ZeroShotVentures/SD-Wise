@@ -15,8 +15,11 @@ export const auth = betterAuth({
   rateLimit: {
     storage: "database",
   },
+  // Accounts are created by `pnpm db:seed:demo` (or by an admin), not by
+  // signing up.
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
   },
   user: {
     deleteUser: {

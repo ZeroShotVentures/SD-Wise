@@ -180,7 +180,15 @@ export async function askPerson(
     select: { id: true },
   });
   if (!recipient) throw new Error("Unknown person");
-  return send(me, { recipientId, question, nodeIds, routed: false });
+  const created = await send(me, {
+    recipientId,
+    question,
+    nodeIds,
+    routed: false,
+  });
+  // send() only skips routed questions; this one is created or throws.
+  if (!created) throw new Error("Question wasn't sent");
+  return created;
 }
 
 // Questions an asker can have waiting on an answer, to one colleague and in

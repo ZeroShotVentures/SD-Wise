@@ -5,9 +5,9 @@ import { Page as PageShell } from "@/components/shell/page";
 import { requirePerson } from "@/lib/graph/me";
 import { question as questionSchema } from "@/lib/graph/schemas";
 
-export const metadata: Metadata = { title: "Request access" };
+export const metadata: Metadata = { title: "Ask a colleague" };
 
-// Where the "Request access" link from an MCP answer lands. Opening the link
+// Where the "Ask a colleague" link from an MCP answer lands. Opening the link
 // sends nothing; only the button does, so a link can't make a request on
 // someone's behalf.
 export default async function Page({
@@ -20,7 +20,10 @@ export default async function Page({
   if (!parsed.success) notFound();
 
   return (
-    <PageShell title="Request access" description={`You asked: ${parsed.data}`}>
+    <PageShell
+      title="Ask a colleague"
+      description={`You asked: ${parsed.data}`}
+    >
       <div className="max-w-md bg-white">
         <RequestMore question={parsed.data} />
       </div>

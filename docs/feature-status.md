@@ -1,6 +1,6 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`), [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card), [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph), [PR #20](https://github.com/ZeroShotVentures/SD-Wise/pull/20) (integrations page revamp, Microsoft 365, MCP tab) and [PR #24](https://github.com/ZeroShotVentures/SD-Wise/pull/24) (an account for every person in the graph, access that starts with the owners only): lint, typecheck, `next build` and all 78 tests pass. Then updated for the graph moving into Postgres, checked on a local database with the demo data: migration, seeds, every service path and the graph, inbox, request and integrations pages; 77 tests pass, plus 5 that run against Postgres in CI. Statuses come from reading the code and the tests; the Integrations page from PR #20 and the access flow from PR #24 were also clicked through in a browser, the rest of this list wasn't.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`), [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card), [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph), [PR #20](https://github.com/ZeroShotVentures/SD-Wise/pull/20) (integrations page revamp, Microsoft 365, MCP tab) and [PR #24](https://github.com/ZeroShotVentures/SD-Wise/pull/24) (an account for every person in the graph, access that starts with the owners only): lint, typecheck, `next build` and all 78 tests pass. Then updated for the graph moving into Postgres, checked on a local database with the demo data: migration, seeds, every service path and the graph, inbox, request and integrations pages; 77 tests pass, plus 5 that run against Postgres in CI. Then updated for [PR #28](https://github.com/ZeroShotVentures/SD-Wise/pull/28) (the Teams demo at `/teams`). Statuses come from reading the code and the tests; the Integrations page from PR #20 and the access flow from PR #24 were also clicked through in a browser, the rest of this list wasn't.
 
 ## In short
 
@@ -46,12 +46,12 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | --- | --- | --- | --- |
 | Ask a colleague | Real | 🟡 | Stored in the `Question` table. The colleague must exist as a `Person` row; `pnpm db:seed` creates one for every fixture person. Since PR #18 nothing in the app or over MCP starts one: the "Ask {name}" button lived in the "Others know more" list, which is gone, and `ask_person` is commented out. The backend and inbox still work. |
 | Drafted reply for the colleague | Real logic, mock data | 🟡 | Claude Sonnet 5.5 writes it once, right after the question is sent, from the facts the colleague can see, and it's stored on the question. Questions without one (demo questions, failed calls) get it on the next inbox load. Only questions get a draft, not access requests, so for now only the demo questions have one. Not yet tried against the live model. |
-| Inbox: received and sent, answer, decline | Real | ✅ | A question can only be resolved once. |
+| Inbox: received and sent, answer, decline | Real | ✅ | A question can only be resolved once. Received questions can also be answered from the [Teams demo](#teams-demo-teams). |
 | Share an answer with the asker or everyone | Real | ✅ | "Everyone" makes the new fact public. Tested. |
 | Answers become new facts in the asker's graph | Real | ✅ | Saved as a fact, in the same transaction as the answer, with `ANSWERS` edges to the facts it was based on that the person answering could see. Deleting the question deletes the fact. Tested against Postgres. |
 | "New for you" highlight | Real | ✅ | Cleared when the asker opens the new fact. |
 | Pending count in the sidebar | Real | ✅ | |
-| Notifications (email, Slack, push) | Not built | ❌ | The app sends no email. People only see a question when they open SD Wise. |
+| Notifications (email, Slack, push) | Not built | ❌ | The app sends no email. People only see a question when they open SD Wise, or when `/teams` is already open (it polls). |
 
 ## Access requests
 
@@ -125,6 +125,17 @@ The demo cast below signs in with their first name. Everyone else uses `first.la
 | Lotte Janssens | `lotte@sdwise.be` | `password123` | Financial controller |
 | Pieter Claes | `pieter@sdwise.be` | `password123` | Support team lead |
 | An Maes | `an@sdwise.be` | `password123` | Payroll legal expert |
+
+## Teams demo (`/teams`)
+
+A Microsoft Teams look-alike with SD Wise installed as an app ([PR #28](https://github.com/ZeroShotVentures/SD-Wise/pull/28)). Standalone: reachable by URL only, not from the sidebar, and it needs a signed-in person. Only the SD Wise parts are real; the rest of Teams is mock data in [data.ts](../src/components/teams/data.ts).
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| SD Wise chat | Real logic, mock data | 🟡 | Pinned chat that calls the same `ask` as the graph page, with suggested questions. The reply is a card with the answer, the facts it cites (titles through `factsFor`, only ones you can see) and the existing "Request access" button when colleagues know more. Same mocked search. Checked as Kobe for the deploy-freeze and payroll cut-off questions. |
+| Questions from SD Wise as chats | Real | 🟡 | Every question or access request in your inbox opens its own chat, newest pending first. The bot posts the question as a card; the message bar is prefilled with the drafted reply, which you can edit or replace ("Use draft" restores it), pick "Only them" or "Everyone", then Send or Decline. Access requests get Share or Deny. Uses the inbox's server actions, so both pages stay in sync. Rendered as Kobe and Filip; the send and decline buttons weren't clicked through. |
+| New questions while the page is open | Real | 🟡 | The page refreshes every 15 s and on window focus; a new pending question shows a toast with "Open". Only while `/teams` is open, so not a notification. |
+| Teams shell: chats, channels, activity, calendar, calls | Mocked | ✅ | Colleague chats with canned replies, channels with reactions and thread replies, an activity feed, a day calendar with Join and Meet now, a call screen, emoji, @mention and attach, presence, unread filters, new chat, back and forward, "Mark all as read" and "Reset demo". Nothing is stored; a reload resets it. |
 
 ## Other
 

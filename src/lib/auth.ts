@@ -7,6 +7,7 @@ import { nextCookies } from "better-auth/next-js";
 import { admin, jwt } from "better-auth/plugins";
 import { env } from "@/env";
 import { roleFor } from "./admin-role";
+import { deletePerson } from "./graph/store";
 import { prisma } from "./prisma";
 
 // The MCP server (src/app/api/mcp/route.ts). Access tokens are bound to it.
@@ -57,7 +58,8 @@ export const auth = betterAuth({
         },
       },
       // The user row only cascades to sessions and tokens. Deleting the person
-      // also removes their questions, answers and access to facts.
+      // also removes their questions, answers, access to facts and the
+      // private facts only they own (deletePerson).
       delete: {
         before: async (user) => {
           const row = await prisma.user.findUnique({
@@ -69,8 +71,8 @@ export const auth = betterAuth({
         after: async (user) => {
           const personId = deletingPerson.get(user);
           if (!personId) return;
-          await prisma.person.deleteMany({
-            where: { id: { equals: personId } },
+          await prisma.$transaction((tx) => deletePerson(tx, personId), {
+            timeout: 30_000,
           });
         },
       },

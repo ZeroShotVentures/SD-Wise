@@ -9,6 +9,7 @@ import { edges, integrations, nodes } from "./fixtures";
 import { demoQuestions, seedGraph } from "./seed";
 import {
   type Db,
+  deletePerson,
   integrationStats,
   linkLooseFacts,
   readGraph,
@@ -287,5 +288,66 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       expect(await syncAnswers(tx)).toBe(1);
       expect(await syncAnswers(tx)).toBe(0);
       expect(await readNodes(tx, [answerNodeId(row.id)])).toHaveLength(1);
+    }));
+
+  it("deletes a person with their own private facts, and keeps shared ones", () =>
+    rolledBack(async (tx) => {
+      const owned = await tx.knowledgeNode.findMany({
+        where: { access: { some: { personId: "p-kobe", owner: true } } },
+        select: {
+          id: true,
+          visibility: true,
+          access: { where: { owner: true }, select: { personId: true } },
+          outgoingEdges: { select: { targetId: true } },
+          incomingEdges: { select: { sourceId: true } },
+        },
+      });
+      const own = owned.filter(
+        (n) => n.visibility === "PRIVATE" && n.access.length === 1,
+      );
+      const kept = owned.filter((n) => !own.includes(n));
+      expect(own.length).toBeGreaterThan(0);
+      expect(kept.some((n) => n.visibility === "PRIVATE")).toBe(true);
+      const asked = await answered(
+        tx,
+        { askerId: "p-kobe", recipientId: "p-filip" },
+        ["n-cutoff-december"],
+      );
+      await saveAnswer(tx, toQuery(asked));
+
+      expect(await deletePerson(tx, "p-kobe")).toEqual({ facts: own.length });
+      expect(
+        await tx.person.findUnique({ where: { id: "p-kobe" } }),
+      ).toBeNull();
+      expect(
+        await readNodes(
+          tx,
+          own.map((n) => n.id),
+        ),
+      ).toEqual([]);
+      expect(await readNodes(tx, [answerNodeId(asked.id)])).toEqual([]);
+      expect(
+        await readNodes(
+          tx,
+          kept.map((n) => n.id),
+        ),
+      ).toHaveLength(kept.length);
+      // The facts they were linked to are recounted.
+      const neighbors = own.flatMap((n) =>
+        n.outgoingEdges
+          .map((e) => e.targetId)
+          .concat(n.incomingEdges.map((e) => e.sourceId)),
+      );
+      const recounted = await tx.knowledgeNode.findMany({
+        where: { id: { in: [...neighbors, "n-cutoff-december"] } },
+        select: {
+          edgeCount: true,
+          _count: { select: { outgoingEdges: true, incomingEdges: true } },
+        },
+      });
+      expect(recounted.length).toBeGreaterThan(0);
+      for (const { edgeCount, _count } of recounted) {
+        expect(edgeCount).toBe(_count.outgoingEdges + _count.incomingEdges);
+      }
     }));
 });

@@ -280,3 +280,52 @@ export async function syncAnswers(db: Db) {
   }
   return added;
 }
+
+// Deletes a person and what is theirs alone. Their questions, and the answers
+// those became, go with them (cascade), as does their access to facts. Their
+// private facts nobody else owns go too: no one else was part of those
+// conversations, so no one could see them again, but their content would stay
+// stored and searched. Facts others own as well stay theirs. Run in a
+// transaction.
+export async function deletePerson(db: Db, personId: string) {
+  const [facts, answers] = await Promise.all([
+    db.knowledgeNode.findMany({
+      where: {
+        visibility: "PRIVATE",
+        access: {
+          some: { personId, owner: true },
+          none: { personId: { not: personId }, owner: true },
+        },
+      },
+      select: { id: true },
+    }),
+    db.knowledgeNode.findMany({
+      where: {
+        question: { OR: [{ askerId: personId }, { recipientId: personId }] },
+      },
+      select: { id: true },
+    }),
+  ]);
+  const factIds = facts.map((n) => n.id);
+  const deleted = new Set([...factIds, ...answers.map((n) => n.id)]);
+  const edges = await db.knowledgeEdge.findMany({
+    where: {
+      OR: [
+        { sourceId: { in: [...deleted] } },
+        { targetId: { in: [...deleted] } },
+      ],
+    },
+    select: { sourceId: true, targetId: true },
+  });
+  await db.knowledgeNode.deleteMany({ where: { id: { in: factIds } } });
+  await db.person.deleteMany({ where: { id: { equals: personId } } });
+  // Their rate limit counters (see rate-limit.ts).
+  await db.rateLimit.deleteMany({
+    where: { key: { startsWith: "app:", endsWith: `:${personId}` } },
+  });
+  const neighbors = edges
+    .flatMap((e) => [e.sourceId, e.targetId])
+    .filter((id) => !deleted.has(id));
+  if (neighbors.length) await recountEdges(db, [...new Set(neighbors)]);
+  return { facts: factIds.length };
+}

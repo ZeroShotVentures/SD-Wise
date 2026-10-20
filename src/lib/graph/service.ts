@@ -339,11 +339,19 @@ export function getIntegrations() {
   });
 }
 
-// Mocked: no OAuth, connecting just flips the flag in memory.
-export function setConnected(id: string, connected: boolean) {
-  const integration = integrations().find((i) => i.id === id);
-  if (!integration) throw new Error("Unknown integration");
-  integration.connected = connected;
-  integration.connectedAt = connected ? new Date().toISOString() : null;
-  return integration;
+// Mocked: no OAuth, connecting just flips the flags in memory. A suite
+// (Microsoft 365) connects several integrations with one sign-in.
+export function setConnected(ids: string[], connected: boolean) {
+  const all = integrations();
+  const targets = ids.map((id) => {
+    const integration = all.find((i) => i.id === id);
+    if (!integration) throw new Error("Unknown integration");
+    return integration;
+  });
+  const now = new Date().toISOString();
+  for (const integration of targets) {
+    integration.connected = connected;
+    integration.connectedAt = connected ? now : null;
+  }
+  return targets;
 }

@@ -116,6 +116,9 @@ describe("/api/mcp", () => {
       "list_inbox",
       "request_access",
     ]);
+    const ask = tools.find((t: { name: string }) => t.name === "ask");
+    expect(ask.title).toBe("Ask the company brain");
+    expect(ask.annotations.readOnlyHint).toBe(true);
   });
 
   it("answers `ask` as the token's user without leaking locked facts", async () => {

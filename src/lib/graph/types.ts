@@ -19,7 +19,13 @@ export type IntegrationKind =
   | "gmail"
   | "google_meet"
   | "teams_meetings"
-  | "zoom";
+  | "zoom"
+  | "sharepoint"
+  | "onedrive"
+  | "onenote"
+  | "google_drive"
+  | "notion"
+  | "confluence";
 
 export type Integration = {
   id: string;
@@ -27,6 +33,8 @@ export type Integration = {
   connected: boolean; // proposal
   connectedAt: string | null; // proposal
 };
+
+export type IntegrationStats = Integration & { facts: number; people: number };
 
 export type Person = {
   id: string;

@@ -154,6 +154,51 @@ describe("/api/mcp", () => {
     expect(page.text).not.toMatch(/export\s*\{/);
   });
 
+  it("serves `list_inbox` with an MCP App card", async () => {
+    const { POST } = await import("./route");
+    const list = await result(
+      await POST(rpc({ jsonrpc: "2.0", id: 1, method: "tools/list" }, asUser)),
+    );
+    expect(
+      list.tools.find((t: { name: string }) => t.name === "list_inbox"),
+    ).toMatchObject({
+      _meta: { ui: { resourceUri: "ui://sd-wise/inbox.html" } },
+    });
+
+    const read = await result(
+      await POST(
+        rpc(
+          {
+            jsonrpc: "2.0",
+            id: 2,
+            method: "resources/read",
+            params: { uri: "ui://sd-wise/inbox.html" },
+          },
+          asUser,
+        ),
+      ),
+    );
+    const [page] = read.contents;
+    expect(page.mimeType).toBe("text/html;profile=mcp-app");
+    expect(page.text).toContain("SD Wise inbox");
+    expect(page.text).toContain("/inbox");
+
+    const call = await result(
+      await POST(
+        rpc(
+          {
+            jsonrpc: "2.0",
+            id: 3,
+            method: "tools/call",
+            params: { name: "list_inbox", arguments: {} },
+          },
+          asUser,
+        ),
+      ),
+    );
+    expect(call.structuredContent).toEqual({ received: [], sent: [] });
+  });
+
   it("answers `ask` as the token's user without leaking locked facts", async () => {
     const { POST } = await import("./route");
     const res = await POST(

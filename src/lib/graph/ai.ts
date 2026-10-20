@@ -1,5 +1,5 @@
 import { canSee } from "./access";
-import type { AskResult, KnowledgeEdge, KnowledgeNode, Person } from "./types";
+import type { AskResult, KnowledgeEdge, KnowledgeNode } from "./types";
 
 // Stand-in for the AI search. Keyword overlap instead of embeddings, one hop
 // instead of a real traversal. Same inputs and outputs as the real thing.
@@ -66,6 +66,8 @@ export function searchGraph(
 
 // Locked matches only surface as `moreAvailable`: never their ids, owners,
 // source or count, so the result can't be used to map what others know.
+// The answer's text joins the summaries of the visible hits; `ask` in the
+// service has Claude write the real one from the same facts.
 export function answerFor(
   question: string,
   viewerId: string,
@@ -112,11 +114,10 @@ export function lockedHits(
   });
 }
 
-// Drafts a reply from what the recipient can see. The real version is an LLM
-// call over the same nodes.
-export function draftAnswer(
+// What the recipient can draft a reply from: the matched facts they can see,
+// plus their own best matches for the question. Claude writes the draft.
+export function draftFacts(
   question: string,
-  asker: Person,
   recipientId: string,
   nodeIds: string[],
   nodes: KnowledgeNode[],
@@ -125,9 +126,5 @@ export function draftAnswer(
   const own = nodes.filter((n) => canSee(n, recipientId));
   const { hits } = searchGraph(question, own, edges, 2);
   const ids = [...new Set([...nodeIds, ...hits])];
-  const used = ids.flatMap((id) => own.find((n) => n.id === id) ?? []);
-  if (!used.length) return null;
-  const firstName = asker.name.split(" ")[0];
-  const facts = used.map((n) => n.contentSummary).join(" ");
-  return { text: `Hi ${firstName}! ${facts}`, nodeIds: used.map((n) => n.id) };
+  return ids.flatMap((id) => own.find((n) => n.id === id) ?? []);
 }

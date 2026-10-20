@@ -10,6 +10,7 @@ import * as graph from "@/lib/graph/service";
 import type { Person } from "@/lib/graph/types";
 import { ASK_APP_URI, askAppHtml } from "./ask-app";
 import { formatAsk, formatInbox } from "./format";
+import { INBOX_APP_URI, inboxAppHtml } from "./inbox-app";
 import { tools } from "./tools";
 
 const json = (value: unknown) => ({
@@ -68,9 +69,26 @@ export function createMcpServer(me: Person) {
   //   },
   // );
 
-  server.registerTool("list_inbox", tools.list_inbox, async () =>
-    json(formatInbox(await graph.getInbox(me))),
+  registerAppResource(
+    server,
+    "SD Wise inbox",
+    INBOX_APP_URI,
+    { description: "Shows the questions and access requests in SD Wise." },
+    async () => ({
+      contents: [
+        {
+          uri: INBOX_APP_URI,
+          mimeType: RESOURCE_MIME_TYPE,
+          text: await inboxAppHtml(),
+        },
+      ],
+    }),
   );
+
+  registerAppTool(server, "list_inbox", tools.list_inbox, async () => {
+    const out = formatInbox(await graph.getInbox(me));
+    return { ...json(out), structuredContent: out };
+  });
 
   return server;
 }

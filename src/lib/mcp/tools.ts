@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { question, requestMoreInput } from "@/lib/graph/schemas";
 import { ASK_APP_URI } from "./ask-app";
+import { INBOX_APP_URI } from "./inbox-app";
 
 // The MCP tools: their names, descriptions, inputs and hints. The server
 // registers exactly these and the Integrations page lists them, so the two
@@ -34,8 +35,9 @@ export const tools = {
   list_inbox: {
     title: "List your inbox",
     description:
-      "List the questions and access requests sent to you, and the ones you sent, with their status and answers.",
+      "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show them in an inbox card. Replying happens in SD Wise itself; the card links there.",
     annotations: { readOnlyHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: INBOX_APP_URI } },
   },
 };
 

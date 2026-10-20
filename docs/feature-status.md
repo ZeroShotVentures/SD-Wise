@@ -1,11 +1,11 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) and [PR #20](https://github.com/ZeroShotVentures/SD-Wise/pull/20) (integrations page revamp, Microsoft 365, MCP tab): lint, typecheck, `next build` and all 59 tests pass. Statuses come from reading the code and the tests; the Integrations page from PR #20 was also clicked through in a browser, the rest of this list wasn't.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`), [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) and [PR #20](https://github.com/ZeroShotVentures/SD-Wise/pull/20) (integrations page revamp, Microsoft 365, MCP tab): lint, typecheck, `next build` and all 61 tests pass. Statuses come from reading the code and the tests; the Integrations page from PR #20 was also clicked through in a browser, the rest of this list wasn't.
 
 ## In short
 
 - **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too, including the MCP tab on the Integrations page and revoking AI clients there.
-- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, the answer and the drafted reply are stitched-together summaries instead of LLM output, and integrations (now with real logos, Microsoft 365 as one suite, and a Documents category) are an in-memory on/off switch.
+- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, and integrations (now with real logos, Microsoft 365 as one suite, and a Documents category) are an in-memory on/off switch. Claude does write the answer and the drafted reply, from whatever that search finds.
 - **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and facts from documents (the document sources can be "connected" but bring nothing).
 
 ## Legend
@@ -32,9 +32,9 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | --- | --- | --- | --- |
 | Search | Mocked | 🟡 | [ai.ts](../src/lib/graph/ai.ts) is a stand-in: keyword overlap (title words count 3, body words 1), then one hop to neighbours. Works for the scripted demo questions, misses paraphrases and synonyms. |
 | Search per [node-finding.md](node-finding.md) | Not built | ❌ | No embedding lookup, in-degree scoring, beam walk, or "nearest visible fact" substitute. |
-| Answer text | Mocked | 🟡 | The summaries of the matching facts you can see, joined together. No LLM writes an answer. |
+| Answer text | Real logic, mock data | 🟡 | Claude Sonnet 5.5, through the Vercel AI Gateway, writes it from the full text of the matching facts you can see; it never gets locked ones. If they don't answer the question, there is no answer, and "Request access" still shows when locked facts matched. Needs `AI_GATEWAY_API_KEY`. Not yet tried against the live model. |
 | Only visible facts in the answer | Real logic, mock data | ✅ | `ask` returns only facts you can see. Locked matches never leave the server: no ids, titles, owners, source or count, in the app or over MCP. Tested, including answers that are partly visible. |
-| "There may be more" hint | Real logic, mock data | ✅ | When locked facts also matched, `ask` sets `moreAvailable` and the answer card offers "Request access". It doesn't say who knows. Replaces the old "Others know more" list of owners. Tested for the Kobe ↔ Filip walkthrough. |
+| "Colleagues know more" hint | Real logic, mock data | ✅ | When locked facts also matched, `ask` sets `moreAvailable` and the answer card offers "Request access". It doesn't say who knows. Replaces the old "Others know more" list of owners. Tested for the Kobe ↔ Filip walkthrough. |
 | Search animation | Mocked | — | Random nodes flash for at least 1.4 s as the "embedding lookup", then the visit order is replayed, skipping locked facts. Cosmetic. |
 | Embedding script (`pnpm db:embed`) | Unused | ❌ | Embeds database rows with `openai/text-embedding-3-small`, but the database has no facts and the search doesn't read embeddings. |
 | AI data generation (`pnpm db:seed`) | Unused | ❌ | Writes facts and new people to tables the app no longer reads; its last output was frozen into `db-fixtures.ts`. Running it again changes nothing in the app. |
@@ -44,7 +44,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | Ask a colleague | Real | 🟡 | Stored in the `Question` table. The colleague must exist as a `Person` row; `pnpm db:seed:demo` creates one for every fixture person. Since PR #18 nothing in the app or over MCP starts one: the "Ask {name}" button lived in the "Others know more" list, which is gone, and `ask_person` is commented out. The backend and inbox still work. |
-| Drafted reply for the colleague | Mocked | 🟡 | "Hi {first name}!" followed by summaries of the facts the colleague can see. No LLM. |
+| Drafted reply for the colleague | Real logic, mock data | 🟡 | Claude Sonnet 5.5 writes it once, right after the question is sent, from the facts the colleague can see, and it's stored on the question. Questions without one (demo questions, failed calls) get it on the next inbox load. Only questions get a draft, not access requests, so for now only the demo questions have one. Not yet tried against the live model. |
 | Inbox: received and sent, answer, decline | Real | ✅ | A question can only be resolved once. |
 | Share an answer with the asker or everyone | Real | ✅ | "Everyone" makes the new fact public. Tested. |
 | Answers become new facts in the asker's graph | Real logic, mock data | ✅ | Rebuilt on every read from answered questions and linked to the facts they were based on; not saved as graph rows. Tested. |
@@ -81,7 +81,8 @@ The **Sources** tab of the Integrations page. Everything here is mocked; the **M
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | MCP server at `/api/mcp` with `ask`, `request_more`, `list_inbox` | Real | ✅ | Every call runs as the signed-in user, with the same visibility rules. Tested: 401 challenge, forged token, 403 without a person, tool list, no leaked locked content or owners. `ask` uses the same mocked search. `ask_person` is commented out, and `request_access` became `request_more`. |
-| MCP App answer card for `ask` | Real | 🟡 | In hosts that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) (Claude, Claude Desktop), `ask` shows a card with the answer, the "There may be more" hint and a "Request access" button. Built on `@modelcontextprotocol/ext-apps`; the build includes its bundle. Tested over HTTP, not yet clicked through in Claude. |
+| MCP App answer card for `ask` | Real | 🟡 | In hosts that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) (Claude, Claude Desktop), `ask` shows a card with the answer, the "Colleagues know more" hint and a "Request access" button. Built on `@modelcontextprotocol/ext-apps`; the build includes its bundle. Tested over HTTP, not yet clicked through in Claude. |
+| MCP App inbox card for `list_inbox` | Real | 🟡 | A read-only card with "For you" and "Sent" tabs. Items waiting for you come first, with the drafted reply; each item shows whether it's a question or an access request, its status, who it's from or to, the facts it's about, and the answer. Pending access requests in Sent still show "The owner". Replying happens in the web app: the "Reply in SD Wise" button opens the inbox there. Shares its shell with the answer card ([app-html.ts](../src/lib/mcp/app-html.ts)). Tested over HTTP, not yet clicked through in Claude. |
 | `request_more` only from the card | Real | 🟡 | The tool is marked app-only, so a request needs a click and the model can't send one by itself. Clients without MCP Apps (Cursor, Claude Code in a terminal) can't request access at all. |
 | Sign-in for MCP clients (OAuth, consent page, discovery, dynamic registration, CIMD) | Real | ✅ | Better Auth MCP plugin. Outside localhost it needs HTTPS. |
 | Integrations → MCP tab: server URL and status | Real | ✅ | The URL with a copy button, and a live check of `/.well-known/oauth-protected-resource/api/mcp`. |
@@ -112,7 +113,7 @@ The **Sources** tab of the Integrations page. Everything here is mocked; the **M
 
 ## Biggest gaps
 
-1. **Search and answers:** build the walk from [node-finding.md](node-finding.md) on embeddings, and have an LLM write the answer and the drafted reply from the facts it found.
+1. **Search:** build the walk from [node-finding.md](node-finding.md) on embeddings. Claude writes the answer and the drafted reply, but only from what the keyword search finds.
 2. **Graph in the database:** read facts and edges from Postgres instead of fixtures, and save answers as real facts.
 3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation. Microsoft 365 through Microsoft Graph is the natural first one: the suite flow and its permission list are already on the page.
 4. **Privacy:** stop the inspector from showing owners of locked facts, hide who asked from owners until they share, let owners mark facts as never hinted, and rate-limit questions that only produce a hint.

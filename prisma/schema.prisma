@@ -23,8 +23,10 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  personId String? @unique
-  person   Person? @relation(fields: [personId], references: [id])
+  /// Every account is exactly one person in the graph, and a person has at
+  /// most one account (pnpm db:seed:accounts gives each of them one).
+  personId String @unique
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   oauthclients       OauthClient[]
   oauthrefreshtokens OauthRefreshToken[]

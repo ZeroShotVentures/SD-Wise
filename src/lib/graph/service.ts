@@ -93,7 +93,7 @@ export async function personFor(userId: string): Promise<Person | null> {
     where: { id: userId },
     select: { name: true, person: true },
   });
-  if (!user?.person) return null;
+  if (!user) return null;
   return toPerson({ ...user.person, user: { name: user.name } });
 }
 
@@ -286,15 +286,13 @@ async function draftReply(
   return draft;
 }
 
-export async function requestAccess(
-  me: Person,
-  nodeId: string,
-  ownerId: string,
-) {
+// The asker doesn't get to see or pick the owners of a locked fact, so the
+// request goes to the first one, as with requestMore.
+export async function requestAccess(me: Person, nodeId: string) {
   const { all } = await loadGraph();
   const node = all.find((n) => n.id === nodeId);
-  if (!node) throw new Error("Unknown node");
-  if (!node.ownerIds.includes(ownerId)) throw new Error("Not an owner");
+  const ownerId = node?.ownerIds[0];
+  if (!node || !ownerId) throw new Error("Unknown node");
   if (canSee(node, me.id)) throw new Error("Already has access");
   const existing = await prisma.question.findFirst({
     where: {

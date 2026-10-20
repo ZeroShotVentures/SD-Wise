@@ -86,9 +86,6 @@ function NodeDetails({
   view: GraphView;
   onSelectNode: (id: string) => void;
 }) {
-  const owners = node.ownerIds.flatMap(
-    (id) => view.people.find((p) => p.id === id) ?? [],
-  );
   const source = SOURCES[node.source];
   const connections = view.edges.filter(
     (e) => e.sourceId === node.id || e.targetId === node.id,
@@ -110,32 +107,19 @@ function NodeDetails({
           </p>
         </div>
         <section>
-          <h3 className="text-xs font-semibold tracking-wider text-muted uppercase">
-            People who know
-          </h3>
-          <ul className="mt-3 flex flex-col gap-2">
-            {owners.map((person) => (
-              <li
-                key={person.id}
-                className="flex items-center gap-3 rounded-xl border border-line p-3"
-              >
-                <Avatar id={person.id} name={person.name} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{person.name}</p>
-                  <p className="truncate text-xs text-muted">{person.role}</p>
-                </div>
-                <RequestAccessButton nodeId={node.id} ownerId={person.id} />
-              </li>
-            ))}
-          </ul>
+          <RequestAccessButton nodeId={node.id} />
           <p className="mt-3 text-xs text-muted">
-            They get a request in their inbox and decide whether to share it
-            with you.
+            Someone who was there gets a request in their inbox and decides
+            whether to share it with you. You only see who once they do.
           </p>
         </section>
       </div>
     );
   }
+
+  const owners = node.ownerIds.flatMap(
+    (id) => view.people.find((p) => p.id === id) ?? [],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -262,7 +246,7 @@ function EdgeDetails({
           </h2>
           <p className="mt-1 text-sm text-white/70">
             At least one side is a fact you don&apos;t have access to. Open the
-            locked fact to see who knows.
+            locked fact to request access.
           </p>
         </div>
       ) : (
@@ -329,13 +313,7 @@ function VisibilityBadge({ visibility }: { visibility: "PUBLIC" | "PRIVATE" }) {
   );
 }
 
-function RequestAccessButton({
-  nodeId,
-  ownerId,
-}: {
-  nodeId: string;
-  ownerId: string;
-}) {
+function RequestAccessButton({ nodeId }: { nodeId: string }) {
   const [pending, startTransition] = useTransition();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(false);
@@ -354,7 +332,7 @@ function RequestAccessButton({
       onClick={() =>
         startTransition(async () => {
           try {
-            await requestAccess({ nodeId, ownerId });
+            await requestAccess({ nodeId });
             setSent(true);
           } catch {
             setError(true);

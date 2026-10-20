@@ -44,7 +44,7 @@ export type Person = {
 };
 
 // proposal: Visibility and owners. Owners were part of the conversation the
-// node came from; access = owners + anyone they shared it with.
+// node came from; access = owners + anyone they shared it with in SD Wise.
 export type Visibility = "PRIVATE" | "PUBLIC";
 
 export type KnowledgeNode = {
@@ -60,6 +60,10 @@ export type KnowledgeNode = {
   accessIds: string[];
   createdAt: string;
 };
+
+// A node as written in the fixtures: access is never set by hand, it starts
+// as the owners (see fixtures.ts).
+export type NodeFixture = Omit<KnowledgeNode, "accessIds">;
 
 // proposal: edges carry meaning ("updates", "relates to", ...).
 export type EdgeKind = "RELATES_TO" | "UPDATES" | "DEPENDS_ON" | "ANSWERS";
@@ -93,7 +97,8 @@ export type Query = {
   seenAt: string | null;
 };
 
-// What a viewer receives. Locked nodes never carry content to the client.
+// What a viewer receives. Locked nodes never carry content or owners to the
+// client: who knows something is private too.
 export type NodeView =
   | (Omit<KnowledgeNode, "accessIds"> & { locked: false; isNew: boolean })
   | {
@@ -101,7 +106,6 @@ export type NodeView =
       locked: true;
       source: KnowledgeSource;
       integrationId: string | null;
-      ownerIds: string[];
       createdAt: string;
       isNew: false;
     };

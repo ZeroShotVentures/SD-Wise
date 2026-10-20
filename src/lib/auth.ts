@@ -13,6 +13,10 @@ import { prisma } from "./prisma";
 export const mcpResource = `${env.BETTER_AUTH_URL}/api/mcp`;
 const mcpScopes = ["openid", "profile", "email", "offline_access"];
 
+// The person a user being deleted was, keyed by the user object better-auth
+// passes to both delete hooks. Hook users only carry better-auth's own fields.
+const deletingPerson = new WeakMap<object, string>();
+
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
@@ -50,6 +54,24 @@ export const auth = betterAuth({
           const role = roleFor(user);
           if ((user as { role?: string | null }).role === role) return;
           await prisma.user.update({ where: { id: user.id }, data: { role } });
+        },
+      },
+      // The user row only cascades to sessions and tokens. Deleting the person
+      // also removes their questions, answers and access to facts.
+      delete: {
+        before: async (user) => {
+          const row = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { personId: true },
+          });
+          if (row) deletingPerson.set(user, row.personId);
+        },
+        after: async (user) => {
+          const personId = deletingPerson.get(user);
+          if (!personId) return;
+          await prisma.person.deleteMany({
+            where: { id: { equals: personId } },
+          });
         },
       },
     },

@@ -3,6 +3,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
 import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
@@ -96,7 +97,17 @@ export async function markSeen(me: Person, rawNodeId: string) {
   });
 }
 
+// Asking calls Claude and sending notifies colleagues (and drafts a reply with
+// Claude), so both are capped per person, for the app and MCP clients alike.
+const MINUTE = 60_000;
+const limitAsks = (me: Person) => rateLimit(`ask:${me.id}`, 20, MINUTE);
+const limitSends = (me: Person) => rateLimit(`send:${me.id}`, 10, MINUTE);
+
+// Drafts written per inbox load. The rest are written on later loads.
+const DRAFTS_PER_LOAD = 5;
+
 export async function ask(me: Person, question: string): Promise<AskResult> {
+  await limitAsks(me);
   const { nodes, edges } = await readGraph(prisma);
   const { hits, visited } = searchGraph(question, nodes, edges);
   const result = answerFor(question, me.id, hits, visited, nodes);
@@ -135,6 +146,7 @@ export async function factsFor(me: Person, ids: string[]) {
 // request per owner, carrying the asker's question as context. Returns
 // nothing either way, so a request can't confirm that anything matched.
 export async function requestMore(me: Person, question: string) {
+  await limitSends(me);
   const { nodes, edges } = await readGraph(prisma);
   const { hits } = searchGraph(question, nodes, edges);
   const byOwner = new Map<string, string[]>();
@@ -175,6 +187,7 @@ export async function askPerson(
   nodeIds: string[],
 ) {
   if (recipientId === me.id) throw new Error("Can't ask yourself");
+  await limitSends(me);
   const recipient = await prisma.person.findUnique({
     where: { id: recipientId },
     select: { id: true },
@@ -232,6 +245,7 @@ async function draftReply(
 // request goes to the first one, as with requestMore.
 export async function requestAccess(me: Person, rawNodeId: string) {
   const nodeId = parseId(rawNodeId);
+  await limitSends(me);
   const [node] = await readNodes(prisma, [nodeId]);
   const ownerId = node?.ownerIds[0];
   if (!node || !ownerId) throw new Error("Unknown node");
@@ -338,9 +352,9 @@ export async function getInbox(me: Person) {
   const drafts = new Map(rows.map((row) => [row.id, row.draft]));
   const draftable = (q: ResolvedQuery) =>
     q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING";
-  const undrafted = queries.filter(
-    (q) => draftable(q) && drafts.get(q.id) === null,
-  );
+  const undrafted = queries
+    .filter((q) => draftable(q) && drafts.get(q.id) === null)
+    .slice(0, DRAFTS_PER_LOAD);
   const draftMissing = async () => {
     if (undrafted.length === 0) return;
     const graph = await readGraph(prisma);

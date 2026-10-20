@@ -10,20 +10,22 @@ const julien = people.find((p) => p.id === "p-julien");
 if (!julien) throw new Error("fixture");
 
 describe("formatAsk", () => {
-  it("never puts locked content in the tool output", () => {
+  it("only hints at locked facts, never what, whose or where from", () => {
     const question = "What does Kras pay per payslip?";
     const { hits, visited } = searchGraph(question, nodes, edges);
-    const result = answerFor(question, julien.id, hits, visited, nodes, people);
+    const result = answerFor(question, julien.id, hits, visited, nodes);
     const views = nodes.map((n) => toNodeView(n, julien.id));
     const pricing = nodes.find((n) => n.id === "n-kras-pricing");
     if (!pricing) throw new Error("fixture");
     expect(hits).toContain(pricing.id);
 
-    const out = formatAsk(result, views, people);
+    const out = formatAsk(result, views);
     const text = JSON.stringify(out);
-    expect(out.lockedFacts.map((f) => f.id)).toContain(pricing.id);
+    expect(out.moreAvailable).toBe(true);
+    expect(text).not.toContain(pricing.id);
     expect(text).not.toContain(pricing.content);
     expect(text).not.toContain(pricing.contentSummary);
     expect(text).not.toContain(pricing.title);
+    for (const ownerId of pricing.ownerIds) expect(text).not.toContain(ownerId);
   });
 });

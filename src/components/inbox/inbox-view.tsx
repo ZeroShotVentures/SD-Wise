@@ -293,6 +293,9 @@ function AccessRequest({ item }: { item: InboxItem }) {
           <p className="mt-1 font-medium text-navy">
             {item.nodeTitles.join(", ") || "A fact you own"}
           </p>
+          <p className="mt-2 text-sm text-muted">
+            They asked: &ldquo;{item.question}&rdquo;
+          </p>
         </div>
       </div>
       <p className="mt-3 text-xs text-muted">
@@ -362,7 +365,7 @@ function Resolved({
       </div>
       <p className="mt-3 font-medium text-navy">
         {item.kind === "ACCESS"
-          ? `Access to: ${item.nodeTitles.join(", ") || "a locked fact"}`
+          ? `Access to: ${item.nodeTitles.join(", ") || item.question}`
           : item.question}
       </p>
       {item.answer && (

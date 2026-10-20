@@ -1,12 +1,11 @@
 "use client";
 
-import { Check, Lightbulb, Send, Users, X } from "lucide-react";
+import { Check, KeyRound, Lightbulb, Send, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { askPerson } from "@/app/(app)/graph/actions";
-import { Avatar } from "@/components/shell/avatar";
+import { requestMore } from "@/app/(app)/graph/actions";
 import { SOURCES } from "@/lib/graph/meta";
-import type { AskResult, GraphView, SuggestedPerson } from "@/lib/graph/types";
+import type { AskResult, GraphView } from "@/lib/graph/types";
 
 type AskResultProps = {
   result: AskResult;
@@ -21,7 +20,7 @@ export function AskResultCard({
   onSelectNode,
   onClose,
 }: AskResultProps) {
-  const { answer, people } = result;
+  const { answer, moreAvailable } = result;
 
   return (
     <section className="animate-rise absolute top-24 left-6 z-10 flex max-h-[calc(100%-15rem)] w-[26rem] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/30">
@@ -73,28 +72,9 @@ export function AskResultCard({
           </div>
         )}
 
-        {people.length > 0 && (
-          <div>
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-worx-red uppercase">
-              <Users className="size-3.5" />
-              {answer ? "Others know more" : "People who might know"}
-            </h3>
-            <p className="mt-1 text-xs text-muted">
-              You can&apos;t see what they know, but you can ask them.
-            </p>
-            <ul className="mt-3 flex flex-col gap-2">
-              {people.map((suggestion) => (
-                <PersonSuggestion
-                  key={suggestion.person.id}
-                  suggestion={suggestion}
-                  question={result.question}
-                />
-              ))}
-            </ul>
-          </div>
-        )}
+        {moreAvailable && <RequestMore question={result.question} />}
 
-        {!answer && people.length === 0 && (
+        {!answer && !moreAvailable && (
           <div className="rounded-xl bg-canvas p-4 text-sm text-muted">
             Nobody in the graph seems to know this yet. Try other words, or
             connect more sources in{" "}
@@ -109,98 +89,56 @@ export function AskResultCard({
   );
 }
 
-function PersonSuggestion({
-  suggestion,
-  question,
-}: {
-  suggestion: SuggestedPerson;
-  question: string;
-}) {
-  const { person, reason, nodeIds } = suggestion;
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState(question);
+// The request reruns the search on the server, so it carries the original
+// question rather than an edited one.
+function RequestMore({ question }: { question: string }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
-  const firstName = person.name.split(" ")[0];
 
   const send = () =>
     startTransition(async () => {
       setError("");
       try {
-        await askPerson({ recipientId: person.id, question: text, nodeIds });
+        await requestMore({ question });
         setSent(true);
-        setOpen(false);
       } catch {
         setError("Couldn't send. Try again.");
       }
     });
 
   return (
-    <li className="rounded-xl border border-line p-3">
-      <div className="flex items-center gap-3">
-        <Avatar id={person.id} name={person.name} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
-            {person.name}{" "}
-            <span className="font-normal text-muted">· {person.role}</span>
-          </p>
-          <p className="text-xs text-muted">{reason}</p>
-        </div>
-        {sent ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
-            <Check className="size-3.5" /> Asked
-          </span>
-        ) : (
-          !open && (
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-dark"
-            >
-              Ask {firstName}
-            </button>
-          )
-        )}
-      </div>
-      {open && (
-        <div className="mt-3 flex flex-col gap-2">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={2}
-            aria-label={`Question for ${person.name}`}
-            className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-brand"
-          />
-          {error && <p className="text-xs text-worx-red">{error}</p>}
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:bg-canvas"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={send}
-              disabled={pending || text.trim().length < 3}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50"
-            >
-              <Send className="size-3" /> {pending ? "Sending..." : "Send"}
-            </button>
-          </div>
-        </div>
-      )}
-      {sent && (
-        <p className="mt-2 text-xs text-muted">
-          {firstName} gets a drafted answer to review. Track it in{" "}
+    <div className="rounded-xl border border-line p-4">
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-worx-red uppercase">
+        <KeyRound className="size-3.5" /> Colleagues know more
+      </h3>
+      <p className="mt-2 text-sm text-ink">
+        Some of what they know about this isn&apos;t shared with you. SD Wise
+        can pass your question on, and they decide whether to share it.
+      </p>
+      {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
+      {sent ? (
+        <p className="mt-3 text-xs text-muted">
+          <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
+            <Check className="size-3.5" /> Requested.
+          </span>{" "}
+          You&apos;ll see it in{" "}
           <Link href="/inbox?tab=sent" className="font-medium text-brand">
             Inbox → Sent
-          </Link>
-          .
+          </Link>{" "}
+          if it&apos;s shared.
         </p>
+      ) : (
+        <button
+          type="button"
+          onClick={send}
+          disabled={pending}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50"
+        >
+          <Send className="size-3" />
+          {pending ? "Requesting..." : "Request access"}
+        </button>
       )}
-    </li>
+    </div>
   );
 }

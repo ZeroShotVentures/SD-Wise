@@ -40,7 +40,6 @@ export function formatAsk(
 
 const inboxItem = (q: InboxItem) => ({
   id: q.id,
-  kind: q.kind,
   status: q.status,
   question: q.question,
   from: label(q.asker),

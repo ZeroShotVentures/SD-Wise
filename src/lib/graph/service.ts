@@ -10,7 +10,6 @@ import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
 import { writeAnswer, writeDraft, writeGeneral } from "./llm";
 import {
   type Db,
-  grantAccess,
   integrationStats,
   personSelect,
   readGraph,
@@ -33,7 +32,7 @@ import type {
 } from "./types";
 
 // The knowledge graph lives in Postgres (store.ts): facts, edges, who can see
-// them, and the questions between people that add answers and access to it.
+// them, and the questions between people whose answers add to it.
 // Integrations are still mocked: connecting a source only flips a flag.
 
 export async function personFor(userId: string): Promise<Person | null> {
@@ -80,18 +79,14 @@ function parseId(value: unknown): string {
 }
 
 export async function markSeen(me: Person, rawNodeId: string) {
-  const nodeId = parseId(rawNodeId);
-  const rawQuestionId = questionIdOf(nodeId);
-  const questionId = rawQuestionId ? parseId(rawQuestionId) : null;
+  const rawQuestionId = questionIdOf(parseId(rawNodeId));
+  if (!rawQuestionId) return;
   await prisma.question.updateMany({
     where: {
+      id: { equals: parseId(rawQuestionId) },
       askerId: me.id,
       status: "ANSWERED",
       seenAt: null,
-      OR: [
-        { kind: "ACCESS", nodeIds: { has: nodeId } },
-        ...(questionId ? [{ id: { equals: questionId } }] : []),
-      ],
     },
     data: { seenAt: new Date() },
   });
@@ -141,11 +136,13 @@ export async function factsFor(me: Person, ids: string[]) {
     .map(({ id, title, source }) => ({ id, title, source }));
 }
 
-// Asks the owners of locked facts matching the question to share them. The
-// search reruns here so the asker never learns which facts or whose. One
-// request per owner, carrying the asker's question as context. Returns
-// nothing either way, so a request can't confirm that anything matched.
-export async function requestMore(me: Person, question: string) {
+// Sends the question to the owners of the locked facts that match it, one
+// question per owner with the facts of theirs it matched, and drafts each
+// their reply. They answer the asker or everyone, or decline; their facts stay
+// theirs. The search reruns here so the asker never learns which facts or
+// whose. Returns nothing either way, so asking can't confirm that anything
+// matched.
+export async function askOwners(me: Person, question: string) {
   await limitSends(me);
   const { nodes, edges } = await readGraph(prisma);
   const { hits } = searchGraph(question, nodes, edges);
@@ -156,26 +153,18 @@ export async function requestMore(me: Person, question: string) {
     byOwner.set(ownerId, [...(byOwner.get(ownerId) ?? []), node.id]);
   }
   await Promise.all(
-    [...byOwner].map(async ([ownerId, nodeIds]) => {
+    [...byOwner].map(async ([recipientId, nodeIds]) => {
       const existing = await prisma.question.findFirst({
         where: {
-          kind: "ACCESS",
+          routed: true,
           status: "PENDING",
           askerId: me.id,
-          recipientId: ownerId,
+          recipientId,
           nodeIds: { hasSome: nodeIds },
         },
       });
       if (existing) return;
-      await prisma.question.create({
-        data: {
-          kind: "ACCESS",
-          askerId: me.id,
-          recipientId: ownerId,
-          question,
-          nodeIds,
-        },
-      });
+      await send(me, { recipientId, question, nodeIds, routed: true });
     }),
   );
 }
@@ -193,14 +182,20 @@ export async function askPerson(
     select: { id: true },
   });
   if (!recipient) throw new Error("Unknown person");
+  return send(me, { recipientId, question, nodeIds, routed: false });
+}
+
+async function send(
+  me: Person,
+  data: {
+    recipientId: string;
+    question: string;
+    nodeIds: string[];
+    routed: boolean;
+  },
+) {
   const created = await prisma.question.create({
-    data: {
-      kind: "QUESTION",
-      askerId: me.id,
-      recipientId,
-      question,
-      nodeIds,
-    },
+    data: { ...data, askerId: me.id },
     include: withPeople,
   });
   // Draft the reply now, so it's ready when the recipient opens their inbox.
@@ -241,42 +236,12 @@ async function draftReply(
   return draft;
 }
 
-// The asker doesn't get to see or pick the owners of a locked fact, so the
-// request goes to the first one, as with requestMore.
-export async function requestAccess(me: Person, rawNodeId: string) {
-  const nodeId = parseId(rawNodeId);
-  await limitSends(me);
-  const [node] = await readNodes(prisma, [nodeId]);
-  const ownerId = node?.ownerIds[0];
-  if (!node || !ownerId) throw new Error("Unknown node");
-  if (canSee(node, me.id)) throw new Error("Already has access");
-  const existing = await prisma.question.findFirst({
-    where: {
-      kind: "ACCESS",
-      status: "PENDING",
-      askerId: me.id,
-      nodeIds: { has: nodeId },
-    },
-  });
-  if (existing) return existing;
-  return prisma.question.create({
-    data: {
-      kind: "ACCESS",
-      askerId: me.id,
-      recipientId: ownerId,
-      question: "Can I see what you know about this?",
-      nodeIds: [nodeId],
-    },
-  });
-}
-
 // Resolves a pending question addressed to me. The status check is part of
 // the update, so a question can only be resolved once.
 async function resolve(
   db: Db,
   me: Person,
   rawQueryId: string,
-  kind: "QUESTION" | "ACCESS" | undefined,
   data: Prisma.QuestionUpdateManyMutationInput,
 ) {
   const queryId = parseId(rawQueryId);
@@ -285,7 +250,6 @@ async function resolve(
       id: { equals: queryId },
       recipientId: me.id,
       status: "PENDING",
-      kind,
     },
     data: { ...data, resolvedAt: new Date() },
   });
@@ -302,7 +266,7 @@ export async function answerQuery(
 ) {
   const queryId = parseId(rawQueryId);
   await prisma.$transaction(async (tx) => {
-    await resolve(tx, me, queryId, "QUESTION", {
+    await resolve(tx, me, queryId, {
       status: "ANSWERED",
       answer,
       shareScope: scope,
@@ -315,28 +279,15 @@ export async function answerQuery(
   });
 }
 
-export async function approveAccess(me: Person, rawQueryId: string) {
-  const queryId = parseId(rawQueryId);
-  await prisma.$transaction(async (tx) => {
-    const query = await tx.question.findUnique({ where: { id: queryId } });
-    const nodes = await readNodes(tx, query?.nodeIds ?? []);
-    const owns = query?.nodeIds.every((id) =>
-      nodes.find((n) => n.id === id)?.ownerIds.includes(me.id),
-    );
-    if (query?.kind === "ACCESS" && !owns) throw new Error("Not an owner");
-    await resolve(tx, me, queryId, "ACCESS", {
-      status: "ANSWERED",
-      shareScope: "ASKER",
-    });
-    if (query) await grantAccess(tx, query);
-  });
-}
-
 export async function declineQuery(me: Person, queryId: string) {
-  await resolve(prisma, me, queryId, undefined, { status: "DECLINED" });
+  await resolve(prisma, me, queryId, { status: "DECLINED" });
 }
 
-const HIDDEN_OWNER = { id: "owner", name: "The owner", role: "Owner" };
+const HIDDEN_OWNER = {
+  id: "owner",
+  name: "A colleague who knows",
+  role: "Colleague",
+};
 
 export async function getInbox(me: Person) {
   const rows = await prisma.question.findMany({
@@ -351,7 +302,7 @@ export async function getInbox(me: Person) {
   // existed, or whose drafting failed, get theirs now.
   const drafts = new Map(rows.map((row) => [row.id, row.draft]));
   const draftable = (q: ResolvedQuery) =>
-    q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING";
+    q.recipientId === me.id && q.status === "PENDING";
   const undrafted = queries
     .filter((q) => draftable(q) && drafts.get(q.id) === null)
     .slice(0, DRAFTS_PER_LOAD);
@@ -377,10 +328,10 @@ export async function getInbox(me: Person) {
     }),
   });
 
-  // Until an owner shares, an access request mustn't tell the asker who it
-  // went to. Once shared, the fact itself names its owners.
+  // A question SD Wise routed mustn't tell the asker whose facts matched it,
+  // until that person answers.
   const hideOwner = (item: InboxItem): InboxItem =>
-    item.kind === "ACCESS" && item.status !== "ANSWERED"
+    item.routed && item.status !== "ANSWERED"
       ? {
           ...item,
           recipientId: "",

@@ -215,22 +215,18 @@ model KnowledgeNode {
 /// Who can read a PRIVATE node. Owners were part of the conversation the node
 /// came from; the others were given access by an owner.
 model NodeAccess {
-  nodeId     String
-  node       KnowledgeNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
-  personId   String
-  person     Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
-  owner      Boolean       @default(false)
-  /// Owners are listed in this order; access requests go to the first.
-  position   Int           @default(0)
-  /// The approved access request that gave this access. Deleting the request
-  /// takes the access away again.
-  questionId String?
-  question   Question?     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt  DateTime      @default(now())
+  nodeId    String
+  node      KnowledgeNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  personId  String
+  person    Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+  owner     Boolean       @default(false)
+  /// Owners are listed in this order; questions about the node go to the
+  /// first.
+  position  Int           @default(0)
+  createdAt DateTime      @default(now())
 
   @@id([nodeId, personId])
   @@index([personId])
-  @@index([questionId])
 }
 
 model KnowledgeEdge {
@@ -246,10 +242,6 @@ model KnowledgeEdge {
   @@index([targetId])
 }
 
-enum QuestionKind {
-  QUESTION
-  ACCESS
-}
 
 enum QuestionStatus {
   PENDING
@@ -262,31 +254,32 @@ enum ShareScope {
   PUBLIC
 }
 
-/// A question (or access request) routed from one person to another.
+/// A question from one person to another, answered from a drafted reply.
 model Question {
   id          String         @id @default(uuid())
-  kind        QuestionKind
   askerId     String
   asker       Person         @relation("QuestionAsker", fields: [askerId], references: [id], onDelete: Cascade)
   recipientId String
   recipient   Person         @relation("QuestionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   question    String
-  /// QUESTION: nodes the search matched. ACCESS: the node being requested.
-  /// No relation, so a question keeps its ids if a node is deleted.
+  /// Nodes the search matched. No relation, so a question keeps its ids if a
+  /// node is deleted.
   nodeIds     String[]
+  /// SD Wise sent it to the owner of private facts that match it, so the
+  /// asker doesn't learn who that is until they answer.
+  routed      Boolean        @default(false)
   status      QuestionStatus @default(PENDING)
   answer      String?
-  /// QUESTION: the reply Claude drafted for the recipient. "" when nothing
-  /// they know answers it, null until it's written.
+  /// The reply Claude drafted for the recipient. "" when nothing they know
+  /// answers it, null until it's written.
   draft       String?
   shareScope  ShareScope?
   createdAt   DateTime       @default(now())
   resolvedAt  DateTime?
-  /// When the asker first looked at the answer or granted node.
+  /// When the asker first looked at the answer.
   seenAt      DateTime?
-  /// QUESTION: the node the answer became. ACCESS: the access it granted.
+  /// The node the answer became.
   answerNode  KnowledgeNode?
-  granted     NodeAccess[]
 
   @@index([recipientId, status])
   @@index([askerId])

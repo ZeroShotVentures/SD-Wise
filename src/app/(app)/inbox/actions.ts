@@ -24,12 +24,6 @@ export async function sendAnswer(input: {
   revalidatePath("/", "layout");
 }
 
-export async function approveAccess(queryId: string) {
-  const me = await requirePerson();
-  await graph.approveAccess(me, id.parse(queryId));
-  revalidatePath("/", "layout");
-}
-
 export async function decline(queryId: string) {
   const me = await requirePerson();
   await graph.declineQuery(me, id.parse(queryId));

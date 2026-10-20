@@ -1,6 +1,6 @@
 import { Lightbulb, Network } from "lucide-react";
 import Link from "next/link";
-import { AskColleague, RequestMore } from "@/components/graph/ask-result";
+import { AskColleague, AskOwners } from "@/components/graph/ask-result";
 import { SOURCES } from "@/lib/graph/meta";
 import type { WiseReply } from "./data";
 
@@ -36,7 +36,7 @@ export function WiseCard({ reply }: { reply: WiseReply }) {
           </div>
         )}
 
-        {reply.moreAvailable && <RequestMore question={reply.question} />}
+        {reply.moreAvailable && <AskOwners question={reply.question} />}
 
         {reply.askColleague && <AskColleague question={reply.question} />}
       </div>

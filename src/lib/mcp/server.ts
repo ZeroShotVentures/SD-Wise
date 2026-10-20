@@ -6,7 +6,7 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/server";
 import { env } from "@/env";
-import { question, requestMoreInput } from "@/lib/graph/schemas";
+import { askOwnersInput, question } from "@/lib/graph/schemas";
 import * as graph from "@/lib/graph/service";
 import type { Person } from "@/lib/graph/types";
 import { ASK_APP_URI, askAppHtml } from "./ask-app";
@@ -28,7 +28,9 @@ export function createMcpServer(me: Person) {
     server,
     "SD Wise answer",
     ASK_APP_URI,
-    { description: "Shows an SD Wise answer, with a button to request more." },
+    {
+      description: "Shows an SD Wise answer, with a button to ask a colleague.",
+    },
     async () => ({
       contents: [
         {
@@ -62,10 +64,10 @@ export function createMcpServer(me: Person) {
     };
   });
 
-  registerAppTool(server, "request_more", tools.request_more, async (input) => {
-    const data = requestMoreInput.parse(input);
-    await graph.requestMore(me, data.question);
-    return json({ requested: true });
+  registerAppTool(server, "ask_owners", tools.ask_owners, async (input) => {
+    const data = askOwnersInput.parse(input);
+    await graph.askOwners(me, data.question);
+    return json({ asked: true });
   });
 
   // Replaced by the answer card's Ask a colleague button.
@@ -87,7 +89,7 @@ export function createMcpServer(me: Person) {
     server,
     "SD Wise inbox",
     INBOX_APP_URI,
-    { description: "Shows the questions and access requests in SD Wise." },
+    { description: "Shows the questions in SD Wise." },
     async () => ({
       contents: [
         {

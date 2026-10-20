@@ -80,10 +80,6 @@ const unreadOf = (list: Conversation[]) =>
 
 function confirmation(item: InboxItem) {
   const first = item.asker.name.split(" ")[0];
-  if (item.kind === "ACCESS")
-    return item.status === "ANSWERED"
-      ? `Shared. ${first} can now see this fact.`
-      : "Access denied. The fact stays private.";
   return item.status === "ANSWERED"
     ? `Sent to ${first}. Your answer is now a fact in their graph${item.shareScope === "PUBLIC" ? ", visible to everyone" : ""}.`
     : `Declined. ${first} won't get an answer from you on this one.`;
@@ -106,7 +102,7 @@ function requestConversation(
       request: item,
     },
   ];
-  if (item.kind === "QUESTION" && item.status === "ANSWERED" && item.answer)
+  if (item.status === "ANSWERED" && item.answer)
     messages.push({
       id: `${item.id}-answer`,
       authorId: "me",
@@ -289,10 +285,7 @@ function Teams({ me, inbox, now }: Props) {
     .map((q) => ({
       id: `act-${q.id}`,
       authorId: q.asker.id,
-      action:
-        q.kind === "ACCESS"
-          ? "wants access via SD Wise"
-          : "asked you via SD Wise",
+      action: "asked you via SD Wise",
       text: q.question,
       time: timeAgo(q.createdAt, now),
       conversationId: requestChatId(q),
@@ -755,9 +748,8 @@ function EmptyList({ children }: { children: ReactNode }) {
 
 function preview(c: Conversation, nameOf: (id: string) => string) {
   if (c.request) {
-    const verb = c.request.kind === "ACCESS" ? "Wants access" : "Asked you";
     return c.request.status === "PENDING"
-      ? `${verb}: ${c.request.question}`
+      ? `Asked you: ${c.request.question}`
       : `${requestStatus(c.request).label} · ${c.request.question}`;
   }
   const last = c.messages.at(-1);

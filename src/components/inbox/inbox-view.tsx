@@ -3,14 +3,13 @@
 import {
   ArrowUpRight,
   Globe,
-  KeyRound,
   Lock,
   MessageCircleQuestion,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { approveAccess, decline, sendAnswer } from "@/app/(app)/inbox/actions";
+import { decline, sendAnswer } from "@/app/(app)/inbox/actions";
 import { Avatar } from "@/components/shell/avatar";
 import { timeAgo } from "@/lib/graph/meta";
 import type { InboxItem, QueryStatus, ShareScope } from "@/lib/graph/types";
@@ -74,13 +73,9 @@ export function InboxView({
           {pending.length === 0 && (
             <Empty text="You're all caught up. Nobody is waiting on you." />
           )}
-          {pending.map((item) =>
-            item.kind === "ACCESS" ? (
-              <AccessRequest key={item.id} item={item} />
-            ) : (
-              <QuestionReview key={item.id} item={item} />
-            ),
-          )}
+          {pending.map((item) => (
+            <QuestionReview key={item.id} item={item} />
+          ))}
           {handled.length > 0 && (
             <>
               <h2 className="mt-6 text-xs font-semibold tracking-wider text-muted uppercase">
@@ -158,7 +153,10 @@ function QuestionReview({ item }: { item: InboxItem }) {
 
   return (
     <Card>
-      <Asker item={item} verb="asked you" />
+      <Asker
+        item={item}
+        verb={item.routed ? "asked SD Wise about what you know" : "asked you"}
+      />
       <p className="mt-4 flex items-start gap-2 text-base font-medium text-navy sm:text-lg">
         <MessageCircleQuestion className="mt-0.5 size-5 shrink-0 text-brand sm:mt-1" />
         {item.question}
@@ -225,7 +223,11 @@ function QuestionReview({ item }: { item: InboxItem }) {
           }
           className="rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50 max-sm:flex-2 sm:py-2"
         >
-          {pending ? "Sending..." : `Send to ${askerName}`}
+          {pending
+            ? "Sending..."
+            : scope === "PUBLIC"
+              ? "Send and share with everyone"
+              : `Send to ${askerName}`}
         </button>
       </div>
     </Card>
@@ -268,65 +270,6 @@ function ScopeOption({
   );
 }
 
-function AccessRequest({ item }: { item: InboxItem }) {
-  const [error, setError] = useState("");
-  const [pending, startTransition] = useTransition();
-  const askerName = item.asker.name.split(" ")[0];
-
-  const run = (fn: () => Promise<void>) =>
-    startTransition(async () => {
-      setError("");
-      try {
-        await fn();
-      } catch {
-        setError("Something went wrong. Try again.");
-      }
-    });
-
-  return (
-    <Card>
-      <Asker item={item} verb="wants access" />
-      <div className="mt-4 flex items-start gap-3 rounded-xl bg-canvas p-4">
-        <KeyRound className="mt-0.5 size-5 shrink-0 text-worx-yellow" />
-        <div>
-          <p className="text-sm text-muted">
-            {askerName} found this in the graph but can&apos;t see it:
-          </p>
-          <p className="mt-1 font-medium text-navy">
-            {item.nodeTitles.join(", ") || "A fact you own"}
-          </p>
-          <p className="mt-2 text-sm text-muted">
-            They asked: &ldquo;{item.question}&rdquo;
-          </p>
-        </div>
-      </div>
-      <p className="mt-3 text-xs text-muted">
-        Sharing gives only {askerName} access. It stays private for everyone
-        else.
-      </p>
-      {error && <p className="mt-4 text-sm text-worx-red">{error}</p>}
-      <div className="mt-6 flex gap-2 sm:justify-end">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => run(() => decline(item.id))}
-          className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-line hover:bg-canvas hover:text-navy disabled:opacity-50 max-sm:flex-1 sm:py-2 sm:ring-0"
-        >
-          Decline
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => run(() => approveAccess(item.id))}
-          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50 max-sm:flex-2 sm:py-2"
-        >
-          {pending ? "Sharing..." : `Share with ${askerName}`}
-        </button>
-      </div>
-    </Card>
-  );
-}
-
 const STATUS: Record<QueryStatus, { label: string; className: string }> = {
   PENDING: { label: "Waiting", className: "bg-amber-100 text-amber-800" },
   ANSWERED: { label: "Answered", className: "bg-emerald-100 text-emerald-800" },
@@ -341,10 +284,7 @@ function Resolved({
   perspective: Tab;
 }) {
   const other = perspective === "sent" ? item.recipient : item.asker;
-  const status =
-    item.kind === "ACCESS" && item.status === "ANSWERED"
-      ? { ...STATUS.ANSWERED, label: "Access granted" }
-      : STATUS[item.status];
+  const status = STATUS[item.status];
   const when = timeAgo(item.resolvedAt ?? item.createdAt);
 
   return (
@@ -368,11 +308,7 @@ function Resolved({
         </span>
         <time className="text-xs text-muted max-sm:hidden">{when}</time>
       </div>
-      <p className="mt-3 font-medium text-navy">
-        {item.kind === "ACCESS"
-          ? `Access to: ${item.nodeTitles.join(", ") || item.question}`
-          : item.question}
-      </p>
+      <p className="mt-3 font-medium text-navy">{item.question}</p>
       {item.answer && (
         <p className="mt-2 rounded-xl bg-canvas px-4 py-3 text-sm leading-relaxed">
           {item.answer}

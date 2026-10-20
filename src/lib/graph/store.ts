@@ -1,10 +1,10 @@
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { answerGraph, answerNodeId, type ResolvedQuery } from "./answers";
 import { looseLinks } from "./links";
-import type { Integration, KnowledgeNode, Person, Query } from "./types";
+import type { Integration, KnowledgeNode, Person } from "./types";
 
 // The knowledge graph in Postgres: facts, who can see them, the edges between
-// them, and the answers and access that questions add. Every function takes
+// them, and the answers that questions add. Every function takes
 // the client or a transaction, so the app and the seed scripts share them.
 
 export type Db = PrismaClient | Prisma.TransactionClient;
@@ -84,19 +84,15 @@ export function toQuery(row: QuestionRow): ResolvedQuery {
   const answered = row.status === "ANSWERED";
   return {
     id: row.id,
-    kind: row.kind,
     askerId: row.askerId,
     recipientId: row.recipientId,
     question: row.question,
     nodeIds: row.nodeIds,
+    routed: row.routed,
     status: row.status,
     answer: row.answer,
     shareScope: row.shareScope,
-    answerNodeId: !answered
-      ? null
-      : row.kind === "ACCESS"
-        ? (row.nodeIds[0] ?? null)
-        : answerNodeId(row.id),
+    answerNodeId: answered ? answerNodeId(row.id) : null,
     createdAt: row.createdAt.toISOString(),
     resolvedAt: row.resolvedAt?.toISOString() ?? null,
     seenAt: row.seenAt?.toISOString() ?? null,
@@ -232,28 +228,7 @@ export async function linkLooseFacts(db: Db) {
   return links.length;
 }
 
-// An approved access request adds the asker to the nodes' access lists.
-// Deleting the request takes the access away again.
-export async function grantAccess(
-  db: Db,
-  q: Pick<Query, "id" | "askerId" | "nodeIds">,
-) {
-  const nodes = await db.knowledgeNode.findMany({
-    where: { id: { in: q.nodeIds } },
-    select: { id: true },
-  });
-  await db.nodeAccess.createMany({
-    data: nodes.map(({ id }) => ({
-      nodeId: id,
-      personId: q.askerId,
-      questionId: q.id,
-    })),
-    skipDuplicates: true,
-  });
-}
-
-// Writes the answers and access grants that aren't in the graph yet, oldest
-// first, since an answer only links facts its author could see by then. For
+// Writes the answers that aren't in the graph yet, oldest first, since an answer only links facts its author could see by then. For
 // questions answered before the graph moved to the database, and the demo
 // questions. Returns how many answers it wrote.
 export async function syncAnswers(db: Db) {
@@ -271,14 +246,10 @@ export async function syncAnswers(db: Db) {
   const done = new Set(written.map((n) => n.questionId));
   let added = 0;
   for (const row of answered) {
-    if (row.kind === "ACCESS") {
-      // oxlint-disable-next-line no-await-in-loop
-      await grantAccess(db, row);
-    } else if (!done.has(row.id)) {
-      // oxlint-disable-next-line no-await-in-loop
-      await saveAnswer(db, toQuery(row));
-      added += 1;
-    }
+    if (done.has(row.id)) continue;
+    // oxlint-disable-next-line no-await-in-loop
+    await saveAnswer(db, toQuery(row));
+    added += 1;
   }
   return added;
 }

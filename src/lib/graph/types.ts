@@ -3,7 +3,6 @@ import type {
   EdgeKind,
   IntegrationType,
   KnowledgeSource,
-  QuestionKind,
   QuestionStatus,
   ShareScope,
   Visibility,
@@ -41,7 +40,7 @@ export type Person = {
 };
 
 // Owners were part of the conversation the node came from; access = owners +
-// anyone they shared it with in SD Wise.
+// the people they answered with it in SD Wise (see answers.ts).
 export type KnowledgeNode = {
   id: string;
   title: string;
@@ -68,18 +67,20 @@ export type KnowledgeEdge = {
   description: string;
 };
 
-// Questions and access requests routed between people. Stored in the
-// Question table; dates are ISO strings so they can cross to the client.
+// Questions between people. Stored in the Question table; dates are ISO
+// strings so they can cross to the client.
 export type QueryStatus = QuestionStatus;
 
 export type Query = {
   id: string;
-  kind: QuestionKind;
   askerId: string;
   recipientId: string;
   question: string;
-  // QUESTION: nodes the search matched. ACCESS: the node being requested.
+  // Nodes the search matched.
   nodeIds: string[];
+  // Sent by SD Wise to the owner of matching private facts, rather than to a
+  // colleague the asker picked.
+  routed: boolean;
   status: QueryStatus;
   answer: string | null;
   shareScope: ShareScope | null;
@@ -124,6 +125,7 @@ export type AskResult = {
   hits: string[];
   lockedHits: string[];
   answer: { text: string; nodeIds: string[] } | null;
+  // Private facts match: offer to send the question to whoever knows them.
   moreAvailable: boolean;
   // Nothing answers it and nobody's locked facts match: offer to send the
   // question to a colleague the asker picks.
@@ -134,6 +136,6 @@ export type InboxItem = Query & {
   asker: Person;
   recipient: Person;
   suggestedAnswer: string | null;
-  // For access requests: what the node is, visible to the recipient only.
+  // The matched facts the viewer can see, by title.
   nodeTitles: string[];
 };

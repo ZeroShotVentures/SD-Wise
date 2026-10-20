@@ -27,13 +27,13 @@ const ask = (me: typeof kobe, question: string, graph = { nodes, edges }) => {
 
 const query = (q: Partial<ResolvedQuery>): ResolvedQuery => ({
   id: "q-1",
-  kind: "QUESTION",
   askerId: kobe.id,
   recipientId: filip.id,
   asker: kobe,
   recipient: filip,
   question: "When is the payroll cut-off in December?",
   nodeIds: ["n-cutoff-december"],
+  routed: false,
   status: "ANSWERED",
   answer: "14 December.",
   shareScope: "ASKER",

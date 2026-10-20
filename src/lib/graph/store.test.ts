@@ -9,7 +9,6 @@ import { edges, integrations, nodes } from "./fixtures";
 import { demoQuestions, seedGraph } from "./seed";
 import {
   type Db,
-  grantAccess,
   linkLooseFacts,
   readGraph,
   readNodes,
@@ -59,7 +58,7 @@ const node = async (tx: Db, id: string) => {
 
 const answered = (
   tx: Db,
-  data: { kind: "QUESTION" | "ACCESS"; askerId: string; recipientId: string },
+  data: { askerId: string; recipientId: string; routed?: boolean },
   nodeIds: string[],
 ) =>
   tx.question.create({
@@ -68,18 +67,18 @@ const answered = (
       question: "When is the payroll cut-off in December?",
       nodeIds,
       status: "ANSWERED",
-      answer: data.kind === "QUESTION" ? "14 December." : null,
+      answer: "14 December.",
       shareScope: "ASKER",
       resolvedAt: new Date(),
     },
     include: withPeople,
   });
 
-describe.skipIf(!prisma)("graph in the database", () => {
+// Each test reads or rewrites the whole graph, which takes a few seconds.
+describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
   it("puts the graph back to how a demo starts, and leaves accounts alone", () =>
     rolledBack(async (tx) => {
-      // What testing leaves behind: an answer, shared access, a disconnected
-      // source. The account has to survive.
+      // What testing leaves behind: answers, a disconnected source. The account has to survive.
       const now = new Date();
       const user = await tx.user.upsert({
         where: { personId: "p-kobe" },
@@ -96,16 +95,16 @@ describe.skipIf(!prisma)("graph in the database", () => {
       });
       const asked = await answered(
         tx,
-        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-filip" },
+        { askerId: "p-kobe", recipientId: "p-filip" },
         ["n-cutoff-december"],
       );
       await saveAnswer(tx, toQuery(asked));
-      const shared = await answered(
+      const routed = await answered(
         tx,
-        { kind: "ACCESS", askerId: "p-julien", recipientId: "p-bram" },
+        { askerId: "p-julien", recipientId: "p-bram", routed: true },
         ["n-kras-pricing"],
       );
-      await grantAccess(tx, shared);
+      await saveAnswer(tx, toQuery(routed));
       await tx.integrations.update({
         where: { id: "i-slack" },
         data: { connected: false },
@@ -164,7 +163,7 @@ describe.skipIf(!prisma)("graph in the database", () => {
       });
       const row = await answered(
         tx,
-        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-filip" },
+        { askerId: "p-kobe", recipientId: "p-filip" },
         ["n-cutoff-december", "n-kras-pricing"],
       );
       await saveAnswer(tx, toQuery(row));
@@ -189,21 +188,20 @@ describe.skipIf(!prisma)("graph in the database", () => {
       expect(await readNodes(tx, [answer.id])).toEqual([]);
     }));
 
-  it("grants access to the asker only, until the request is deleted", () =>
+  it("answers a routed question without sharing the facts behind it", () =>
     rolledBack(async (tx) => {
       const row = await answered(
         tx,
-        { kind: "ACCESS", askerId: "p-julien", recipientId: "p-bram" },
+        { askerId: "p-julien", recipientId: "p-bram", routed: true },
         ["n-kras-pricing"],
       );
-      await grantAccess(tx, row);
+      const answer = await saveAnswer(tx, toQuery(row));
+      const saved = await node(tx, answer.id);
+      expect(canSee(saved, "p-julien")).toBe(true);
+      expect(canSee(saved, "p-kobe")).toBe(false);
       const pricing = await node(tx, "n-kras-pricing");
-      expect(canSee(pricing, "p-julien")).toBe(true);
-      expect(canSee(pricing, "p-kobe")).toBe(false);
-      expect(pricing.ownerIds).toEqual(["p-bram", "p-lotte"]);
-
-      await tx.question.delete({ where: { id: row.id } });
-      expect(canSee(await node(tx, "n-kras-pricing"), "p-julien")).toBe(false);
+      expect(canSee(pricing, "p-julien")).toBe(false);
+      expect(pricing.accessIds).toEqual(["p-bram", "p-lotte"]);
     }));
 
   it("links facts cut off from the graph, so every fact is on a topic", () =>
@@ -224,7 +222,7 @@ describe.skipIf(!prisma)("graph in the database", () => {
       // Julien can't see the Kras pricing, so his answer has no fact to link.
       const row = await answered(
         tx,
-        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-julien" },
+        { askerId: "p-kobe", recipientId: "p-julien" },
         ["n-kras-pricing"],
       );
       await saveAnswer(tx, toQuery(row));
@@ -241,7 +239,7 @@ describe.skipIf(!prisma)("graph in the database", () => {
       await syncAnswers(tx);
       const row = await answered(
         tx,
-        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-filip" },
+        { askerId: "p-kobe", recipientId: "p-filip" },
         ["n-cutoff-december"],
       );
       expect(await syncAnswers(tx)).toBe(1);

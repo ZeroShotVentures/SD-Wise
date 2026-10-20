@@ -3,7 +3,7 @@
 import { Check, KeyRound, Lightbulb, Send, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { askPerson, colleagues, requestMore } from "@/app/(app)/graph/actions";
+import { askOwners, askPerson, colleagues } from "@/app/(app)/graph/actions";
 import { SOURCES } from "@/lib/graph/meta";
 import type { AskResult, GraphView, Person } from "@/lib/graph/types";
 
@@ -78,7 +78,7 @@ export function AskResultCard({
         )}
 
         {moreAvailable && (
-          <RequestMore question={result.question} lit={lockedHits.length} />
+          <AskOwners question={result.question} lit={lockedHits.length} />
         )}
 
         {askColleague && <AskColleague question={result.question} />}
@@ -94,10 +94,11 @@ const withheld = (lit: number) =>
       ? "The locked fact lit up in red matches this, but isn't shared with you."
       : `The ${lit} locked facts lit up in red match this, but aren't shared with you.`;
 
-// The request reruns the search on the server, so it carries the original
+// Sends the question to whoever knows the locked matches, with a drafted
+// answer. The search reruns on the server, so it carries the original
 // question rather than an edited one. `lit` counts the locked matches lit up
 // on the graph, when there is one.
-export function RequestMore({
+export function AskOwners({
   question,
   lit = 0,
 }: {
@@ -112,7 +113,7 @@ export function RequestMore({
     startTransition(async () => {
       setError("");
       try {
-        await requestMore({ question });
+        await askOwners({ question });
         setSent(true);
       } catch {
         setError("Couldn't send. Try again.");
@@ -125,8 +126,8 @@ export function RequestMore({
         <KeyRound className="size-3.5" /> Colleagues know more
       </h3>
       <p className="mt-2 text-sm text-ink">
-        {withheld(lit)} SD Wise can pass your question on, and they decide
-        whether to share it.
+        {withheld(lit)} SD Wise can send your question to who knows, with an
+        answer drafted for them. They decide what to tell you.
       </p>
       {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
       {sent ? (
@@ -134,11 +135,11 @@ export function RequestMore({
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
             <Check className="size-3.5" /> Asked.
           </span>{" "}
-          You&apos;ll see it in{" "}
+          You&apos;ll see their answer in{" "}
           <Link href="/inbox?tab=sent" className="font-medium text-brand">
             Inbox → Sent
-          </Link>{" "}
-          if it&apos;s shared.
+          </Link>
+          .
         </p>
       ) : (
         <button

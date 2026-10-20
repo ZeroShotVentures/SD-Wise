@@ -10,5 +10,4 @@ export const askPersonInput = z.object({
   nodeIds: z.array(id).max(10),
 });
 
-export const requestAccessInput = z.object({ nodeId: id });
-export const requestMoreInput = z.object({ question });
+export const askOwnersInput = z.object({ question });

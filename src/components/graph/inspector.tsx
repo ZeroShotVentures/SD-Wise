@@ -2,15 +2,12 @@
 
 import {
   ArrowRight,
-  Check,
   Globe,
   Link2,
   Lock,
   MessageSquareQuote,
   X,
 } from "lucide-react";
-import { useState, useTransition } from "react";
-import { requestAccess } from "@/app/(app)/graph/actions";
 import { Avatar } from "@/components/shell/avatar";
 import {
   dateFormat,
@@ -106,13 +103,11 @@ function NodeDetails({
             were there can see it.
           </p>
         </div>
-        <section>
-          <RequestAccessButton nodeId={node.id} />
-          <p className="mt-3 text-xs text-muted">
-            Someone who was there gets a request in their inbox and decides
-            whether to share it with you. You only see who once they do.
-          </p>
-        </section>
+        <p className="text-xs text-muted">
+          Ask SD Wise a question about it. When this matches, Ask a colleague
+          sends your question to someone who was there, and they decide what to
+          tell you. You only see who once they answer.
+        </p>
       </div>
     );
   }
@@ -245,8 +240,7 @@ function EdgeDetails({
             You can&apos;t see this connection
           </h2>
           <p className="mt-1 text-sm text-white/70">
-            At least one side is a fact you don&apos;t have access to. Open the
-            locked fact to request access.
+            At least one side is a fact you don&apos;t have access to.
           </p>
         </div>
       ) : (
@@ -310,38 +304,5 @@ function VisibilityBadge({ visibility }: { visibility: "PUBLIC" | "PRIVATE" }) {
     <span className="inline-flex items-center gap-1 rounded-full bg-canvas px-2 py-0.5 text-xs font-medium text-muted">
       <Lock className="size-3" /> Private
     </span>
-  );
-}
-
-function RequestAccessButton({ nodeId }: { nodeId: string }) {
-  const [pending, startTransition] = useTransition();
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState(false);
-
-  if (sent) {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
-        <Check className="size-3.5" /> Requested
-      </span>
-    );
-  }
-  return (
-    <button
-      type="button"
-      disabled={pending}
-      onClick={() =>
-        startTransition(async () => {
-          try {
-            await requestAccess({ nodeId });
-            setSent(true);
-          } catch {
-            setError(true);
-          }
-        })
-      }
-      className="shrink-0 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50 md:py-1.5"
-    >
-      {pending ? "Sending..." : error ? "Try again" : "Request access"}
-    </button>
   );
 }

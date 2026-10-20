@@ -3,11 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { requirePerson } from "@/lib/graph/me";
 import {
+  askOwnersInput,
   askPersonInput,
   id,
   question,
-  requestAccessInput,
-  requestMoreInput,
 } from "@/lib/graph/schemas";
 import * as graph from "@/lib/graph/service";
 
@@ -32,17 +31,10 @@ export async function colleagues() {
   return graph.colleagues(me);
 }
 
-export async function requestAccess(input: { nodeId: string }) {
+export async function askOwners(input: { question: string }) {
   const me = await requirePerson();
-  const data = requestAccessInput.parse(input);
-  await graph.requestAccess(me, data.nodeId);
-  revalidatePath("/", "layout");
-}
-
-export async function requestMore(input: { question: string }) {
-  const me = await requirePerson();
-  const data = requestMoreInput.parse(input);
-  await graph.requestMore(me, data.question);
+  const data = askOwnersInput.parse(input);
+  await graph.askOwners(me, data.question);
   revalidatePath("/", "layout");
 }
 

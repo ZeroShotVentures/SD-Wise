@@ -9,8 +9,8 @@ import { requireSession } from "@/lib/session";
 
 const id = z.string().min(1).max(100);
 
-// Mocked: no OAuth, connecting just flips the flags. Facts from a
-// disconnected source drop out of the graph and search.
+// Mocked: no OAuth, connecting just flips the flags in the database. Facts
+// from a disconnected source drop out of the graph and search.
 export async function setConnected(input: {
   ids: string[];
   connected: boolean;
@@ -19,7 +19,7 @@ export async function setConnected(input: {
   const data = z
     .object({ ids: z.array(id).min(1).max(20), connected: z.boolean() })
     .parse(input);
-  graph.setConnected(data.ids, data.connected);
+  await graph.setConnected(data.ids, data.connected);
   revalidatePath("/", "layout");
 }
 

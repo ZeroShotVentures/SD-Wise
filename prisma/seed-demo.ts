@@ -1,12 +1,15 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { type Prisma, PrismaClient } from "../src/generated/prisma/client";
+import { recountEdges, syncAnswers } from "../src/lib/graph/store";
 import { seedAccounts } from "./accounts";
 
 // Everything a demo needs: an account for every person in the graph (as
 // `pnpm db:seed:accounts` does, see docs/accounts.md) and the questions
 // already in people's inboxes. Safe to re-run: demo questions are only added
-// once. Pass --reset to also delete every question, e.g. before a demo.
+// once. Pass --reset to also delete every question, e.g. before a demo, which
+// takes the answers and access they added out of the graph too. Needs the
+// graph from `pnpm db:seed`.
 //
 //   pnpm db:seed:demo [--reset]
 
@@ -85,17 +88,24 @@ const prisma = new PrismaClient({
 async function main() {
   const reset = process.argv.includes("--reset");
 
+  if ((await prisma.knowledgeNode.count()) === 0) {
+    throw new Error("The graph is empty: run `pnpm db:seed` first.");
+  }
+
   await seedAccounts(prisma);
 
   if (reset) {
     const { count } = await prisma.question.deleteMany();
-    console.log(`Deleted ${count} questions`);
+    console.log(`Deleted ${count} questions, with their answers and access`);
   }
   const { count } = await prisma.question.createMany({
     data: QUESTIONS,
     skipDuplicates: true,
   });
   console.log(`${count} demo questions added`);
+  const answers = await syncAnswers(prisma);
+  await recountEdges(prisma);
+  console.log(`${answers} answers written to the graph`);
 }
 
 main()

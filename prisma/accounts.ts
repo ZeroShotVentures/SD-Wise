@@ -1,39 +1,15 @@
 import { hashPassword } from "better-auth/crypto";
 import type { PrismaClient } from "../src/generated/prisma/client";
 import { accounts, PASSWORD } from "../src/lib/graph/accounts";
+import { seedPeople } from "../src/lib/graph/seed";
 
-// Makes the database match the graph: one Person row per fixture person, and
-// one account per person, all with the same password. People that aren't in
-// the graph go, and with them their accounts and questions. Safe to re-run:
-// existing accounts keep their id and sessions and get the password back.
+// Makes the database match the graph: one Person row per fixture person
+// (seedPeople), and one account per person, all with the same password.
+// People that aren't in the graph go, and with them their accounts, questions
+// and access. Safe to re-run: existing accounts keep their id and sessions
+// and get the password back.
 export async function seedAccounts(prisma: PrismaClient) {
-  // One query per changed row, not per person: a transaction of ~300 upserts
-  // outlasts Prisma's 5s limit against a remote database.
-  const existing = new Map(
-    (await prisma.person.findMany()).map((p) => [p.id, p]),
-  );
-  await prisma.person.createMany({
-    data: accounts
-      .filter(({ person }) => !existing.has(person.id))
-      .map(({ person: { id, role, department } }) => ({
-        id,
-        role,
-        department,
-      })),
-  });
-  await prisma.$transaction(
-    accounts
-      .filter(({ person }) => {
-        const row = existing.get(person.id);
-        return (
-          row &&
-          (row.role !== person.role || row.department !== person.department)
-        );
-      })
-      .map(({ person: { id, role, department } }) =>
-        prisma.person.update({ where: { id }, data: { role, department } }),
-      ),
-  );
+  await seedPeople(prisma);
   const { count: gone } = await prisma.person.deleteMany({
     where: { id: { notIn: accounts.map(({ person }) => person.id) } },
   });

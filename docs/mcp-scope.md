@@ -19,4 +19,4 @@
 
 - Answering inbox questions over MCP; graph-write tools.
 - Custom scopes per tool. (A "connected apps" list with revoke has since been built, on Integrations → MCP.)
-- Replacing the graph fixtures with real data.
+- Real data from integrations. The graph is in the database, but still seeded from fixtures.

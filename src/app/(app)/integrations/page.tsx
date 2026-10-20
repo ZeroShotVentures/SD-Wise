@@ -17,9 +17,10 @@ export default async function Page({
 }) {
   await requirePerson();
   const { user } = await requireSession();
-  const [{ tab }, clients] = await Promise.all([
+  const [{ tab }, clients, integrations] = await Promise.all([
     searchParams,
     getMcpClients(user.id),
+    getIntegrations(),
   ]);
 
   return (
@@ -29,7 +30,7 @@ export default async function Page({
     >
       <IntegrationsView
         tab={tab === "mcp" ? "mcp" : "sources"}
-        integrations={getIntegrations()}
+        integrations={integrations}
         mcp={{ url: mcpResource, clients, tools: toolSummaries() }}
       />
     </PageShell>

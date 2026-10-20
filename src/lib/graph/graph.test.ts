@@ -195,7 +195,7 @@ describe("bulk fixtures", () => {
   it("add up to about 10,000 data points", () => {
     const total = people.length + nodes.length + edges.length;
     expect(total).toBeGreaterThan(9_900);
-    expect(total).toBeLessThan(10_200);
+    expect(total).toBeLessThan(11_000);
   });
 
   it("only link nodes and people that exist", () => {

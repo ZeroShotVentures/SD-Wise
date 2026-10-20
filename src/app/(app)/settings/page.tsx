@@ -4,6 +4,7 @@ import { DeleteAccount } from "@/components/settings/delete-account";
 import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
+import { SignOut } from "@/components/settings/sign-out";
 import { secondaryButtonClass } from "@/components/settings/styles";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
@@ -42,7 +43,7 @@ export default async function Page() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
           Settings
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -73,7 +74,7 @@ export default async function Page() {
               key={s.id}
               className="flex items-center justify-between gap-4 py-3 text-sm"
             >
-              <div>
+              <div className="min-w-0 wrap-anywhere">
                 <p className="font-medium text-zinc-900 dark:text-zinc-50">
                   {describeUserAgent(s.userAgent)}
                   {s.id === session.id && (
@@ -116,11 +117,18 @@ export default async function Page() {
       >
         <Link
           href="/integrations?tab=mcp"
-          className={`inline-block ${secondaryButtonClass}`}
+          className={`inline-block text-center ${secondaryButtonClass}`}
         >
           Set up MCP and manage your AI clients
         </Link>
       </Section>
+
+      {/* The sidebar holds sign out on wider screens. */}
+      <div className="md:hidden">
+        <Section title="Account" description={`Signed in as ${user.email}.`}>
+          <SignOut />
+        </Section>
+      </div>
 
       <Section
         title="Delete account"

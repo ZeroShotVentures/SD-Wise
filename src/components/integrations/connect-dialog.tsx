@@ -109,14 +109,15 @@ export function ConnectDialog({
       aria-label={`Connect ${title}`}
       onClose={onClose}
       onCancel={(e) => running && e.preventDefault()}
-      className="animate-pop mx-auto mt-[12vh] w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl bg-white p-0 text-ink shadow-2xl backdrop:bg-navy/60 backdrop:backdrop-blur-sm"
+      // A sheet from the bottom on phones, where the thumb is; centred above.
+      className="animate-pop m-0 mt-auto max-h-[calc(100dvh-2rem)] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-0 text-ink shadow-2xl backdrop:bg-navy/60 backdrop:backdrop-blur-sm sm:mx-auto sm:mt-[12vh] sm:mb-auto sm:max-h-[calc(88dvh-1rem)] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-2xl"
     >
-      <div className="relative p-6">
+      <div className="relative p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6">
         {!running && (
           <button
             type="button"
             onClick={close}
-            className="absolute top-4 right-4 rounded-md p-1 text-muted transition-colors hover:bg-canvas hover:text-navy"
+            className="absolute top-3 right-3 rounded-md p-2 text-muted transition-colors hover:bg-canvas hover:text-navy"
           >
             <X className="size-4" />
             <span className="sr-only">Close</span>
@@ -158,7 +159,7 @@ export function ConnectDialog({
                         return (
                           <label
                             key={item.id}
-                            className={`flex cursor-pointer items-center gap-2.5 rounded-xl p-2 text-sm ring-1 transition-all ${
+                            className={`flex cursor-pointer items-center gap-2.5 rounded-xl p-2.5 text-sm ring-1 transition-all sm:p-2 ${
                               on
                                 ? "bg-brand-soft/60 ring-brand/40"
                                 : "ring-line hover:bg-canvas"
@@ -311,7 +312,7 @@ function ProviderButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`group mt-6 flex w-full items-center justify-center gap-2.5 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`group mt-6 flex w-full items-center justify-center gap-2.5 rounded-lg px-4 py-3 text-sm font-medium text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:py-2.5 ${
         microsoft
           ? "bg-[#2f2f2f] hover:bg-black"
           : "bg-brand hover:bg-brand-dark"

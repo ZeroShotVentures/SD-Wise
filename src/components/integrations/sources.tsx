@@ -159,15 +159,16 @@ export function Sources({
             }}
             placeholder={`Search ${items.length} sources`}
             aria-label="Search sources"
-            className="w-full rounded-xl bg-white py-2.5 pr-10 pl-10 text-sm text-ink ring-1 ring-line transition-shadow outline-none placeholder:text-muted focus:ring-2 focus:ring-brand"
+            className="w-full rounded-xl bg-white py-2.5 pr-10 pl-10 text-base text-ink ring-1 ring-line transition-shadow outline-none placeholder:text-muted focus:ring-2 focus:ring-brand sm:text-sm"
           />
+          {/* No hint on touch screens: there's no "/" key to press. */}
           {!query && (
-            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-[11px] text-muted">
+            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-[11px] text-muted pointer-coarse:hidden">
               /
             </kbd>
           )}
         </div>
-        <fieldset className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        <fieldset className="-mx-4 flex min-w-0 gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-1 sm:px-1">
           <legend className="sr-only">Filter sources</legend>
           {filters.map(([key, n]) => (
             <button
@@ -175,7 +176,7 @@ export function Sources({
               type="button"
               aria-pressed={filter === key}
               onClick={() => setFilter(key)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all sm:py-1 ${
                 filter === key
                   ? "bg-navy text-white shadow-sm"
                   : "bg-white text-muted ring-1 ring-line hover:text-navy"
@@ -266,7 +267,7 @@ export function Sources({
         createPortal(
           <output
             key={toast.id}
-            className="animate-rise fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-xl bg-navy py-2.5 pr-2.5 pl-4 text-sm text-white shadow-2xl"
+            className="animate-rise fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl bg-navy py-2.5 pr-2.5 pl-4 text-sm text-white shadow-2xl sm:gap-4 md:bottom-6"
           >
             {toast.message}
             {toast.undo && (
@@ -322,7 +323,7 @@ function SuiteHero({
   ];
 
   return (
-    <section className="@container relative overflow-hidden rounded-3xl bg-white p-6 ring-1 ring-line sm:p-8">
+    <section className="@container relative overflow-hidden rounded-3xl bg-white p-5 ring-1 ring-line sm:p-8">
       {/* Microsoft's four colours, blurred into the corner. */}
       <div
         aria-hidden
@@ -360,7 +361,7 @@ function SuiteHero({
             <button
               type="button"
               onClick={() => onConnect(remaining)}
-              className="group flex items-center gap-2.5 rounded-lg bg-[#2f2f2f] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-black active:scale-[0.98]"
+              className="group flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-[#2f2f2f] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-black active:scale-[0.98] @3xl:flex-none"
             >
               <Logo name="microsoft" size="xs" className="ring-0" />
               {done === 0
@@ -555,7 +556,7 @@ function IntegrationCard({
           <button
             type="button"
             onClick={onDisconnect}
-            className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
+            className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
           >
             Disconnect
           </button>
@@ -564,7 +565,7 @@ function IntegrationCard({
         <button
           type="button"
           onClick={onConnect}
-          className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-brand-soft px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-white"
+          className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-brand-soft px-3 py-2.5 text-sm font-medium sm:py-2 text-brand transition-colors hover:bg-brand hover:text-white"
         >
           Connect
           <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />

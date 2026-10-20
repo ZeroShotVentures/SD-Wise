@@ -6,7 +6,7 @@ const videos = ["/demo/sd-wise-film-julien.mp4", "/demo/sdwise.mp4"] as const;
 
 export default function DemoVideoPage() {
   return (
-    <main className="min-h-screen bg-canvas px-6 py-10">
+    <main className="min-h-dvh bg-canvas px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
         {videos.map((src) => (
           // Marketing films ship without a caption track.

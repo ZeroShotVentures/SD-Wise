@@ -27,7 +27,7 @@ export function IntegrationsView({
       <div
         role="tablist"
         aria-label="Integrations"
-        className="mb-8 inline-flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line"
+        className="mb-6 flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line sm:mb-8 sm:inline-flex"
       >
         {(
           [
@@ -44,7 +44,7 @@ export function IntegrationsView({
               setTab(key);
               window.history.replaceState(null, "", `/integrations?tab=${key}`);
             }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none sm:py-1.5 ${
               tab === key ? "bg-navy text-white" : "text-muted hover:text-navy"
             }`}
           >

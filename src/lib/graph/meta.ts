@@ -184,12 +184,27 @@ export const EDGE_KINDS: Record<EdgeKind, string> = {
 
 export const ZOOM = { min: 0.05, max: 4, step: 1.5 } as const;
 
-export const dateFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+// Not Intl: ICU versions disagree on short months (Node prints "Sep", some
+// browsers "Sept"), so server and client HTML wouldn't match on hydration.
+export const dateFormat = {
+  format: (date: Date) =>
+    `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`,
+};
 
 export const timeAgo = (iso: string, now = Date.now()) => {
   const minutes = Math.round((now - new Date(iso).getTime()) / 60000);

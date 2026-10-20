@@ -21,5 +21,6 @@ export const config = {
     "/integrations/:path*",
     "/settings/:path*",
     "/admin/:path*",
+    "/teams/:path*",
   ],
 };

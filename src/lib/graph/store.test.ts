@@ -74,7 +74,8 @@ const answered = (
     include: withPeople,
   });
 
-describe.skipIf(!prisma)("graph in the database", () => {
+// Each test reads or rewrites the whole graph, which takes a few seconds.
+describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
   it("puts the graph back to how a demo starts, and leaves accounts alone", () =>
     rolledBack(async (tx) => {
       // What testing leaves behind: answers, a disconnected source. The account has to survive.

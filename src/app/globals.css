@@ -36,3 +36,73 @@ body {
 .animate-rise {
   animation: rise 0.3s ease-out both;
 }
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade {
+  animation: fade 0.2s ease-out both;
+}
+
+/* Dots travelling along the line between SD Wise and a provider. */
+@keyframes flow {
+  to {
+    background-position: 16px 0;
+  }
+}
+
+.animate-flow {
+  background-image: radial-gradient(
+    circle,
+    currentColor 1.5px,
+    transparent 2px
+  );
+  background-size: 8px 4px;
+  background-repeat: repeat-x;
+  background-position: 0 0;
+  animation: flow 0.6s linear infinite;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: draw 0.45s 0.1s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-pop,
+  .animate-fade,
+  .animate-flow,
+  .animate-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

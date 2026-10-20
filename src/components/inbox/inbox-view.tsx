@@ -34,7 +34,7 @@ export function InboxView({
     <div>
       <div
         role="tablist"
-        className="inline-flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line"
+        className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line sm:inline-flex"
       >
         {(
           [
@@ -51,7 +51,7 @@ export function InboxView({
               setTab(key);
               window.history.replaceState(null, "", `/inbox?tab=${key}`);
             }}
-            className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none sm:py-1.5 ${
               tab === key ? "bg-navy text-white" : "text-muted hover:text-navy"
             }`}
           >
@@ -108,7 +108,7 @@ export function InboxView({
 
 function Empty({ text }: { text: string }) {
   return (
-    <p className="rounded-2xl border border-dashed border-line bg-white p-10 text-center text-sm text-muted">
+    <p className="rounded-2xl border border-dashed border-line bg-white p-6 text-center text-sm text-muted sm:p-10">
       {text}
     </p>
   );
@@ -116,7 +116,7 @@ function Empty({ text }: { text: string }) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-line">
+    <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-line sm:p-6">
       {children}
     </article>
   );
@@ -132,7 +132,9 @@ function Asker({ item, verb }: { item: InboxItem; verb: string }) {
           {verb} · {item.asker.role}
         </span>
       </p>
-      <time className="text-xs text-muted">{timeAgo(item.createdAt)}</time>
+      <time className="shrink-0 self-start text-xs text-muted sm:self-auto">
+        {timeAgo(item.createdAt)}
+      </time>
     </div>
   );
 }
@@ -157,8 +159,8 @@ function QuestionReview({ item }: { item: InboxItem }) {
   return (
     <Card>
       <Asker item={item} verb="asked you" />
-      <p className="mt-4 flex items-start gap-2 text-lg font-medium text-navy">
-        <MessageCircleQuestion className="mt-1 size-5 shrink-0 text-brand" />
+      <p className="mt-4 flex items-start gap-2 text-base font-medium text-navy sm:text-lg">
+        <MessageCircleQuestion className="mt-0.5 size-5 shrink-0 text-brand sm:mt-1" />
         {item.question}
       </p>
 
@@ -174,7 +176,7 @@ function QuestionReview({ item }: { item: InboxItem }) {
           onChange={(e) => setAnswer(e.target.value)}
           rows={4}
           aria-label="Answer"
-          className="mt-2 w-full resize-y rounded-xl border border-line bg-canvas/50 px-4 py-3 text-sm leading-relaxed outline-none focus:border-brand focus:bg-white"
+          className="mt-2 w-full resize-y rounded-xl border border-line bg-canvas/50 px-4 py-3 text-base leading-relaxed sm:text-sm outline-none focus:border-brand focus:bg-white"
         />
         {item.nodeTitles.length > 0 && (
           <p className="mt-2 text-xs text-muted">
@@ -206,12 +208,12 @@ function QuestionReview({ item }: { item: InboxItem }) {
       </fieldset>
 
       {error && <p className="mt-4 text-sm text-worx-red">{error}</p>}
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex gap-2 sm:justify-end">
         <button
           type="button"
           disabled={pending}
           onClick={() => run(() => decline(item.id))}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-muted hover:bg-canvas hover:text-navy disabled:opacity-50"
+          className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-line hover:bg-canvas hover:text-navy disabled:opacity-50 max-sm:flex-1 sm:py-2 sm:ring-0"
         >
           Decline
         </button>
@@ -221,7 +223,7 @@ function QuestionReview({ item }: { item: InboxItem }) {
           onClick={() =>
             run(() => sendAnswer({ queryId: item.id, answer, scope }))
           }
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50"
+          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50 max-sm:flex-2 sm:py-2"
         >
           {pending ? "Sending..." : `Send to ${askerName}`}
         </button>
@@ -303,12 +305,12 @@ function AccessRequest({ item }: { item: InboxItem }) {
         else.
       </p>
       {error && <p className="mt-4 text-sm text-worx-red">{error}</p>}
-      <div className="mt-6 flex justify-end gap-2">
+      <div className="mt-6 flex gap-2 sm:justify-end">
         <button
           type="button"
           disabled={pending}
           onClick={() => run(() => decline(item.id))}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-muted hover:bg-canvas hover:text-navy disabled:opacity-50"
+          className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-line hover:bg-canvas hover:text-navy disabled:opacity-50 max-sm:flex-1 sm:py-2 sm:ring-0"
         >
           Decline
         </button>
@@ -316,7 +318,7 @@ function AccessRequest({ item }: { item: InboxItem }) {
           type="button"
           disabled={pending}
           onClick={() => run(() => approveAccess(item.id))}
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50"
+          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50 max-sm:flex-2 sm:py-2"
         >
           {pending ? "Sharing..." : `Share with ${askerName}`}
         </button>
@@ -343,25 +345,28 @@ function Resolved({
     item.kind === "ACCESS" && item.status === "ANSWERED"
       ? { ...STATUS.ANSWERED, label: "Access granted" }
       : STATUS[item.status];
+  const when = timeAgo(item.resolvedAt ?? item.createdAt);
 
   return (
     <Card>
       <div className="flex items-center gap-3">
         <Avatar id={other.id} name={other.name} />
-        <p className="flex-1 text-sm">
-          <span className="text-muted">
-            {perspective === "sent" ? "To" : "From"}{" "}
-          </span>
-          <span className="font-semibold text-navy">{other.name}</span>
-        </p>
+        {/* On phones the time moves under the name to leave room. */}
+        <div className="min-w-0 flex-1 text-sm">
+          <p className="truncate">
+            <span className="text-muted">
+              {perspective === "sent" ? "To" : "From"}{" "}
+            </span>
+            <span className="font-semibold text-navy">{other.name}</span>
+          </p>
+          <time className="text-xs text-muted sm:hidden">{when}</time>
+        </div>
         <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}
         >
           {status.label}
         </span>
-        <time className="text-xs text-muted">
-          {timeAgo(item.resolvedAt ?? item.createdAt)}
-        </time>
+        <time className="text-xs text-muted max-sm:hidden">{when}</time>
       </div>
       <p className="mt-3 font-medium text-navy">
         {item.kind === "ACCESS"
@@ -376,7 +381,7 @@ function Resolved({
       {item.status === "ANSWERED" && item.answerNodeId && (
         <Link
           href={`/graph?node=${item.answerNodeId}`}
-          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+          className="mt-3 -mb-2 inline-flex items-center gap-1 py-2 text-sm font-medium text-brand hover:underline"
         >
           View in graph <ArrowUpRight className="size-3.5" />
         </Link>

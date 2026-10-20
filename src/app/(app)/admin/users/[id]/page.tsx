@@ -70,17 +70,17 @@ export default async function Page({
       <header className="space-y-2">
         <Link
           href="/admin"
-          className="text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          className="-my-2 inline-block py-2 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
         >
           ← All users
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="min-w-0 text-xl font-semibold tracking-tight wrap-anywhere text-zinc-900 sm:text-2xl dark:text-zinc-50">
             {target.name || target.email}
           </h1>
           <UserBadges user={target} />
         </div>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm wrap-anywhere text-zinc-500 dark:text-zinc-400">
           {[
             target.email,
             `joined ${dateFormat.format(new Date(target.createdAt))} UTC`,
@@ -89,7 +89,7 @@ export default async function Page({
             .filter(Boolean)
             .join(" · ")}
         </p>
-        <p className="font-mono text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="font-mono text-xs break-all text-zinc-400 dark:text-zinc-500">
           {target.id}
         </p>
       </header>
@@ -151,7 +151,7 @@ export default async function Page({
                       key={s.id}
                       className="flex items-center justify-between gap-4 py-3 text-sm"
                     >
-                      <div>
+                      <div className="min-w-0 wrap-anywhere">
                         <p className="font-medium text-zinc-900 dark:text-zinc-50">
                           {describeUserAgent(s.userAgent ?? null)}
                           {s.impersonatedBy && (

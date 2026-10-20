@@ -18,7 +18,7 @@ export function Section({
 
   return (
     <section
-      className={`rounded-xl border bg-white p-6 shadow-sm dark:bg-zinc-900 ${border}`}
+      className={`rounded-xl border bg-white p-4 shadow-sm sm:p-6 dark:bg-zinc-900 ${border}`}
     >
       <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
         {title}

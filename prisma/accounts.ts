@@ -7,14 +7,32 @@ import { accounts, PASSWORD } from "../src/lib/graph/accounts";
 // the graph go, and with them their accounts and questions. Safe to re-run:
 // existing accounts keep their id and sessions and get the password back.
 export async function seedAccounts(prisma: PrismaClient) {
+  // One query per changed row, not per person: a transaction of ~300 upserts
+  // outlasts Prisma's 5s limit against a remote database.
+  const existing = new Map(
+    (await prisma.person.findMany()).map((p) => [p.id, p]),
+  );
+  await prisma.person.createMany({
+    data: accounts
+      .filter(({ person }) => !existing.has(person.id))
+      .map(({ person: { id, role, department } }) => ({
+        id,
+        role,
+        department,
+      })),
+  });
   await prisma.$transaction(
-    accounts.map(({ person: { id, role, department } }) =>
-      prisma.person.upsert({
-        where: { id },
-        create: { id, role, department },
-        update: { role, department },
-      }),
-    ),
+    accounts
+      .filter(({ person }) => {
+        const row = existing.get(person.id);
+        return (
+          row &&
+          (row.role !== person.role || row.department !== person.department)
+        );
+      })
+      .map(({ person: { id, role, department } }) =>
+        prisma.person.update({ where: { id }, data: { role, department } }),
+      ),
   );
   const { count: gone } = await prisma.person.deleteMany({
     where: { id: { notIn: accounts.map(({ person }) => person.id) } },

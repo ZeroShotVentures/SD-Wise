@@ -38,17 +38,16 @@ Every fact, and who is allowed to see it, is stored in the database. SD Wise onl
 pnpm install
 pnpm db:up            # Postgres with pgvector, in Docker
 pnpm db:deploy        # migrations
-pnpm db:seed          # the company graph: people, facts, access, edges
-pnpm db:seed:demo     # an account for every person, and the demo questions
-pnpm db:seed:tekstiel # the Tekstiel NV onboarding facts, for the walkthrough below
+pnpm db:seed:demo     # an account for every person, then the graph
+pnpm db:seed:cocacola # the Coca-Cola onboarding facts, for the walkthrough below
 pnpm dev
 ```
 
-`pnpm db:seed` writes the graph from `src/lib/graph/fixtures.ts` and is safe to re-run; `pnpm db:seed:demo` needs it first. `pnpm db:seed:demo --reset` clears every question, and the answers and access they added, before a demo.
+Before a demo, `pnpm db:seed` puts the graph back to how a demo starts: it deletes every question, answer and shared access from testing, reconnects the sources, and writes the graph from `src/lib/graph/fixtures.ts` with the six demo questions. Accounts, passwords and sessions stay.
 
 ### Accounts
 
-Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus demo questions) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
+Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus the graph) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
 
 | User | Email | Password | Role |
 | --- | --- | --- | --- |
@@ -57,12 +56,12 @@ Every person in the graph has an account, all with the password `password123`. C
 
 ### Walkthrough
 
-1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Request access**.
+1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Ask a colleague**.
 2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
 3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
 4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and request access; as **Kobe**, share it.
 
-With `pnpm db:seed:tekstiel`, as **Kobe** ask *"How is the onboarding of Tekstiel NV going?"*. The search finds 12 facts about the new customer: Kobe sees 6 (the HR system feed and data migration are on track), the other 6 are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Request access** sends his question to Filip and Bram. The facts are in `src/lib/graph/tekstiel-fixtures.ts`.
+For the Coca-Cola story, run `pnpm db:seed && pnpm db:seed:cocacola` (`pnpm db:seed` resets the graph without those facts). As **Kobe**, ask *"How is the onboarding of Coca Cola going?"*. The search finds about a dozen facts about the new customer: Kobe sees half of them (the HR system feed and data migration are on track), the rest are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Ask a colleague** sends his question to Filip and Bram. The facts are in `src/lib/graph/cocacola-fixtures.ts`.
 
 A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can request access from the graph too.
 
@@ -75,7 +74,7 @@ SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](
 - **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
 - **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
 
-Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get a Request access link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
+Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get an Ask a colleague link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
 
 The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. Claude, ChatGPT and Copilot Studio connect from the cloud and need a public URL too.
 

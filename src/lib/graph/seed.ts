@@ -1,21 +1,83 @@
+import type { Prisma } from "@/generated/prisma/client";
 import * as fixtures from "./fixtures";
-import { accessRows, type Db, nodeRow, recountEdges } from "./store";
+import {
+  accessRows,
+  type Db,
+  linkLooseFacts,
+  nodeRow,
+  recountEdges,
+  syncAnswers,
+} from "./store";
 
-// Writes the company graph in fixtures.ts to the database: integrations,
-// people, facts, who can see them and the edges between them. Safe to re-run:
-// missing rows are added, and facts and people that changed in the fixtures
-// are updated. Nothing is deleted, integrations keep whether they're
-// connected, and access given in SD Wise stays.
+// The graph as a demo starts: the company graph in fixtures.ts and the
+// questions already in people's inboxes. People and their accounts are not
+// part of it (see prisma/accounts.ts).
 
-const NODE_COLUMNS = [
-  "title",
-  "content",
-  "contentSummary",
-  "source",
-  "integrationId",
-  "sourceDescription",
-  "visibility",
-] as const;
+const at = (iso: string) => new Date(iso);
+
+// Questions already in people's inboxes when the demo starts.
+export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
+  {
+    id: "q-demo-oauth",
+    kind: "QUESTION",
+    askerId: "p-timon",
+    recipientId: "p-victor",
+    question: "When does the Payroll API switch to OAuth?",
+    nodeIds: ["n-api-oauth"],
+    createdAt: at("2026-09-29T09:12:00Z"),
+  },
+  {
+    id: "q-demo-kras-pricing",
+    kind: "ACCESS",
+    askerId: "p-julien",
+    recipientId: "p-bram",
+    question: "Can I see what you know about this?",
+    nodeIds: ["n-kras-pricing"],
+    createdAt: at("2026-09-29T14:40:00Z"),
+  },
+  {
+    id: "q-demo-renewal",
+    kind: "QUESTION",
+    askerId: "p-victor",
+    recipientId: "p-dario",
+    question: "Did we agree on a renewal discount for Kras?",
+    nodeIds: ["n-kras-renewal"],
+    createdAt: at("2026-09-30T10:30:00Z"),
+  },
+  {
+    id: "q-demo-oauth-date",
+    kind: "QUESTION",
+    askerId: "p-victor",
+    recipientId: "p-kobe",
+    question: "Is the OAuth go-live still mid-December?",
+    nodeIds: ["n-api-oauth"],
+    createdAt: at("2026-09-30T08:05:00Z"),
+  },
+  {
+    id: "q-demo-ai-budget",
+    kind: "QUESTION",
+    askerId: "p-julien",
+    recipientId: "p-kobe",
+    question: "Is the AI tooling budget approved?",
+    nodeIds: ["n-ai-budget"],
+    status: "ANSWERED",
+    answer:
+      "Yes, €40k is approved for Q4. We need to pick a vendor before November.",
+    shareScope: "ASKER",
+    createdAt: at("2026-09-26T15:20:00Z"),
+    resolvedAt: at("2026-09-26T16:01:00Z"),
+    seenAt: at("2026-09-26T16:30:00Z"),
+  },
+  {
+    id: "q-demo-sla",
+    kind: "QUESTION",
+    askerId: "p-pieter",
+    recipientId: "p-filip",
+    question: "Does the two-day payroll SLA also hold in December?",
+    nodeIds: ["n-payroll-sla"],
+    createdAt: at("2026-09-30T07:45:00Z"),
+  },
+];
 
 // One Person row per person in the fixtures: missing ones are added and
 // changed ones updated, one query per changed row. The graph seed and the
@@ -42,65 +104,44 @@ export async function seedPeople(db: Db) {
   return { added: count, updated: changed.length };
 }
 
+// Replaces the graph with the one a demo starts from. Deletes every question,
+// with the answers and access it added, every fact and edge, and which
+// sources are connected; then writes the fixture graph, the demo questions
+// and their answers, and links facts cut off from the rest (links.ts). People
+// are only added or updated, so accounts and their sessions stay. Run it in a
+// transaction.
 export async function seedGraph(db: Db) {
-  const integrations = await db.integrations.createMany({
+  const deleted = {
+    questions: (await db.question.deleteMany()).count,
+    // Edges and access go with their facts.
+    facts: (await db.knowledgeNode.deleteMany()).count,
+  };
+  await db.integrations.deleteMany();
+
+  await db.integrations.createMany({
     data: fixtures.integrations.map(({ connectedAt, ...integration }) => ({
       ...integration,
       connectedAt: connectedAt ? new Date(connectedAt) : null,
     })),
-    skipDuplicates: true,
   });
-
   const people = await seedPeople(db);
-
-  const rows = fixtures.nodes.map(nodeRow);
-  const nodesById = new Map(
-    (
-      await db.knowledgeNode.findMany({
-        where: { id: { in: rows.map((n) => n.id) } },
-        select: { id: true, createdAt: true, ...selectAll(NODE_COLUMNS) },
-      })
-    ).map((row) => [row.id, row]),
-  );
-  const nodes = await db.knowledgeNode.createMany({
-    data: rows.filter((n) => !nodesById.has(n.id)),
-  });
-  const changedNodes = rows.filter((n) => {
-    const row = nodesById.get(n.id);
-    return (
-      row &&
-      (NODE_COLUMNS.some((column) => row[column] !== n[column]) ||
-        row.createdAt.getTime() !== n.createdAt.getTime())
-    );
-  });
-  await Promise.all(
-    changedNodes.map(({ id, ...data }) =>
-      db.knowledgeNode.update({ where: { id }, data }),
-    ),
-  );
-
-  const access = await db.nodeAccess.createMany({
-    data: fixtures.nodes.flatMap(accessRows),
-    skipDuplicates: true,
-  });
-  const edges = await db.knowledgeEdge.createMany({
-    data: fixtures.edges,
-    skipDuplicates: true,
-  });
+  await db.knowledgeNode.createMany({ data: fixtures.nodes.map(nodeRow) });
+  await db.nodeAccess.createMany({ data: fixtures.nodes.flatMap(accessRows) });
+  await db.knowledgeEdge.createMany({ data: fixtures.edges });
+  await db.question.createMany({ data: demoQuestions });
+  const answers = await syncAnswers(db);
+  const links = await linkLooseFacts(db);
   await recountEdges(db);
 
   return {
-    added: {
-      integrations: integrations.count,
-      people: people.added,
-      nodes: nodes.count,
-      access: access.count,
-      edges: edges.count,
+    deleted,
+    people,
+    written: {
+      facts: fixtures.nodes.length,
+      edges: fixtures.edges.length,
+      questions: demoQuestions.length,
+      answers,
+      links,
     },
-    updated: { people: people.updated, nodes: changedNodes.length },
   };
-}
-
-function selectAll<const K extends string>(columns: readonly K[]) {
-  return Object.fromEntries(columns.map((c) => [c, true])) as Record<K, true>;
 }

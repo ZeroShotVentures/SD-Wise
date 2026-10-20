@@ -125,7 +125,7 @@ export function RequestMore({ question }: { question: string }) {
       {sent ? (
         <p className="mt-3 text-xs text-muted">
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-            <Check className="size-3.5" /> Requested.
+            <Check className="size-3.5" /> Asked.
           </span>{" "}
           You&apos;ll see it in{" "}
           <Link href="/inbox?tab=sent" className="font-medium text-brand">
@@ -141,7 +141,7 @@ export function RequestMore({ question }: { question: string }) {
           className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50 sm:py-1.5"
         >
           <Send className="size-3" />
-          {pending ? "Requesting..." : "Request access"}
+          {pending ? "Asking..." : "Ask a colleague"}
         </button>
       )}
     </div>

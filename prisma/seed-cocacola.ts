@@ -1,19 +1,25 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { accessRows, nodeRow, recountEdges } from "../src/lib/graph/store";
 import {
-  tekstielEdges,
-  tekstielNodes,
-} from "../src/lib/graph/tekstiel-fixtures";
+  cocacolaEdges,
+  cocacolaNodes,
+} from "../src/lib/graph/cocacola-fixtures";
+import {
+  accessRows,
+  linkLooseFacts,
+  nodeRow,
+  recountEdges,
+} from "../src/lib/graph/store";
 
-// Adds what the company knows about onboarding Tekstiel NV to the graph, for
-// the demo question "How is the onboarding of Tekstiel NV going?" (see
-// src/lib/graph/tekstiel-fixtures.ts). Safe to re-run: missing rows are added
-// and changed facts updated, nothing is deleted. Access given in rehearsals
-// goes with `pnpm db:seed:demo --reset`. Needs the graph from `pnpm db:seed`.
+// Adds what the company knows about onboarding Coca-Cola to the graph, for
+// the demo question "How is the onboarding of Coca Cola going?" (see
+// src/lib/graph/cocacola-fixtures.ts), then links facts cut off from the rest
+// as `pnpm db:seed` does. Safe to re-run: missing rows are added and changed
+// facts updated, nothing is deleted. `pnpm db:seed` resets the graph without
+// them, so run this after it, e.g. before every demo.
 //
-//   pnpm db:seed:tekstiel
+//   pnpm db:seed && pnpm db:seed:cocacola
 
 config({ path: [".env.local", ".env", ".env.example"], quiet: true });
 
@@ -26,10 +32,10 @@ const prisma = new PrismaClient({
 
 async function main() {
   const { host, pathname } = new URL(url as string);
-  console.log(`Adding Tekstiel NV to the graph in ${host}${pathname}`);
+  console.log(`Adding Coca-Cola to the graph in ${host}${pathname}`);
 
-  const ids = tekstielNodes.map((n) => n.id);
-  const linked = tekstielEdges
+  const ids = cocacolaNodes.map((n) => n.id);
+  const linked = cocacolaEdges
     .flatMap((e) => [e.sourceId, e.targetId])
     .filter((id) => !ids.includes(id));
   const found = await prisma.knowledgeNode.count({
@@ -40,7 +46,7 @@ async function main() {
   }
 
   const added = await prisma.$transaction(async (tx) => {
-    const rows = tekstielNodes.map(nodeRow);
+    const rows = cocacolaNodes.map(nodeRow);
     const nodes = await tx.knowledgeNode.createMany({
       data: rows,
       skipDuplicates: true,
@@ -51,31 +57,32 @@ async function main() {
       ),
     );
     const access = await tx.nodeAccess.createMany({
-      data: tekstielNodes.flatMap(accessRows),
+      data: cocacolaNodes.flatMap(accessRows),
       skipDuplicates: true,
     });
     const edges = await tx.knowledgeEdge.createMany({
-      data: tekstielEdges,
+      data: cocacolaEdges,
       skipDuplicates: true,
     });
     await recountEdges(tx, [...ids, ...linked]);
-    return { nodes, access, edges };
+    const links = await linkLooseFacts(tx);
+    return { nodes, access, edges, links };
   });
   console.log(
-    `Added ${added.nodes.count} facts, ${added.access.count} access rows and ${added.edges.count} edges`,
+    `Added ${added.nodes.count} facts, ${added.access.count} access rows, ${added.edges.count} edges and ${added.links} links that join facts cut off from the graph`,
   );
 
   // Facts from a disconnected source drop out of the graph and the search.
   const disconnected = await prisma.integrations.findMany({
     where: {
-      id: { in: tekstielNodes.flatMap((n) => n.integrationId ?? []) },
+      id: { in: cocacolaNodes.flatMap((n) => n.integrationId ?? []) },
       connected: false,
     },
     select: { type: true },
   });
   if (disconnected.length) {
     console.warn(
-      `Connect ${disconnected.map((i) => i.type).join(", ")} on the Integrations page, or its Tekstiel NV facts stay hidden`,
+      `Connect ${disconnected.map((i) => i.type).join(", ")} on the Integrations page, or its Coca-Cola facts stay hidden`,
     );
   }
 }

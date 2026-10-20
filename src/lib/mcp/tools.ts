@@ -10,7 +10,7 @@ export const tools = {
   ask: {
     title: "Ask the company brain",
     description:
-      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card with a Request access button; there, don't repeat the answer word for word or draw your own visual of it, just add what the card doesn't say. If the card isn't shown, give the answer yourself and, when `moreAvailable` is true, show `requestUrl` as a \"Request access\" link or button (also in any visual you make). It opens SD Wise, where the user clicks to send the request. You can't send it yourself.",
+      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card with an Ask a colleague button; there, don't repeat the answer word for word or draw your own visual of it, just add what the card doesn't say. If the card isn't shown, give the answer yourself and, when `moreAvailable` is true, show `requestUrl` as an \"Ask a colleague\" link or button (also in any visual you make). It opens SD Wise, where the user clicks to send the request. You can't send it yourself.",
     inputSchema: z.object({
       question: question.describe("The question, in plain language"),
     }),

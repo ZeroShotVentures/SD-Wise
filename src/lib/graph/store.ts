@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { answerGraph, answerNodeId, type ResolvedQuery } from "./answers";
+import { looseLinks } from "./links";
 import type { Integration, KnowledgeNode, Person, Query } from "./types";
 
 // The knowledge graph in Postgres: facts, who can see them, the edges between
@@ -201,7 +202,34 @@ export async function saveAnswer(db: Db, q: ResolvedQuery) {
   await db.nodeAccess.createMany({ data: accessRows(node) });
   await db.knowledgeEdge.createMany({ data: edges });
   await recountEdges(db, [node.id, ...edges.map((e) => e.targetId)]);
+  // Based on nothing the recipient could see: link it by its words instead.
+  if (edges.length === 0) await linkLooseFacts(db);
   return node;
+}
+
+// Gives every fact cut off from the rest of the graph, or from the rest of
+// its source, one edge in (see links.ts), so the graph view never has facts
+// without a topic. Returns how many edges it added.
+export async function linkLooseFacts(db: Db) {
+  const [facts, edges] = await Promise.all([
+    db.knowledgeNode.findMany({
+      select: {
+        id: true,
+        title: true,
+        contentSummary: true,
+        integrationId: true,
+      },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }),
+    db.knowledgeEdge.findMany({ select: { sourceId: true, targetId: true } }),
+  ]);
+  const links = looseLinks(facts, edges);
+  if (links.length === 0) return 0;
+  await db.knowledgeEdge.createMany({ data: links, skipDuplicates: true });
+  await recountEdges(db, [
+    ...new Set(links.flatMap((e) => [e.sourceId, e.targetId])),
+  ]);
+  return links.length;
 }
 
 // An approved access request adds the asker to the nodes' access lists.

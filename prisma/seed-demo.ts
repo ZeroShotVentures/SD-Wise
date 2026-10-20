@@ -1,111 +1,31 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
-import { type Prisma, PrismaClient } from "../src/generated/prisma/client";
-import { recountEdges, syncAnswers } from "../src/lib/graph/store";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { seedGraph } from "../src/lib/graph/seed";
 import { seedAccounts } from "./accounts";
 
-// Everything a demo needs: an account for every person in the graph (as
-// `pnpm db:seed:accounts` does, see docs/accounts.md) and the questions
-// already in people's inboxes. Safe to re-run: demo questions are only added
-// once. Pass --reset to also delete every question, e.g. before a demo, which
-// takes the answers and access they added out of the graph too. Needs the
-// graph from `pnpm db:seed`.
+// Everything a demo needs on a new database: an account for every person in
+// the graph (`pnpm db:seed:accounts`, see docs/accounts.md), then the graph
+// with the questions already in people's inboxes (`pnpm db:seed`). Safe to
+// re-run; to only reset the graph, use `pnpm db:seed`.
 //
-//   pnpm db:seed:demo [--reset]
+//   pnpm db:seed:demo
 
 config({ path: [".env.local", ".env", ".env.example"], quiet: true });
-
-const at = (iso: string) => new Date(iso);
-
-// Questions already in people's inboxes when the demo starts.
-const QUESTIONS: Prisma.QuestionCreateManyInput[] = [
-  {
-    id: "q-demo-oauth",
-    kind: "QUESTION",
-    askerId: "p-timon",
-    recipientId: "p-victor",
-    question: "When does the Payroll API switch to OAuth?",
-    nodeIds: ["n-api-oauth"],
-    createdAt: at("2026-09-29T09:12:00Z"),
-  },
-  {
-    id: "q-demo-kras-pricing",
-    kind: "ACCESS",
-    askerId: "p-julien",
-    recipientId: "p-bram",
-    question: "Can I see what you know about this?",
-    nodeIds: ["n-kras-pricing"],
-    createdAt: at("2026-09-29T14:40:00Z"),
-  },
-  {
-    id: "q-demo-renewal",
-    kind: "QUESTION",
-    askerId: "p-victor",
-    recipientId: "p-dario",
-    question: "Did we agree on a renewal discount for Kras?",
-    nodeIds: ["n-kras-renewal"],
-    createdAt: at("2026-09-30T10:30:00Z"),
-  },
-  {
-    id: "q-demo-oauth-date",
-    kind: "QUESTION",
-    askerId: "p-victor",
-    recipientId: "p-kobe",
-    question: "Is the OAuth go-live still mid-December?",
-    nodeIds: ["n-api-oauth"],
-    createdAt: at("2026-09-30T08:05:00Z"),
-  },
-  {
-    id: "q-demo-ai-budget",
-    kind: "QUESTION",
-    askerId: "p-julien",
-    recipientId: "p-kobe",
-    question: "Is the AI tooling budget approved?",
-    nodeIds: ["n-ai-budget"],
-    status: "ANSWERED",
-    answer:
-      "Yes, €40k is approved for Q4. We need to pick a vendor before November.",
-    shareScope: "ASKER",
-    createdAt: at("2026-09-26T15:20:00Z"),
-    resolvedAt: at("2026-09-26T16:01:00Z"),
-    seenAt: at("2026-09-26T16:30:00Z"),
-  },
-  {
-    id: "q-demo-sla",
-    kind: "QUESTION",
-    askerId: "p-pieter",
-    recipientId: "p-filip",
-    question: "Does the two-day payroll SLA also hold in December?",
-    nodeIds: ["n-payroll-sla"],
-    createdAt: at("2026-09-30T07:45:00Z"),
-  },
-];
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
 
 async function main() {
-  const reset = process.argv.includes("--reset");
-
-  if ((await prisma.knowledgeNode.count()) === 0) {
-    throw new Error("The graph is empty: run `pnpm db:seed` first.");
-  }
-
   await seedAccounts(prisma);
-
-  if (reset) {
-    const { count } = await prisma.question.deleteMany();
-    console.log(`Deleted ${count} questions, with their answers and access`);
-  }
-  const { count } = await prisma.question.createMany({
-    data: QUESTIONS,
-    skipDuplicates: true,
-  });
-  console.log(`${count} demo questions added`);
-  const answers = await syncAnswers(prisma);
-  await recountEdges(prisma);
-  console.log(`${answers} answers written to the graph`);
+  const { deleted, written } = await prisma.$transaction(
+    (tx) => seedGraph(tx),
+    { maxWait: 10_000, timeout: 120_000 },
+  );
+  console.log(
+    `Graph reset: deleted ${deleted.questions} questions, wrote ${written.facts} facts and ${written.questions} demo questions`,
+  );
 }
 
 main()

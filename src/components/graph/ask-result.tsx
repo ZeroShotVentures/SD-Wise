@@ -2,10 +2,34 @@
 
 import { Check, KeyRound, Lightbulb, Send, UserRound, X } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { createContext, useContext, useState, useTransition } from "react";
 import { askOwners, askPerson, colleagues } from "@/app/(app)/graph/actions";
 import { SOURCES } from "@/lib/graph/meta";
 import type { AskResult, GraphView, Person } from "@/lib/graph/types";
+
+// Where a sent question's answer shows up: Inbox → Sent, unless the host shows
+// sent questions itself, like Teams with a chat per question. Gets the
+// question's id when there's exactly one.
+export const ShowSent = createContext<((questionId?: string) => void) | null>(
+  null,
+);
+
+function SentLink({ questionId }: { questionId?: string }) {
+  const show = useContext(ShowSent);
+  return show ? (
+    <button
+      type="button"
+      onClick={() => show(questionId)}
+      className="font-medium text-brand hover:underline"
+    >
+      Your questions
+    </button>
+  ) : (
+    <Link href="/inbox?tab=sent" className="font-medium text-brand">
+      Inbox → Sent
+    </Link>
+  );
+}
 
 type AskResultProps = {
   result: AskResult;
@@ -120,11 +144,7 @@ export function AskOwners({ question }: { question: string }) {
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
             <Check className="size-3.5" /> Asked.
           </span>{" "}
-          You&apos;ll see their answer in{" "}
-          <Link href="/inbox?tab=sent" className="font-medium text-brand">
-            Inbox → Sent
-          </Link>
-          .
+          You&apos;ll see their answer in <SentLink />.
         </p>
       ) : (
         <button
@@ -146,7 +166,7 @@ export function AskOwners({ question }: { question: string }) {
 export function AskColleague({ question }: { question: string }) {
   const [people, setPeople] = useState<Person[] | null>(null);
   const [recipientId, setRecipientId] = useState("");
-  const [sentTo, setSentTo] = useState<Person | null>(null);
+  const [sent, setSent] = useState<{ id: string; to: Person } | null>(null);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -166,8 +186,9 @@ export function AskColleague({ question }: { question: string }) {
     startTransition(async () => {
       setError("");
       try {
-        await askPerson({ recipientId, question, nodeIds: [] });
-        setSentTo(people?.find((p) => p.id === recipientId) ?? null);
+        const id = await askPerson({ recipientId, question, nodeIds: [] });
+        const to = people?.find((p) => p.id === recipientId);
+        setSent(to ? { id, to } : null);
       } catch {
         setError("Couldn't send. Try again.");
       }
@@ -182,16 +203,12 @@ export function AskColleague({ question }: { question: string }) {
         <UserRound className="size-3.5" /> Ask a colleague
       </h3>
       {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
-      {sentTo ? (
+      {sent ? (
         <p className="mt-3 text-xs text-muted">
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-            <Check className="size-3.5" /> Sent to {sentTo.name}.
+            <Check className="size-3.5" /> Sent to {sent.to.name}.
           </span>{" "}
-          You&apos;ll see the answer in{" "}
-          <Link href="/inbox?tab=sent" className="font-medium text-brand">
-            Inbox → Sent
-          </Link>
-          .
+          You&apos;ll see the answer in <SentLink questionId={sent.id} />.
         </p>
       ) : people ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">

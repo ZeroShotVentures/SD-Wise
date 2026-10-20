@@ -27,7 +27,9 @@ export function PresenceDot({
 }
 
 // A colleague's avatar with the SD Wise mark: the bot brought this question.
+// While SD Wise keeps the colleague hidden, it's just the bot.
 export function RequestAvatar({ id, name }: { id: string; name: string }) {
+  if (id === WISE_ID) return <TeamsAvatar id={id} name={name} />;
   return (
     <span className="relative inline-flex shrink-0">
       <TeamsAvatar id={id} name={name} />

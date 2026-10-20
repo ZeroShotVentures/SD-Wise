@@ -7,12 +7,12 @@ export const metadata: Metadata = { title: "Teams" };
 
 async function loadInbox() {
   const me = await requirePerson();
-  const { received } = await getInbox(me);
+  const { received, sent } = await getInbox(me);
   // One clock for server and client, so relative times hydrate identically.
-  return { me, received, now: Date.now() };
+  return { me, received, sent, now: Date.now() };
 }
 
 export default async function Page() {
-  const { me, received, now } = await loadInbox();
-  return <TeamsView me={me} inbox={received} now={now} />;
+  const { me, received, sent, now } = await loadInbox();
+  return <TeamsView me={me} received={received} sent={sent} now={now} />;
 }

@@ -94,7 +94,7 @@ export function ConversationPane({
   const [typing, setTyping] = useState<string | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const { kind, messages, request } = conversation;
+  const { kind, messages, request, sent } = conversation;
   const isMine = (id: string) => id === "me" || id === me.id;
   const busy = typing !== null;
   const first = conversation.memberIds[0] ?? WISE_ID;
@@ -206,7 +206,7 @@ export function ConversationPane({
     }));
 
   const tabs: [Tab, string][] =
-    kind === "request"
+    kind === "request" || kind === "sent"
       ? []
       : kind === "wise"
         ? [
@@ -223,13 +223,16 @@ export function ConversationPane({
       ? "App · Answers from your company brain"
       : kind === "request"
         ? `Question via SD Wise · ${request?.asker.role}`
-        : kind === "chat"
-          ? MEMBERS[first]?.role
-          : kind === "group"
-            ? `${conversation.memberIds.length + 1} people`
-            : team?.name;
+        : kind === "sent"
+          ? `Your question via SD Wise${sent?.recipientId ? ` · ${sent.recipient.role}` : ""}`
+          : kind === "chat"
+            ? MEMBERS[first]?.role
+            : kind === "group"
+              ? `${conversation.memberIds.length + 1} people`
+              : team?.name;
 
-  const callable = kind !== "wise";
+  // Not the bot, nor a colleague SD Wise keeps hidden.
+  const callable = first !== WISE_ID;
   const startCall = (video: boolean) =>
     onCall({
       title:
@@ -265,7 +268,7 @@ export function ConversationPane({
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e8ebfa] text-[#5b5fc7]">
             <Users className="size-4" />
           </span>
-        ) : kind === "request" ? (
+        ) : kind === "request" || kind === "sent" ? (
           <RequestAvatar id={first} name={conversation.title} />
         ) : (
           <TeamsAvatar
@@ -359,7 +362,11 @@ export function ConversationPane({
                 <>
                   <div className="mb-2 flex items-center gap-3 text-xs text-[#616161]">
                     <span className="h-px flex-1 bg-[#e0e0e0]" />
-                    {kind === "request" ? "From SD Wise" : "Today"}
+                    {kind === "request"
+                      ? "From SD Wise"
+                      : kind === "sent"
+                        ? "Via SD Wise"
+                        : "Today"}
                     <span className="h-px flex-1 bg-[#e0e0e0]" />
                   </div>
                   {messages.map((m, i) =>
@@ -378,7 +385,7 @@ export function ConversationPane({
                         name={nameOf(m.authorId)}
                         mine={isMine(m.authorId)}
                         grouped={messages[i - 1]?.authorId === m.authorId}
-                        reactable={kind !== "request"}
+                        reactable={kind !== "request" && kind !== "sent"}
                         onReact={(e) => react(m.id, e)}
                       />
                     ),
@@ -432,6 +439,23 @@ export function ConversationPane({
                     This question is handled. SD Wise closed the conversation.
                   </p>
                 )
+              ) : sent ? (
+                <p className="rounded-md border border-dashed border-[#d1d1d1] px-3 py-2.5 text-center text-xs text-[#616161]">
+                  {sent.status === "PENDING"
+                    ? "SD Wise posts the answer here as soon as it's in."
+                    : "This question is handled. SD Wise closed the conversation."}
+                  {sent.answerNodeId && (
+                    <>
+                      {" "}
+                      <Link
+                        href={`/graph?node=${sent.answerNodeId}`}
+                        className="font-semibold text-[#5b5fc7] hover:underline"
+                      >
+                        View in SD Wise
+                      </Link>
+                    </>
+                  )}
+                </p>
               ) : (
                 <form
                   onSubmit={(e) => {

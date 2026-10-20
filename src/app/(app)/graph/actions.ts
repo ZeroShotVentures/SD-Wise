@@ -22,8 +22,14 @@ export async function askPerson(input: {
 }) {
   const me = await requirePerson();
   const data = askPersonInput.parse(input);
-  await graph.askPerson(me, data.recipientId, data.question, data.nodeIds);
+  const created = await graph.askPerson(
+    me,
+    data.recipientId,
+    data.question,
+    data.nodeIds,
+  );
   revalidatePath("/", "layout");
+  return created.id;
 }
 
 export async function colleagues() {

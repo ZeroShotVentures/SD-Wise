@@ -87,13 +87,15 @@ export type Message = {
 export type Conversation = {
   id: string;
   // "request": a question routed to you by SD Wise, one chat per question.
-  kind: "wise" | "request" | "chat" | "group" | "channel";
+  // "sent": a question you sent through SD Wise, one chat per question too.
+  kind: "wise" | "request" | "sent" | "chat" | "group" | "channel";
   title: string;
   memberIds: string[];
   messages: Message[];
   unread?: number;
   teamId?: string;
   request?: InboxItem;
+  sent?: InboxItem;
 };
 
 export type Team = {

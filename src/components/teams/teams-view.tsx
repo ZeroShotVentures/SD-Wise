@@ -27,6 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { ShowSent } from "@/components/graph/ask-result";
 import { timeAgo } from "@/lib/graph/meta";
 import type { InboxItem, Person } from "@/lib/graph/types";
 import { CalendarPane } from "./calendar-pane";
@@ -127,7 +128,76 @@ function requestConversation(
   };
 }
 
-type Props = { me: Person; inbox: InboxItem[]; now: number };
+const sentChatId = (questionId: string) => `s-${questionId}`;
+
+// Each question you send through SD Wise becomes its own chat with whoever it
+// went to, and their answer lands in it.
+function sentConversation(
+  item: InboxItem,
+  seen: boolean,
+  now: number,
+): Conversation {
+  const asked = timeAgo(item.createdAt, now);
+  const resolved = item.resolvedAt ? timeAgo(item.resolvedAt, now) : asked;
+  // getInbox clears the id while SD Wise keeps who it went to hidden.
+  const hidden = !item.recipientId;
+  const who = hidden
+    ? "a colleague who knows"
+    : item.recipient.name.split(" ")[0];
+  const messages: Message[] = [
+    {
+      id: `${item.id}-question`,
+      authorId: "me",
+      time: asked,
+      text: item.question,
+    },
+    {
+      id: `${item.id}-sent`,
+      authorId: WISE_ID,
+      time: asked,
+      text: `Sent to ${who}. I'll post the answer here.`,
+    },
+  ];
+  if (item.status === "ANSWERED" && item.answer)
+    messages.push(
+      {
+        id: `${item.id}-answer`,
+        authorId: item.recipient.id,
+        time: resolved,
+        text: item.answer,
+      },
+      {
+        id: `${item.id}-done`,
+        authorId: WISE_ID,
+        time: resolved,
+        text: `${who}'s answer is now a fact in your graph${item.shareScope === "PUBLIC" ? ", visible to everyone" : ""}.`,
+      },
+    );
+  if (item.status === "DECLINED")
+    messages.push({
+      id: `${item.id}-done`,
+      authorId: WISE_ID,
+      time: resolved,
+      text: `Declined by ${who}. Ask someone else from the SD Wise chat.`,
+    });
+  return {
+    id: sentChatId(item.id),
+    kind: "sent",
+    title: item.recipient.name,
+    memberIds: hidden ? [] : [item.recipient.id],
+    // An answer is new until you open it here or find it in the graph.
+    unread: item.status === "ANSWERED" && !item.seenAt && !seen ? 1 : 0,
+    sent: item,
+    messages,
+  };
+}
+
+type Props = {
+  me: Person;
+  received: InboxItem[];
+  sent: InboxItem[];
+  now: number;
+};
 
 export function TeamsView(props: Props) {
   return (
@@ -137,7 +207,7 @@ export function TeamsView(props: Props) {
   );
 }
 
-function Teams({ me, inbox, now }: Props) {
+function Teams({ me, received, sent, now }: Props) {
   const router = useRouter();
   const notify = useNotify();
   const [section, setSection] = useState<Section>("chat");
@@ -155,7 +225,7 @@ function Teams({ me, inbox, now }: Props) {
 
   const requests = useMemo(
     () =>
-      inbox
+      received
         .toSorted(
           (a, b) =>
             Number(b.status === "PENDING") - Number(a.status === "PENDING"),
@@ -163,11 +233,18 @@ function Teams({ me, inbox, now }: Props) {
         .map((item) =>
           requestConversation(item, seenRequests.includes(item.id), now),
         ),
-    [inbox, seenRequests, now],
+    [received, seenRequests, now],
+  );
+  const asked = useMemo(
+    () =>
+      sent.map((item) =>
+        sentConversation(item, seenRequests.includes(item.id), now),
+      ),
+    [sent, seenRequests, now],
   );
   const all = useMemo(
-    () => [...requests, ...conversations],
-    [requests, conversations],
+    () => [...requests, ...asked, ...conversations],
+    [requests, asked, conversations],
   );
 
   const activeId = history.stack[history.index] ?? "c-wise";
@@ -184,24 +261,29 @@ function Teams({ me, inbox, now }: Props) {
     };
   }, [router]);
 
-  const known = useRef(new Set(inbox.map((q) => q.id)));
+  const known = useRef(new Set(received.map((q) => q.id)));
+  const sentStatus = useRef(new Map(sent.map((q) => [q.id, q.status])));
 
-  const askers = new Map(inbox.map((q) => [q.asker.id, q.asker.name]));
+  const people = new Map(
+    [...received.map((q) => q.asker), ...sent.map((q) => q.recipient)].map(
+      (p) => [p.id, p.name],
+    ),
+  );
   const nameOf = (id: string) =>
     id === "me" || id === me.id
       ? me.name
       : id === WISE_ID
         ? "SD Wise"
-        : (MEMBERS[id]?.name ?? askers.get(id) ?? id);
+        : (MEMBERS[id]?.name ?? people.get(id) ?? id);
 
   const show = (id: string) => {
     const target = all.find((c) => c.id === id);
     setSection(target?.teamId ? "teams" : "chat");
     setListOpen(false);
-    if (target?.request) {
-      const requestId = target.request.id;
+    const question = target?.request ?? target?.sent;
+    if (question) {
       setSeenRequests((seen) =>
-        seen.includes(requestId) ? seen : [...seen, requestId],
+        seen.includes(question.id) ? seen : [...seen, question.id],
       );
     }
     setConversations((list) =>
@@ -218,13 +300,12 @@ function Teams({ me, inbox, now }: Props) {
     }));
   };
 
-  // Setters only, so the toast can open the chat whenever it's clicked.
-  const openRequest = useCallback((item: InboxItem) => {
-    const id = requestChatId(item);
+  // Setters only, so a toast can open the chat whenever it's clicked.
+  const openQuestion = useCallback((id: string, questionId: string) => {
     setSection("chat");
     setListOpen(false);
     setSeenRequests((seen) =>
-      seen.includes(item.id) ? seen : [...seen, item.id],
+      seen.includes(questionId) ? seen : [...seen, questionId],
     );
     setHistory(({ stack, index }) =>
       stack[index] === id
@@ -233,17 +314,46 @@ function Teams({ me, inbox, now }: Props) {
     );
   }, []);
 
+  // The Ask cards in the SD Wise chat point here instead of Inbox → Sent.
+  const showSent = useCallback(
+    (questionId?: string) => {
+      if (questionId) {
+        openQuestion(sentChatId(questionId), questionId);
+        return;
+      }
+      setSection("chat");
+      setListOpen(true);
+    },
+    [openQuestion],
+  );
+
   useEffect(() => {
-    for (const item of inbox) {
+    for (const item of received) {
       if (known.current.has(item.id)) continue;
       known.current.add(item.id);
       if (item.status !== "PENDING") continue;
       notify(`${item.asker.name} asked you something via SD Wise`, {
         label: "Open",
-        run: () => openRequest(item),
+        run: () => openQuestion(requestChatId(item), item.id),
       });
     }
-  }, [inbox, notify, openRequest]);
+  }, [received, notify, openQuestion]);
+
+  // So do answers to what you asked. A question you just sent isn't news.
+  useEffect(() => {
+    for (const item of sent) {
+      const before = sentStatus.current.get(item.id);
+      sentStatus.current.set(item.id, item.status);
+      if (before !== "PENDING" || item.status === "PENDING") continue;
+      notify(
+        `${item.recipient.name} ${item.status === "ANSWERED" ? "answered" : "declined"} your question`,
+        {
+          label: "Open",
+          run: () => openQuestion(sentChatId(item.id), item.id),
+        },
+      );
+    }
+  }, [sent, notify, openQuestion]);
 
   const step = (delta: number) => {
     const index = history.index + delta;
@@ -280,7 +390,7 @@ function Teams({ me, inbox, now }: Props) {
   const update = (id: string, fn: (c: Conversation) => Conversation) =>
     setConversations((list) => list.map((c) => (c.id === id ? fn(c) : c)));
 
-  const requestActivity: ActivityItem[] = inbox
+  const requestActivity: ActivityItem[] = received
     .filter((q) => q.status === "PENDING")
     .map((q) => ({
       id: `act-${q.id}`,
@@ -290,7 +400,17 @@ function Teams({ me, inbox, now }: Props) {
       time: timeAgo(q.createdAt, now),
       conversationId: requestChatId(q),
     }));
-  const activity = [...requestActivity, ...ACTIVITY];
+  const answerActivity: ActivityItem[] = sent
+    .filter((q) => q.status === "ANSWERED" && !q.seenAt)
+    .map((q) => ({
+      id: `act-${q.id}`,
+      authorId: q.recipient.id,
+      action: "answered you via SD Wise",
+      text: q.answer ?? q.question,
+      time: timeAgo(q.resolvedAt ?? q.createdAt, now),
+      conversationId: sentChatId(q.id),
+    }));
+  const activity = [...requestActivity, ...answerActivity, ...ACTIVITY];
   const isRead = (item: ActivityItem) =>
     readActivity.includes(item.id) ||
     seenRequests.some((id) => item.id === `act-${id}`);
@@ -300,7 +420,7 @@ function Teams({ me, inbox, now }: Props) {
       list.map((c) => (c.unread ? { ...c, unread: 0 } : c)),
     );
     setReadActivity(activity.map((a) => a.id));
-    setSeenRequests(inbox.map((q) => q.id));
+    setSeenRequests([...received, ...sent].map((q) => q.id));
     notify("Everything is marked as read");
   };
 
@@ -360,302 +480,309 @@ function Teams({ me, inbox, now }: Props) {
   );
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#ebebeb] text-[#242424]">
-      <header className="grid h-12 shrink-0 grid-cols-[1fr_minmax(0,36rem)_1fr] items-center gap-2 px-2 sm:px-3">
-        <div className="flex items-center gap-1">
-          <Image
-            src="/logos/teams.svg"
-            alt="Microsoft Teams"
-            width={24}
-            height={24}
-            className="mr-1 size-6"
-          />
-          <span className="hidden items-center sm:flex">
-            <IconButton
-              label="Back"
-              onClick={() => step(-1)}
-              disabled={history.index === 0}
-            >
-              <ChevronLeft className="size-4" />
-            </IconButton>
-            <IconButton
-              label="Forward"
-              onClick={() => step(1)}
-              disabled={history.index >= history.stack.length - 1}
-            >
-              <ChevronRight className="size-4" />
-            </IconButton>
-          </span>
-        </div>
+    <ShowSent value={showSent}>
+      <div className="flex h-dvh flex-col overflow-hidden bg-[#ebebeb] text-[#242424]">
+        <header className="grid h-12 shrink-0 grid-cols-[1fr_minmax(0,36rem)_1fr] items-center gap-2 px-2 sm:px-3">
+          <div className="flex items-center gap-1">
+            <Image
+              src="/logos/teams.svg"
+              alt="Microsoft Teams"
+              width={24}
+              height={24}
+              className="mr-1 size-6"
+            />
+            <span className="hidden items-center sm:flex">
+              <IconButton
+                label="Back"
+                onClick={() => step(-1)}
+                disabled={history.index === 0}
+              >
+                <ChevronLeft className="size-4" />
+              </IconButton>
+              <IconButton
+                label="Forward"
+                onClick={() => step(1)}
+                disabled={history.index >= history.stack.length - 1}
+              >
+                <ChevronRight className="size-4" />
+              </IconButton>
+            </span>
+          </div>
 
-        <label className="flex h-8 w-full items-center gap-2 rounded-md bg-white px-3 text-sm text-[#616161] shadow-sm focus-within:ring-2 focus-within:ring-[#5b5fc7]">
-          <Search className="size-4 shrink-0" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (section !== "chat" && section !== "teams") setSection("chat");
-              setListOpen(true);
-            }}
-            placeholder="Search people, chats and messages"
-            className="w-full min-w-0 bg-transparent text-[#242424] outline-none placeholder:text-[#616161]"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="rounded p-0.5 hover:bg-[#f0f0f0]"
-            >
-              <X className="size-3.5" />
-              <span className="sr-only">Clear search</span>
-            </button>
-          )}
-        </label>
-
-        <div className="flex items-center justify-end gap-1">
-          <Popover
-            label="Settings and more"
-            trigger={<Ellipsis className="size-4" />}
-          >
-            {(close) => (
-              <>
-                <MenuItem
-                  icon={<CheckCheck className="size-4" />}
-                  onClick={() => {
-                    markAllRead();
-                    close();
-                  }}
-                >
-                  Mark all as read
-                </MenuItem>
-                <MenuItem
-                  icon={<RotateCcw className="size-4" />}
-                  onClick={() => {
-                    reset();
-                    close();
-                  }}
-                >
-                  Reset demo
-                </MenuItem>
-              </>
-            )}
-          </Popover>
-          <Popover
-            label="Your profile"
-            triggerClassName="relative inline-flex rounded-full"
-            trigger={
-              <TeamsAvatar id={me.id} name={me.name} presence={presence} />
-            }
-          >
-            {(close) => (
-              <>
-                <div className="flex items-center gap-3 border-b border-[#f0f0f0] px-2.5 pt-2 pb-3">
-                  <TeamsAvatar
-                    id={me.id}
-                    name={me.name}
-                    size="lg"
-                    presence={presence}
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{me.name}</p>
-                    <p className="truncate text-xs text-[#616161]">{me.role}</p>
-                  </div>
-                </div>
-                <div className="pt-1">
-                  {(Object.keys(PRESENCE) as Presence[]).map((p) => (
-                    <MenuItem
-                      key={p}
-                      icon={<PresenceDot presence={p} className="ring-0" />}
-                      selected={p === presence}
-                      onClick={() => {
-                        setPresence(p);
-                        close();
-                      }}
-                    >
-                      {PRESENCE[p].label}
-                    </MenuItem>
-                  ))}
-                </div>
-              </>
-            )}
-          </Popover>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1">
-        <nav
-          aria-label="Apps"
-          className="flex w-[4.25rem] shrink-0 flex-col items-center gap-1 py-1"
-        >
-          {rail.map(({ id, label, icon: Icon, badge }) => (
-            <RailButton
-              key={id}
-              label={label}
-              current={section === id}
-              badge={badge}
-              onClick={() => {
-                setSection(id);
+          <label className="flex h-8 w-full items-center gap-2 rounded-md bg-white px-3 text-sm text-[#616161] shadow-sm focus-within:ring-2 focus-within:ring-[#5b5fc7]">
+            <Search className="size-4 shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (section !== "chat" && section !== "teams")
+                  setSection("chat");
                 setListOpen(true);
               }}
+              placeholder="Search people, chats and messages"
+              className="w-full min-w-0 bg-transparent text-[#242424] outline-none placeholder:text-[#616161]"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="rounded p-0.5 hover:bg-[#f0f0f0]"
+              >
+                <X className="size-3.5" />
+                <span className="sr-only">Clear search</span>
+              </button>
+            )}
+          </label>
+
+          <div className="flex items-center justify-end gap-1">
+            <Popover
+              label="Settings and more"
+              trigger={<Ellipsis className="size-4" />}
             >
-              <Icon
-                className="size-5"
-                strokeWidth={section === id ? 2.2 : 1.6}
-              />
-            </RailButton>
-          ))}
-          <RailButton
-            label="SD Wise"
-            current={false}
-            badge={0}
-            onClick={() => open("c-wise")}
-          >
-            <WiseMark className="size-6" />
-          </RailButton>
-          <Popover
-            label="Apps"
-            placement="right"
-            triggerClassName="flex w-14 flex-col items-center gap-1 rounded-md py-1.5 text-[10px] text-[#616161] transition-colors hover:bg-white/60 hover:text-[#5b5fc7]"
-            trigger={
-              <>
-                <span className="flex size-6 items-center justify-center">
-                  <LayoutGrid className="size-5" strokeWidth={1.6} />
-                </span>
-                <span aria-hidden>Apps</span>
-              </>
-            }
-          >
-            {(close) => (
-              <>
-                <p className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-[#616161]">
-                  Apps
-                </p>
-                {APPS.map((app) => (
+              {(close) => (
+                <>
                   <MenuItem
-                    key={app.id}
-                    icon={
-                      app.logo ? (
-                        <Image
-                          src={`/logos/${app.logo}.svg`}
-                          alt=""
-                          width={16}
-                          height={16}
-                        />
-                      ) : (
-                        <WiseMark className="size-4 border-0" />
-                      )
-                    }
+                    icon={<CheckCheck className="size-4" />}
                     onClick={() => {
+                      markAllRead();
                       close();
-                      if (app.id === "wise") open("c-wise");
-                      else notify(`${app.name} isn't part of this demo`);
                     }}
                   >
-                    {app.name}
+                    Mark all as read
                   </MenuItem>
-                ))}
+                  <MenuItem
+                    icon={<RotateCcw className="size-4" />}
+                    onClick={() => {
+                      reset();
+                      close();
+                    }}
+                  >
+                    Reset demo
+                  </MenuItem>
+                </>
+              )}
+            </Popover>
+            <Popover
+              label="Your profile"
+              triggerClassName="relative inline-flex rounded-full"
+              trigger={
+                <TeamsAvatar id={me.id} name={me.name} presence={presence} />
+              }
+            >
+              {(close) => (
+                <>
+                  <div className="flex items-center gap-3 border-b border-[#f0f0f0] px-2.5 pt-2 pb-3">
+                    <TeamsAvatar
+                      id={me.id}
+                      name={me.name}
+                      size="lg"
+                      presence={presence}
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">
+                        {me.name}
+                      </p>
+                      <p className="truncate text-xs text-[#616161]">
+                        {me.role}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pt-1">
+                    {(Object.keys(PRESENCE) as Presence[]).map((p) => (
+                      <MenuItem
+                        key={p}
+                        icon={<PresenceDot presence={p} className="ring-0" />}
+                        selected={p === presence}
+                        onClick={() => {
+                          setPresence(p);
+                          close();
+                        }}
+                      >
+                        {PRESENCE[p].label}
+                      </MenuItem>
+                    ))}
+                  </div>
+                </>
+              )}
+            </Popover>
+          </div>
+        </header>
+
+        <div className="flex min-h-0 flex-1">
+          <nav
+            aria-label="Apps"
+            className="flex w-[4.25rem] shrink-0 flex-col items-center gap-1 py-1"
+          >
+            {rail.map(({ id, label, icon: Icon, badge }) => (
+              <RailButton
+                key={id}
+                label={label}
+                current={section === id}
+                badge={badge}
+                onClick={() => {
+                  setSection(id);
+                  setListOpen(true);
+                }}
+              >
+                <Icon
+                  className="size-5"
+                  strokeWidth={section === id ? 2.2 : 1.6}
+                />
+              </RailButton>
+            ))}
+            <RailButton
+              label="SD Wise"
+              current={false}
+              badge={0}
+              onClick={() => open("c-wise")}
+            >
+              <WiseMark className="size-6" />
+            </RailButton>
+            <Popover
+              label="Apps"
+              placement="right"
+              triggerClassName="flex w-14 flex-col items-center gap-1 rounded-md py-1.5 text-[10px] text-[#616161] transition-colors hover:bg-white/60 hover:text-[#5b5fc7]"
+              trigger={
+                <>
+                  <span className="flex size-6 items-center justify-center">
+                    <LayoutGrid className="size-5" strokeWidth={1.6} />
+                  </span>
+                  <span aria-hidden>Apps</span>
+                </>
+              }
+            >
+              {(close) => (
+                <>
+                  <p className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-[#616161]">
+                    Apps
+                  </p>
+                  {APPS.map((app) => (
+                    <MenuItem
+                      key={app.id}
+                      icon={
+                        app.logo ? (
+                          <Image
+                            src={`/logos/${app.logo}.svg`}
+                            alt=""
+                            width={16}
+                            height={16}
+                          />
+                        ) : (
+                          <WiseMark className="size-4 border-0" />
+                        )
+                      }
+                      onClick={() => {
+                        close();
+                        if (app.id === "wise") open("c-wise");
+                        else notify(`${app.name} isn't part of this demo`);
+                      }}
+                    >
+                      {app.name}
+                    </MenuItem>
+                  ))}
+                </>
+              )}
+            </Popover>
+          </nav>
+
+          <div className="flex min-w-0 flex-1 overflow-hidden rounded-tl-lg bg-white shadow-sm">
+            {section === "calendar" ? (
+              <CalendarPane nameOf={nameOf} onJoin={setCall} />
+            ) : (
+              <>
+                <aside
+                  className={`w-full shrink-0 flex-col border-r border-[#e0e0e0] bg-[#f5f5f5] md:flex md:w-80 ${
+                    listOpen ? "flex" : "hidden"
+                  }`}
+                >
+                  {section === "activity" && (
+                    <ActivityList
+                      items={activity}
+                      isRead={isRead}
+                      nameOf={nameOf}
+                      onOpen={(item) => {
+                        setReadActivity((r) => [...r, item.id]);
+                        open(item.conversationId);
+                      }}
+                    />
+                  )}
+                  {section === "chat" && (
+                    <ChatList
+                      items={filtered.filter((c) => !c.teamId)}
+                      activeId={activeId}
+                      nameOf={nameOf}
+                      onOpen={open}
+                      newChat={
+                        <Popover
+                          label="New chat"
+                          trigger={<SquarePen className="size-4" />}
+                        >
+                          {(close) => (
+                            <>
+                              <p className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-[#616161]">
+                                Start a chat with
+                              </p>
+                              {newChatCandidates.map((m) => (
+                                <MenuItem
+                                  key={m.id}
+                                  icon={
+                                    <TeamsAvatar
+                                      id={m.id}
+                                      name={m.name}
+                                      size="sm"
+                                    />
+                                  }
+                                  onClick={() => {
+                                    startChat(m.id);
+                                    close();
+                                  }}
+                                >
+                                  {m.name}
+                                </MenuItem>
+                              ))}
+                              {newChatCandidates.length === 0 && (
+                                <p className="px-2.5 py-2 text-sm text-[#616161]">
+                                  You already chat with everyone.
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </Popover>
+                      }
+                    />
+                  )}
+                  {section === "teams" && (
+                    <TeamList
+                      items={filtered}
+                      activeId={activeId}
+                      onOpen={open}
+                    />
+                  )}
+                </aside>
+                <section
+                  className={`min-w-0 flex-1 flex-col ${listOpen ? "hidden md:flex" : "flex"}`}
+                >
+                  {active && (
+                    <ConversationPane
+                      key={active.id}
+                      me={me}
+                      conversation={active}
+                      team={TEAMS.find((t) => t.id === active.teamId)}
+                      nameOf={nameOf}
+                      onBack={() => setListOpen(true)}
+                      onCall={setCall}
+                      onUpdate={(fn) => update(active.id, fn)}
+                    />
+                  )}
+                </section>
               </>
             )}
-          </Popover>
-        </nav>
-
-        <div className="flex min-w-0 flex-1 overflow-hidden rounded-tl-lg bg-white shadow-sm">
-          {section === "calendar" ? (
-            <CalendarPane nameOf={nameOf} onJoin={setCall} />
-          ) : (
-            <>
-              <aside
-                className={`w-full shrink-0 flex-col border-r border-[#e0e0e0] bg-[#f5f5f5] md:flex md:w-80 ${
-                  listOpen ? "flex" : "hidden"
-                }`}
-              >
-                {section === "activity" && (
-                  <ActivityList
-                    items={activity}
-                    isRead={isRead}
-                    nameOf={nameOf}
-                    onOpen={(item) => {
-                      setReadActivity((r) => [...r, item.id]);
-                      open(item.conversationId);
-                    }}
-                  />
-                )}
-                {section === "chat" && (
-                  <ChatList
-                    items={filtered.filter((c) => !c.teamId)}
-                    activeId={activeId}
-                    nameOf={nameOf}
-                    onOpen={open}
-                    newChat={
-                      <Popover
-                        label="New chat"
-                        trigger={<SquarePen className="size-4" />}
-                      >
-                        {(close) => (
-                          <>
-                            <p className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-[#616161]">
-                              Start a chat with
-                            </p>
-                            {newChatCandidates.map((m) => (
-                              <MenuItem
-                                key={m.id}
-                                icon={
-                                  <TeamsAvatar
-                                    id={m.id}
-                                    name={m.name}
-                                    size="sm"
-                                  />
-                                }
-                                onClick={() => {
-                                  startChat(m.id);
-                                  close();
-                                }}
-                              >
-                                {m.name}
-                              </MenuItem>
-                            ))}
-                            {newChatCandidates.length === 0 && (
-                              <p className="px-2.5 py-2 text-sm text-[#616161]">
-                                You already chat with everyone.
-                              </p>
-                            )}
-                          </>
-                        )}
-                      </Popover>
-                    }
-                  />
-                )}
-                {section === "teams" && (
-                  <TeamList
-                    items={filtered}
-                    activeId={activeId}
-                    onOpen={open}
-                  />
-                )}
-              </aside>
-              <section
-                className={`min-w-0 flex-1 flex-col ${listOpen ? "hidden md:flex" : "flex"}`}
-              >
-                {active && (
-                  <ConversationPane
-                    key={active.id}
-                    me={me}
-                    conversation={active}
-                    team={TEAMS.find((t) => t.id === active.teamId)}
-                    nameOf={nameOf}
-                    onBack={() => setListOpen(true)}
-                    onCall={setCall}
-                    onUpdate={(fn) => update(active.id, fn)}
-                  />
-                )}
-              </section>
-            </>
-          )}
+          </div>
         </div>
-      </div>
 
-      {call && <CallOverlay call={call} onEnd={() => setCall(null)} />}
-    </div>
+        {call && <CallOverlay call={call} onEnd={() => setCall(null)} />}
+      </div>
+    </ShowSent>
   );
 }
 
@@ -752,6 +879,13 @@ function preview(c: Conversation, nameOf: (id: string) => string) {
       ? `Asked you: ${c.request.question}`
       : `${requestStatus(c.request).label} · ${c.request.question}`;
   }
+  if (c.sent) {
+    const { status, question, answer } = c.sent;
+    if (status === "ANSWERED") return answer ?? question;
+    return status === "PENDING"
+      ? `You asked: ${question}`
+      : `Declined · ${question}`;
+  }
   const last = c.messages.at(-1);
   if (!last) return "No messages yet";
   const author =
@@ -785,7 +919,10 @@ function ChatList({
   const shown = unreadOnly ? items.filter((c) => c.unread) : items;
   const pinned = shown.filter((c) => c.kind === "wise");
   const requests = shown.filter((c) => c.kind === "request");
-  const recent = shown.filter((c) => c.kind !== "wise" && c.kind !== "request");
+  const asked = shown.filter((c) => c.kind === "sent");
+  const recent = shown.filter(
+    (c) => c.kind !== "wise" && c.kind !== "request" && c.kind !== "sent",
+  );
 
   const row = (c: Conversation) => {
     const current = c.id === activeId;
@@ -804,7 +941,7 @@ function ChatList({
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e8ebfa] text-[#5b5fc7]">
             <Users className="size-4" />
           </span>
-        ) : c.kind === "request" ? (
+        ) : c.kind === "request" || c.kind === "sent" ? (
           <RequestAvatar id={firstId} name={c.title} />
         ) : (
           <TeamsAvatar
@@ -859,6 +996,12 @@ function ChatList({
           <div>
             <SectionLabel>Questions from SD Wise</SectionLabel>
             {requests.map(row)}
+          </div>
+        )}
+        {asked.length > 0 && (
+          <div>
+            <SectionLabel>Your questions</SectionLabel>
+            {asked.map(row)}
           </div>
         )}
         {recent.length > 0 && (
@@ -985,7 +1128,8 @@ function ActivityList({
               onClick={() => onOpen(item)}
               className="flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left hover:bg-white/70"
             >
-              {item.conversationId.startsWith("q-") ? (
+              {item.conversationId.startsWith("q-") ||
+              item.conversationId.startsWith("s-") ? (
                 <RequestAvatar
                   id={item.authorId}
                   name={nameOf(item.authorId)}

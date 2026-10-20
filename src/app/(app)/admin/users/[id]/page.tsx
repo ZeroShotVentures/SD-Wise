@@ -70,17 +70,17 @@ export default async function Page({
       <header className="space-y-2">
         <Link
           href="/admin"
-          className="-my-2 inline-block py-2 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          className="-my-2 inline-block py-2 text-sm text-zinc-500 hover:text-zinc-900"
         >
           ← All users
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="min-w-0 text-xl font-semibold tracking-tight wrap-anywhere text-zinc-900 sm:text-2xl dark:text-zinc-50">
+          <h1 className="min-w-0 text-xl font-semibold tracking-tight wrap-anywhere text-zinc-900 sm:text-2xl">
             {target.name || target.email}
           </h1>
           <UserBadges user={target} />
         </div>
-        <p className="text-sm wrap-anywhere text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm wrap-anywhere text-zinc-500">
           {[
             target.email,
             `joined ${dateFormat.format(new Date(target.createdAt))} UTC`,
@@ -89,14 +89,12 @@ export default async function Page({
             .filter(Boolean)
             .join(" · ")}
         </p>
-        <p className="font-mono text-xs break-all text-zinc-400 dark:text-zinc-500">
-          {target.id}
-        </p>
+        <p className="font-mono text-xs break-all text-zinc-400">{target.id}</p>
       </header>
 
       {isSelf ? (
         <Section title="This is you">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500">
             Admin actions are disabled on your own account. Manage it in{" "}
             <Link href="/settings" className="underline">
               Settings
@@ -111,7 +109,7 @@ export default async function Page({
             description="Sign in as this user to see what they see. The session ends after an hour or when you stop impersonating, and is hidden from the user's session list."
           >
             {targetIsAdmin ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm text-zinc-500">
                 Admins can&apos;t be impersonated.
               </p>
             ) : (
@@ -140,27 +138,25 @@ export default async function Page({
             description="Devices currently signed in to this account."
           >
             {activeSessions.length === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No active sessions.
-              </p>
+              <p className="text-sm text-zinc-500">No active sessions.</p>
             ) : (
               <>
-                <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <ul className="divide-y divide-zinc-200">
                   {activeSessions.map((s) => (
                     <li
                       key={s.id}
                       className="flex items-center justify-between gap-4 py-3 text-sm"
                     >
                       <div className="min-w-0 wrap-anywhere">
-                        <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                        <p className="font-medium text-zinc-900">
                           {describeUserAgent(s.userAgent ?? null)}
                           {s.impersonatedBy && (
-                            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
                               Impersonation
                             </span>
                           )}
                         </p>
-                        <p className="text-zinc-500 dark:text-zinc-400">
+                        <p className="text-zinc-500">
                           {[
                             s.ipAddress,
                             `signed in ${dateFormat.format(new Date(s.createdAt))} UTC`,

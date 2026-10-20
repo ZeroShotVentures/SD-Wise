@@ -42,33 +42,31 @@ export function ConsentForm({ clientName, email, scopes }: ConsentFormProps) {
   };
 
   return (
-    <div className="w-full max-w-sm space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="w-full max-w-sm space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
           Allow {clientName}?
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-zinc-500">
           It will use SD Wise as {email}, and only see what you can see.
         </p>
       </div>
 
-      <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+      <ul className="space-y-1 text-sm text-zinc-700">
         <li>Ask questions and send them to colleagues</li>
         {scopes.map((scope) => (
           <li key={scope}>{SCOPE_LABEL[scope] ?? scope}</li>
         ))}
       </ul>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-3">
         <button
           type="button"
           disabled={loading}
           onClick={() => decide(false)}
-          className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 sm:py-2.5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 sm:py-2.5"
         >
           Deny
         </button>
@@ -76,7 +74,7 @@ export function ConsentForm({ clientName, email, scopes }: ConsentFormProps) {
           type="button"
           disabled={loading}
           onClick={() => decide(true)}
-          className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 sm:py-2.5 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 sm:py-2.5"
         >
           Allow
         </button>

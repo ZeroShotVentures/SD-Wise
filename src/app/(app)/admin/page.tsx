@@ -50,10 +50,10 @@ export default async function Page({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
           Admin
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-zinc-500">
           {total} {total === 1 ? "user" : "users"}
           {query ? ` matching "${query}"` : ""}
         </p>
@@ -73,50 +73,42 @@ export default async function Page({
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
             <tr>
               <th className="px-4 py-2 font-medium">User</th>
               <th className="px-4 py-2 font-medium">Status</th>
               <th className="px-4 py-2 font-medium max-sm:hidden">Joined</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-zinc-200">
             {users.map((user) => (
               // The link stretches over the row, so the whole row is a target.
-              <tr
-                key={user.id}
-                className="relative hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              >
+              <tr key={user.id} className="relative hover:bg-zinc-50">
                 <td className="px-4 py-3 wrap-anywhere">
                   <Link
                     href={`/admin/users/${user.id}`}
-                    className="font-medium text-zinc-900 after:absolute after:inset-0 hover:underline dark:text-zinc-50"
+                    className="font-medium text-zinc-900 after:absolute after:inset-0 hover:underline"
                   >
                     {user.name || user.email}
                   </Link>
-                  <p className="text-zinc-500 dark:text-zinc-400">
-                    {user.email}
-                  </p>
-                  <p className="text-xs text-zinc-400 sm:hidden dark:text-zinc-500">
+                  <p className="text-zinc-500">{user.email}</p>
+                  <p className="text-xs text-zinc-400 sm:hidden">
                     Joined {dateFormat.format(new Date(user.createdAt))}
                   </p>
                 </td>
                 <td className="px-4 py-3">
                   <UserBadges user={user} />
                 </td>
-                <td className="px-4 py-3 text-zinc-500 max-sm:hidden dark:text-zinc-400">
+                <td className="px-4 py-3 text-zinc-500 max-sm:hidden">
                   {dateFormat.format(new Date(user.createdAt))}
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td
-                  colSpan={3}
-                  className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400"
-                >
+                <td colSpan={3} className="px-4 py-8 text-center text-zinc-500">
                   No users found.
                 </td>
               </tr>
@@ -126,7 +118,7 @@ export default async function Page({
       </div>
 
       {pageCount > 1 && (
-        <nav className="flex items-center justify-between gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+        <nav className="flex items-center justify-between gap-4 text-sm text-zinc-500">
           <span>
             Page {pageNumber} of {pageCount}
           </span>

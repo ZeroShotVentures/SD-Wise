@@ -29,8 +29,7 @@ async function appClient() {
 let client: Promise<string> | undefined;
 
 const BASE_STYLE = `
-  :root { color-scheme: light dark; --fg: #10233f; --muted: #6b7280; --line: #e5e7eb; --brand: #2563eb; --card: #fff; --soft: #f5f7fa; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #e5e7eb; --muted: #9ca3af; --line: #374151; --card: #1f2937; --soft: #111827; } }
+  :root { color-scheme: light; --fg: #10233f; --muted: #6b7280; --line: #e5e7eb; --brand: #2563eb; --card: #fff; --soft: #f5f7fa; }
   * { box-sizing: border-box; }
   body { margin: 0; font: 14px/1.5 system-ui, sans-serif; color: var(--fg); background: transparent; }
   .card { border: 1px solid var(--line); border-radius: 14px; background: var(--card); padding: 16px; display: grid; gap: 14px; }

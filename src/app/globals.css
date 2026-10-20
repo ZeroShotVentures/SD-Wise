@@ -17,6 +17,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Light only: ignore the browser's dark mode preference. */
+html {
+  color-scheme: only light;
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);

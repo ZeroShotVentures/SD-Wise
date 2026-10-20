@@ -153,19 +153,9 @@ export async function askOwners(me: Person, question: string) {
     byOwner.set(ownerId, [...(byOwner.get(ownerId) ?? []), node.id]);
   }
   await Promise.all(
-    [...byOwner].map(async ([recipientId, nodeIds]) => {
-      const existing = await prisma.question.findFirst({
-        where: {
-          routed: true,
-          status: "PENDING",
-          askerId: me.id,
-          recipientId,
-          nodeIds: { hasSome: nodeIds },
-        },
-      });
-      if (existing) return;
-      await send(me, { recipientId, question, nodeIds, routed: true });
-    }),
+    [...byOwner].map(([recipientId, nodeIds]) =>
+      send(me, { recipientId, question, nodeIds, routed: true }),
+    ),
   );
 }
 
@@ -185,6 +175,17 @@ export async function askPerson(
   return send(me, { recipientId, question, nodeIds, routed: false });
 }
 
+// Questions an asker can have waiting on an answer, to one colleague and in
+// all. Every question lands in someone's inbox and has Claude draft a reply,
+// so the rate limit alone would let one person keep filling an inbox.
+const PENDING_PER_RECIPIENT = 5;
+const PENDING_PER_ASKER = 20;
+
+// Checks and creates under a lock on the asker, so concurrent sends can't all
+// pass the checks before any of them is created. Returns null when the
+// question isn't sent: a routed one that is already pending, or one over a cap.
+// Routed questions are dropped silently, so the asker can't learn whose facts
+// matched; a question to a chosen colleague throws instead.
 async function send(
   me: Person,
   data: {
@@ -194,10 +195,39 @@ async function send(
     routed: boolean;
   },
 ) {
-  const created = await prisma.question.create({
-    data: { ...data, askerId: me.id },
-    include: withPeople,
+  const created = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`send:${me.id}`}))`;
+    const pending = { askerId: me.id, status: "PENDING" as const };
+    if (data.routed) {
+      const existing = await tx.question.findFirst({
+        where: {
+          ...pending,
+          routed: true,
+          recipientId: data.recipientId,
+          nodeIds: { hasSome: data.nodeIds },
+        },
+        select: { id: true },
+      });
+      if (existing) return null;
+    }
+    const [toRecipient, inAll] = await Promise.all([
+      tx.question.count({
+        where: { ...pending, recipientId: data.recipientId },
+      }),
+      tx.question.count({ where: pending }),
+    ]);
+    if (toRecipient >= PENDING_PER_RECIPIENT || inAll >= PENDING_PER_ASKER) {
+      if (data.routed) return null;
+      throw new Error(
+        "Too many unanswered questions. Wait for some answers first.",
+      );
+    }
+    return tx.question.create({
+      data: { ...data, askerId: me.id },
+      include: withPeople,
+    });
   });
+  if (!created) return null;
   // Draft the reply now, so it's ready when the recipient opens their inbox.
   after(async () => {
     await draftReply(toQuery(created), await readGraph(prisma));

@@ -67,6 +67,6 @@ jobs:
       - name: Seed the graph, twice to check it's safe to re-run
         run: pnpm db:seed && pnpm db:seed
       - name: Database tests
-        run: pnpm exec vitest run src/lib/graph/store.test.ts
+        run: pnpm exec vitest run --no-file-parallelism src/lib/graph/store.test.ts src/lib/graph/service.test.ts
         env:
           TEST_DATABASE_URL: postgresql://my-app:my-app@localhost:5432/my-app?schema=public

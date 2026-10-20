@@ -149,7 +149,7 @@ export function GraphExplorer({
       if (id !== run.current) return;
       setHighlight(EMPTY);
       setStatus(null);
-      setError("Something went wrong while searching. Try again.");
+      setError("Search failed. Try again.");
       return;
     } finally {
       clearInterval(scan);
@@ -239,9 +239,7 @@ export function GraphExplorer({
         <p className="mt-0.5 text-xs text-white/60 sm:mt-1 sm:text-sm">
           {view.nodes.length} facts in {clustering.clusters.length} topics · you
           can see {visible}
-          <span className="max-sm:hidden">
-            , the rest is known by colleagues
-          </span>
+          <span className="max-sm:hidden">, colleagues know the rest</span>
         </p>
       </header>
 
@@ -256,7 +254,7 @@ export function GraphExplorer({
           </li>
         ))}
         <li className="flex items-center gap-2">
-          <Lock className="size-2.5" /> No access
+          <Lock className="size-2.5" /> Locked
         </li>
       </ul>
 

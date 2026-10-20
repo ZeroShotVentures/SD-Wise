@@ -34,8 +34,7 @@ ${RULES}`;
 const CANT_HELP = "CANT_HELP";
 
 // When it can't help and doesn't reply properly.
-const CANT_HELP_TEXT =
-  "I can't help you with that. You can ask a colleague with the button below.";
+const CANT_HELP_TEXT = "I can't help with that. You can ask a colleague below.";
 
 // For questions no fact answers. Claude answers the ones that need no company
 // knowledge, like the time or what SD Wise can do, and says it can't help with
@@ -44,7 +43,7 @@ const GENERAL_SYSTEM = `You are SD Wise, the company brain of SD Worx. An employ
 
 - Answer only if the question needs no knowledge of SD Worx, its people, customers, plans or policies: the date or time, a greeting, simple maths, or what you can do (answer questions from the company's chats, emails and meetings, and point to colleagues who know more).
 - Lead with the answer, in 1 or 2 sentences. Plain text, no markdown.
-- Otherwise, reply with ${CANT_HELP} followed by one friendly sentence, in the question's language, saying you can't help with that and they can ask a colleague with the button below.`;
+- Otherwise, reply with ${CANT_HELP} followed by one friendly sentence, in the question's language, saying you can't help with that and they can ask a colleague below.`;
 
 // SD Worx is in Belgium, so the time is Brussels time.
 function now() {

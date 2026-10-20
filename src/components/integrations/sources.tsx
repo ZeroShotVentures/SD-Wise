@@ -96,7 +96,7 @@ export function Sources({
     change([integration.id], false);
     setToast({
       id: ++toastId.current,
-      message: `${label} disconnected. Its facts left the graph.`,
+      message: `${label} disconnected. Its facts are removed from the graph.`,
       undo: () => change([integration.id], true),
     });
   };
@@ -349,8 +349,7 @@ function SuiteHero({
             </h2>
             <p className="mt-1 max-w-lg text-sm text-muted">
               One sign-in for {apps.slice(0, -1).join(", ")} and {apps.at(-1)}.
-              SD Wise reads through {meta.api} with your own permissions, and
-              never writes anything back.
+              Read-only through {meta.api}, with your own permissions.
             </p>
           </div>
         </div>

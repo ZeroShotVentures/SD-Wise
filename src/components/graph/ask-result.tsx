@@ -50,7 +50,7 @@ export function AskResultCard({
           <div>
             {answer.nodeIds.length > 0 && (
               <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
-                <Lightbulb className="size-3.5" /> From what you know
+                <Lightbulb className="size-3.5" /> From what you can see
               </h3>
             )}
             <p className="text-sm leading-relaxed text-ink">{answer.text}</p>
@@ -89,10 +89,10 @@ export function AskResultCard({
 
 const withheld = (lit: number) =>
   lit === 0
-    ? "Some of what they know about this isn't shared with you."
+    ? "Colleagues know more about this than you can see."
     : lit === 1
-      ? "The locked fact lit up in red matches this, but isn't shared with you."
-      : `The ${lit} locked facts lit up in red match this, but aren't shared with you.`;
+      ? "A locked fact, in red on the graph, matches your question."
+      : `${lit} locked facts, in red on the graph, match your question.`;
 
 // Sends the question to whoever knows the locked matches, with a drafted
 // answer. The search reruns on the server, so it carries the original
@@ -126,16 +126,16 @@ export function AskOwners({
         <KeyRound className="size-3.5" /> Colleagues know more
       </h3>
       <p className="mt-2 text-sm text-ink">
-        {withheld(lit)} SD Wise can send your question to who knows, with an
-        answer drafted for them. They decide what to tell you.
+        {withheld(lit)} Ask, and the people who know get your question with a
+        reply already drafted. They decide what to tell you.
       </p>
       {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
       {sent ? (
         <p className="mt-3 text-xs text-muted">
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-            <Check className="size-3.5" /> Asked.
+            <Check className="size-3.5" /> Sent.
           </span>{" "}
-          You&apos;ll see their answer in{" "}
+          Their answer shows up in{" "}
           <Link href="/inbox?tab=sent" className="font-medium text-brand">
             Inbox → Sent
           </Link>
@@ -149,7 +149,7 @@ export function AskOwners({
           className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50 sm:py-1.5"
         >
           <Send className="size-3" />
-          {pending ? "Asking..." : "Ask a colleague"}
+          {pending ? "Sending..." : "Ask a colleague"}
         </button>
       )}
     </div>
@@ -196,13 +196,19 @@ export function AskColleague({ question }: { question: string }) {
       <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
         <UserRound className="size-3.5" /> Ask a colleague
       </h3>
+      {!sentTo && (
+        <p className="mt-2 text-sm text-ink">
+          Send your question to someone who might know. SD Wise drafts their
+          reply for them.
+        </p>
+      )}
       {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
       {sentTo ? (
         <p className="mt-3 text-xs text-muted">
           <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
             <Check className="size-3.5" /> Sent to {sentTo.name}.
           </span>{" "}
-          You&apos;ll see the answer in{" "}
+          Their answer shows up in{" "}
           <Link href="/inbox?tab=sent" className="font-medium text-brand">
             Inbox → Sent
           </Link>
@@ -229,7 +235,7 @@ export function AskColleague({ question }: { question: string }) {
             className={button}
           >
             <Send className="size-3" />
-            {pending ? "Sending..." : "Send question"}
+            {pending ? "Sending..." : "Send"}
           </button>
         </div>
       ) : (
@@ -240,7 +246,7 @@ export function AskColleague({ question }: { question: string }) {
           className={`mt-3 ${button}`}
         >
           <UserRound className="size-3" />
-          {pending ? "Loading..." : "Ask a colleague"}
+          {pending ? "Loading..." : "Choose a colleague"}
         </button>
       )}
     </div>

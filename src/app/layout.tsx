@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s · SD Wise",
   },
   description:
-    "Ask your company brain. Get an answer, or the person who knows.",
+    "Ask your company brain. It answers from what you can see and asks colleagues for the rest.",
 };
 
 // "cover" lets the bottom tab bar pad itself clear of the home indicator.

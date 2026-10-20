@@ -46,7 +46,7 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
           Sign in
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Enter your credentials to continue
+          Ask the company brain. It answers from what you can see.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
           disabled={loading}
           className="w-full rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 sm:py-2.5 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          {loading ? "Loading..." : "Sign in"}
+          {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
     </div>

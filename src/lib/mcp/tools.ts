@@ -1,9 +1,6 @@
 import { z } from "zod";
-import {
-  askPersonInput,
-  question,
-  requestAccessInput,
-} from "@/lib/graph/schemas";
+import { question, requestMoreInput } from "@/lib/graph/schemas";
+import { ASK_APP_URI } from "./ask-app";
 
 // The MCP tools: their names, descriptions, inputs and hints. The server
 // registers exactly these and the Integrations page lists them, so the two
@@ -12,35 +9,27 @@ export const tools = {
   ask: {
     title: "Ask the company brain",
     description:
-      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. Facts you can't see come back as locked facts with their owners, plus people who know more.",
+      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. The answer card has a Request access button for the rest.",
     inputSchema: z.object({
       question: question.describe("The question, in plain language"),
     }),
     annotations: { readOnlyHint: true, openWorldHint: false },
+    _meta: { ui: { resourceUri: ASK_APP_URI } },
   },
-  ask_person: {
-    title: "Ask a colleague",
+  // Only the answer card's button calls this, so a request always comes from
+  // the user clicking, never from the model on its own.
+  request_more: {
+    title: "Request the rest of an answer",
     description:
-      "Send a question to a colleague. They get it in their inbox with a drafted reply. Use ids from `ask` (peopleWhoKnowMore and nodeIds).",
-    inputSchema: askPersonInput,
+      "Forward a question to whoever holds the locked information behind `moreAvailable`. They decide whether to share it.",
+    inputSchema: requestMoreInput,
     annotations: {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
-  },
-  request_access: {
-    title: "Request access to a locked fact",
-    description:
-      "Ask the owner of a locked fact for access. Use a locked fact id and one of its owner ids from `ask`.",
-    inputSchema: requestAccessInput,
-    annotations: {
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: true,
-      openWorldHint: false,
-    },
+    _meta: { ui: { resourceUri: ASK_APP_URI, visibility: ["app" as const] } },
   },
   list_inbox: {
     title: "List your inbox",
@@ -48,13 +37,15 @@ export const tools = {
       "List the questions and access requests sent to you, and the ones you sent, with their status and answers.",
     annotations: { readOnlyHint: true, openWorldHint: false },
   },
-} as const;
+};
 
 export type ToolSummary = {
   name: string;
   title: string;
   description: string;
   readOnly: boolean;
+  // Hidden from the model; only the answer card can call it.
+  appOnly: boolean;
   params: { name: string; type: string; required: boolean }[];
 };
 
@@ -73,11 +64,16 @@ export function toolSummaries(): ToolSummary[] {
       Record<string, unknown>
     >;
     const required = new Set(schema?.required ?? []);
+    const { _meta: meta } = tool as {
+      _meta?: { ui: { visibility?: string[] } };
+    };
+    const ui = meta?.ui;
     return {
       name,
       title: tool.title,
       description: tool.description,
       readOnly: tool.annotations.readOnlyHint,
+      appOnly: !!ui?.visibility && !ui.visibility.includes("model"),
       params: Object.entries(properties).map(([param, value]) => ({
         name: param,
         type: typeOf(value),

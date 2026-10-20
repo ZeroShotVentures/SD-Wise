@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   Eye,
   Loader2,
+  MousePointerClick,
   Send,
   TriangleAlert,
   Unplug,
@@ -149,7 +150,7 @@ function guides(url: string): Guide[] {
 
 const PROMPTS = [
   "Ask SD Wise when the December payroll cut-off is",
-  "Who knows about the deploy freeze over the holidays?",
+  "Is there a deploy freeze over the holidays?",
   "What's waiting in my SD Wise inbox?",
 ];
 
@@ -622,7 +623,12 @@ function Tools({ tools }: { tools: ToolSummary[] }) {
               <code className="font-mono text-sm font-semibold text-navy">
                 {tool.name}
               </code>
-              {tool.readOnly ? (
+              {tool.appOnly ? (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
+                  <MousePointerClick className="size-3" /> Only from the answer
+                  card
+                </span>
+              ) : tool.readOnly ? (
                 <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                   <Eye className="size-3" /> Read-only
                 </span>

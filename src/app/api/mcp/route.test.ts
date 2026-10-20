@@ -33,7 +33,7 @@ vi.mock("@/lib/graph/service", () => ({
   personFor: mocks.personFor,
   ask: async (me: { id: string }, q: string) => {
     const { hits, visited } = searchGraph(q, nodes, edges);
-    return answerFor(q, me.id, hits, visited, nodes, people);
+    return answerFor(q, me.id, hits, visited, nodes);
   },
   getGraph: async (me: { id: string }) => ({
     people,
@@ -112,13 +112,46 @@ describe("/api/mcp", () => {
     const { tools } = await result(res);
     expect(tools.map((t: { name: string }) => t.name).toSorted()).toEqual([
       "ask",
-      "ask_person",
       "list_inbox",
-      "request_access",
+      "request_more",
     ]);
+    expect(
+      tools.find((t: { name: string }) => t.name === "request_more"),
+    ).toMatchObject({ _meta: { ui: { visibility: ["app"] } } });
     const ask = tools.find((t: { name: string }) => t.name === "ask");
     expect(ask.title).toBe("Ask the company brain");
     expect(ask.annotations.readOnlyHint).toBe(true);
+  });
+
+  it("serves `ask` with an MCP App card", async () => {
+    const { POST } = await import("./route");
+    const list = await result(
+      await POST(rpc({ jsonrpc: "2.0", id: 1, method: "tools/list" }, asUser)),
+    );
+    expect(
+      list.tools.find((t: { name: string }) => t.name === "ask"),
+    ).toMatchObject({
+      _meta: { ui: { resourceUri: "ui://sd-wise/ask.html" } },
+    });
+
+    const read = await result(
+      await POST(
+        rpc(
+          {
+            jsonrpc: "2.0",
+            id: 2,
+            method: "resources/read",
+            params: { uri: "ui://sd-wise/ask.html" },
+          },
+          asUser,
+        ),
+      ),
+    );
+    const [page] = read.contents;
+    expect(page.mimeType).toBe("text/html;profile=mcp-app");
+    expect(page.text).toContain("Request access");
+    expect(page.text).toContain("const App = ");
+    expect(page.text).not.toMatch(/export\s*\{/);
   });
 
   it("answers `ask` as the token's user without leaking locked facts", async () => {
@@ -139,7 +172,8 @@ describe("/api/mcp", () => {
     );
     const text = (await result(res)).content[0].text as string;
     expect(mocks.personFor).toHaveBeenCalledWith("u-julien");
-    expect(JSON.parse(text).lockedFacts.length).toBeGreaterThan(0);
+    expect(JSON.parse(text).moreAvailable).toBe(true);
     expect(text).not.toContain("€4.20");
+    expect(text).not.toContain("p-bram");
   });
 });

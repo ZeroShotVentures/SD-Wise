@@ -7,6 +7,7 @@ import {
   id,
   question,
   requestAccessInput,
+  requestMoreInput,
 } from "@/lib/graph/schemas";
 import * as graph from "@/lib/graph/service";
 
@@ -33,6 +34,13 @@ export async function requestAccess(input: {
   const me = await requirePerson();
   const data = requestAccessInput.parse(input);
   await graph.requestAccess(me, data.nodeId, data.ownerId);
+  revalidatePath("/", "layout");
+}
+
+export async function requestMore(input: { question: string }) {
+  const me = await requirePerson();
+  const data = requestMoreInput.parse(input);
+  await graph.requestMore(me, data.question);
   revalidatePath("/", "layout");
 }
 

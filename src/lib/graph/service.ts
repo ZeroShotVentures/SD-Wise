@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
-import { answerFor, draftAnswer, searchGraph } from "./ai";
+import { answerFor, draftAnswer, lockedHits, searchGraph } from "./ai";
 import {
   answerNodeId,
   applyAnswers,
@@ -171,7 +171,45 @@ export async function markSeen(me: Person, rawNodeId: string) {
 export async function ask(me: Person, question: string): Promise<AskResult> {
   const { nodes, edges } = await loadGraph();
   const { hits, visited } = searchGraph(question, nodes, edges);
-  return answerFor(question, me.id, hits, visited, nodes, fixtures.people);
+  return answerFor(question, me.id, hits, visited, nodes);
+}
+
+// Asks the owners of locked facts matching the question to share them. The
+// search reruns here so the asker never learns which facts or whose. One
+// request per owner, carrying the asker's question as context. Returns
+// nothing either way, so a request can't confirm that anything matched.
+export async function requestMore(me: Person, question: string) {
+  const { nodes, edges } = await loadGraph();
+  const { hits } = searchGraph(question, nodes, edges);
+  const byOwner = new Map<string, string[]>();
+  for (const node of lockedHits(me.id, hits, nodes)) {
+    const ownerId = node.ownerIds[0];
+    if (!ownerId) continue;
+    byOwner.set(ownerId, [...(byOwner.get(ownerId) ?? []), node.id]);
+  }
+  await Promise.all(
+    [...byOwner].map(async ([ownerId, nodeIds]) => {
+      const existing = await prisma.question.findFirst({
+        where: {
+          kind: "ACCESS",
+          status: "PENDING",
+          askerId: me.id,
+          recipientId: ownerId,
+          nodeIds: { hasSome: nodeIds },
+        },
+      });
+      if (existing) return;
+      await prisma.question.create({
+        data: {
+          kind: "ACCESS",
+          askerId: me.id,
+          recipientId: ownerId,
+          question,
+          nodeIds,
+        },
+      });
+    }),
+  );
 }
 
 export async function askPerson(
@@ -263,9 +301,12 @@ export async function answerQuery(
 
 export async function approveAccess(me: Person, rawQueryId: string) {
   const queryId = parseId(rawQueryId);
-  const query = await prisma.question.findUnique({ where: { id: queryId } });
+  const [query, { all }] = await Promise.all([
+    prisma.question.findUnique({ where: { id: queryId } }),
+    loadGraph(),
+  ]);
   const owns = query?.nodeIds.every((id) =>
-    fixtures.nodes.find((n) => n.id === id)?.ownerIds.includes(me.id),
+    all.find((n) => n.id === id)?.ownerIds.includes(me.id),
   );
   if (query?.kind === "ACCESS" && !owns) throw new Error("Not an owner");
   await resolve(me, queryId, "ACCESS", {
@@ -277,6 +318,8 @@ export async function approveAccess(me: Person, rawQueryId: string) {
 export async function declineQuery(me: Person, queryId: string) {
   await resolve(me, queryId, undefined, { status: "DECLINED" });
 }
+
+const HIDDEN_OWNER = { id: "owner", name: "The owner", role: "Owner" };
 
 export async function getInbox(me: Person) {
   const [rows, graph] = await Promise.all([
@@ -310,10 +353,24 @@ export async function getInbox(me: Person) {
     };
   };
 
+  // Until an owner shares, an access request mustn't tell the asker who it
+  // went to. Once shared, the fact itself names its owners.
+  const hideOwner = (item: InboxItem): InboxItem =>
+    item.kind === "ACCESS" && item.status !== "ANSWERED"
+      ? {
+          ...item,
+          recipientId: "",
+          recipient: { ...HIDDEN_OWNER, department: me.department },
+        }
+      : item;
+
   const queries = rows.map(toQuery);
   return {
     received: queries.filter((q) => q.recipientId === me.id).map(toItem),
-    sent: queries.filter((q) => q.askerId === me.id).map(toItem),
+    sent: queries
+      .filter((q) => q.askerId === me.id)
+      .map(toItem)
+      .map(hideOwner),
   };
 }
 

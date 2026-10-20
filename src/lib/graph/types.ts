@@ -118,19 +118,15 @@ export type GraphView = {
   edges: EdgeView[];
 };
 
-export type SuggestedPerson = {
-  person: Person;
-  nodeIds: string[];
-  reason: string;
-};
-
+// Only nodes the viewer can see. `moreAvailable` says locked nodes matched
+// too, without saying which, whose or how many.
 export type AskResult = {
   question: string;
   // Order the search touched nodes, for the animation.
   visited: string[];
   hits: string[];
   answer: { text: string; nodeIds: string[] } | null;
-  people: SuggestedPerson[];
+  moreAvailable: boolean;
 };
 
 export type InboxItem = Query & {

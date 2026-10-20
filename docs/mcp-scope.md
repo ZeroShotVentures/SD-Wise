@@ -11,12 +11,12 @@
    - `/.well-known/*` forwards to Better Auth for discovery (protected resource and authorization server metadata).
    - Migration `20261020120000_mcp_oauth` adds the OAuth Provider tables and `jwks`.
 2. **Endpoint:** `src/app/api/mcp/route.ts`, `@modelcontextprotocol/server` v2 (stateless), wrapped in `requireMcpAuth`. The token's `sub` resolves to a `Person` via `personFor`; accounts without one get a 403. 2025-protocol clients are served statelessly as well.
-3. **Tools:** `ask`, `ask_person`, `request_access`, `list_inbox`. None take a person id.
+3. **Tools:** `ask` (with an MCP App answer card), `request_more` (called by the card only), `list_inbox`. None take a person id.
 4. **Shared validation:** zod schemas in `src/lib/graph/schemas.ts`, used by the Server Actions and the tools.
 5. **Tests:** 401 challenge without or with a forged token, 403 for users without a person, tool listing, `ask` runs as the token's user and never returns locked content.
 
 ## Out of scope for v1
 
 - Answering inbox questions over MCP; graph-write tools.
-- Custom scopes per tool, a "connected apps" list with revoke in Settings.
+- Custom scopes per tool. (A "connected apps" list with revoke has since been built, on Integrations → MCP.)
 - Replacing the graph fixtures with real data.

@@ -34,7 +34,7 @@ Every fact, and who is allowed to see it, is stored in the database. SD Wise onl
 
 ### Accounts
 
-Sign in with one of these two accounts:
+Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus demo questions) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
 
 | User | Email | Password | Role |
 | --- | --- | --- | --- |

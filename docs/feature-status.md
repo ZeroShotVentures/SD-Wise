@@ -1,10 +1,10 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) and [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph): lint, typecheck, `next build` and all 67 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph) and an account for every person in the graph: lint, typecheck, `next build` and all 73 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
 
 ## In short
 
-- **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too.
+- **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Every person who owns a fact has an account, so you can sign in as anyone and see the graph as they do. Sign-in, settings, admin and the MCP server are real too.
 - **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, and integrations are an in-memory on/off switch. Claude does write the answer and the drafted reply, from whatever that search finds.
 - **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and document sources.
 
@@ -20,7 +20,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | Facts, edges and people | Mocked | 🟡 | 4,300 facts, 6,216 edges and 313 people, all in code: 30 hand-written demo facts ([fixtures.ts](../src/lib/graph/fixtures.ts)), 3,940 generated from a fixed seed ([bulk-fixtures.ts](../src/lib/graph/bulk-fixtures.ts)), and 330 AI-generated ones moved out of the database ([db-fixtures.ts](../src/lib/graph/db-fixtures.ts)). The `KnowledgeNode` and `KnowledgeEdge` tables exist but are empty and never read. |
-| Who can see each fact | Mocked | 🟡 | Owners and access lists are assigned in the fixtures, not taken from the source (channel members, mail recipients, meeting attendees). |
+| Who can see each fact | Real logic, mock data | 🟡 | Owners and access lists are assigned in the fixtures, not taken from the source (channel members, mail recipients, meeting attendees). Every owner is an account ([Accounts](#accounts)), so the locks in the graph are the signed-in person's own. Kobe and Filip were also given access to about 140 facts each from conversations they weren't in, so they have more to see in a demo. |
 | Redaction of locked facts | Real logic, mock data | ✅ | Done on the server, so locked content never reaches the browser. Edges touching a locked fact lose their meaning too. Tested. |
 | Graph view (semantic zoom, zoom slider, fit to screen, legend) | Real | ✅ | Renders every fact; locked ones show as a lock. Detail depends on zoom: zoomed out you see topic islands with names, fact counts and bundled links between topics; zooming in fades in the edges and moves island names to the island's edge as captions; zoomed in shows fact names wherever they fit without overlapping. Click an island to zoom into it; hover a fact to highlight its neighbours. Screenshots in [graph-semantic-zoom](graph-semantic-zoom/README.md). The legend has no entry for documents, but no fact is a document yet. |
 | Topic islands and their names | Real logic, mock data | ✅ | Computed in the browser from the graph's edges (Louvain, [clusters.ts](../src/lib/graph/clusters.ts)): 41 topics on the demo graph. Names are the phrases most typical of each topic, taken only from titles the viewer can see, so they never leak a locked fact; a topic with nothing visible is "Private knowledge". Facts without edges share a "Not connected yet" island. Tested. Some names are generic ("Cohort", "Budget") because the mock titles are. |
@@ -38,7 +38,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | "Colleagues know more" hint | Real logic, mock data | ✅ | When locked facts also matched, `ask` sets `moreAvailable` and the answer card offers "Request access". It doesn't say who knows. Replaces the old "Others know more" list of owners. Tested for the Kobe ↔ Filip walkthrough. |
 | Search animation | Mocked | — | Random nodes flash for at least 1.4 s as the "embedding lookup", then the visit order is replayed, skipping locked facts. Cosmetic. |
 | Embedding script (`pnpm db:embed`) | Unused | ❌ | Embeds database rows with `openai/text-embedding-3-small`, but the database has no facts and the search doesn't read embeddings. |
-| AI data generation (`pnpm db:seed`) | Unused | ❌ | Writes facts and new people to tables the app no longer reads; its last output was frozen into `db-fixtures.ts`. Running it again changes nothing in the app. |
+| AI data generation (`pnpm db:seed`) | Unused | ❌ | Writes facts and new people to tables the app no longer reads; its last output was frozen into `db-fixtures.ts`. Running it again changes nothing in the app, and the next `pnpm db:seed:accounts` removes the people it added, since they have no account. |
 
 ## Asking people
 
@@ -89,12 +89,33 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | Sign in with email and password | Real | ✅ | Tested. Rate limiting is stored in the database. |
-| Sign up | Not built (on purpose) | — | Accounts only come from `pnpm db:seed:demo`, which also deletes every account except Kobe and Filip. Accounts without a person get a 404 on the graph, inbox and integrations pages. |
-| Demo accounts and demo questions | Real | ✅ | Kobe and Filip, `password123`. `--reset` clears all questions first. |
-| Settings: name, password, sessions, delete account | Real | ✅ | Deleting Kobe or Filip breaks the demo until the next `pnpm db:seed:demo`. |
+| Sign up | Not built (on purpose) | — | Accounts only come from `pnpm db:seed:accounts` (or `pnpm db:seed:demo`). |
+| One account per person | Real | ✅ | Every person in the graph has exactly one account and every account is one person: `user.personId` is required and unique, and deleting a person deletes their account. `pnpm db:seed:accounts` creates the 313 accounts, removes accounts and people that aren't in the graph, and resets every password. Safe to re-run; existing accounts keep their sessions. Tested, and checked by signing in as Kobe, Filip and three others: the graph's "you can see" count matches [accounts.md](accounts.md). |
+| Demo questions | Real | ✅ | `pnpm db:seed:demo` seeds the accounts, then adds six questions to inboxes. `--reset` clears all questions first. |
+| Settings: name, password, sessions, delete account | Real | ✅ | A deleted account comes back with the next `pnpm db:seed:accounts`. Until then that person can't sign in. |
 | Settings: "Connect your AI" | Real | ✅ | Shows the Cursor and Claude Code config for this deployment's URL. |
-| Admin: users, search, impersonate, ban, sessions, set password, delete | Real | 🟡 | Works, but nobody is an admin unless `ADMIN_EMAILS` lists them, and it's empty in `.env.example`. Add `kobe@sdwise.be` to use it in the demo. There's no "create user". |
+| Admin: users, search, impersonate, ban, sessions, set password, delete | Real | 🟡 | Works, but nobody is an admin unless `ADMIN_EMAILS` lists them, and it's empty in `.env.example`. Add `kobe@sdwise.be` to use it in the demo. There's no "create user": an account needs a person, so the seed makes them. |
 | Plans and entitlements | Unused | — | `getEntitlements` always returns "unlimited" and nothing calls it. Left over from the template. |
+
+## Accounts
+
+Every person in the graph can sign in. All accounts share the password **`password123`**. Run `pnpm db:seed:accounts` (or `pnpm db:seed:demo`) to create them.
+
+The demo cast below signs in with their first name. Everyone else uses `first.last@sdwise.be`, without accents and with multi-word last names joined: Amélie Goossens is `amelie.goossens@sdwise.be`, Sanne Van den Berg is `sanne.vandenberg@sdwise.be`. [accounts.md](accounts.md) lists all 313 with their role and how many facts each owns and can see.
+
+| Name | Email | Password | Role |
+| --- | --- | --- | --- |
+| Kobe Verdonck | `kobe@sdwise.be` | `password123` | Platform lead |
+| Filip Dierckx | `filip@sdwise.be` | `password123` | Payroll operations lead |
+| Dario | `dario@sdwise.be` | `password123` | Product lead |
+| Victor | `victor@sdwise.be` | `password123` | Backend engineer |
+| Julien | `julien@sdwise.be` | `password123` | Data engineer |
+| Timon | `timon@sdwise.be` | `password123` | Marketing lead |
+| Sofie Peeters | `sofie@sdwise.be` | `password123` | HR business partner |
+| Bram De Smet | `bram@sdwise.be` | `password123` | Account manager |
+| Lotte Janssens | `lotte@sdwise.be` | `password123` | Financial controller |
+| Pieter Claes | `pieter@sdwise.be` | `password123` | Support team lead |
+| An Maes | `an@sdwise.be` | `password123` | Payroll legal expert |
 
 ## Other
 

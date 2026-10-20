@@ -93,7 +93,7 @@ export async function personFor(userId: string): Promise<Person | null> {
     where: { id: userId },
     select: { name: true, person: true },
   });
-  if (!user?.person) return null;
+  if (!user) return null;
   return toPerson({ ...user.person, user: { name: user.name } });
 }
 

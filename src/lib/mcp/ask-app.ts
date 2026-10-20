@@ -47,7 +47,12 @@ function render(data) {
       } catch {
         button.disabled = false;
         button.textContent = "Request access";
-        status.textContent = "Couldn't send. Try again.";
+        if (data.requestUrl) {
+          await app.openLink({ url: data.requestUrl }).catch(() => {});
+          status.textContent = "Opened SD Wise to finish the request.";
+        } else {
+          status.textContent = "Couldn't send. Try again.";
+        }
       }
     };
     more.append(button, status);

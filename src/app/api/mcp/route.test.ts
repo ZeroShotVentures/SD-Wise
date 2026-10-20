@@ -117,7 +117,7 @@ describe("/api/mcp", () => {
     ]);
     expect(
       tools.find((t: { name: string }) => t.name === "request_more"),
-    ).toMatchObject({ _meta: { ui: { visibility: ["app"] } } });
+    ).toMatchObject({ _meta: { ui: { visibility: ["model", "app"] } } });
   });
 
   it("serves `ask` with an MCP App card", async () => {

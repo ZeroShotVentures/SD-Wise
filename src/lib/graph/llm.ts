@@ -41,20 +41,35 @@ function promptFor(question: string, facts: KnowledgeNode[], extra = "") {
   return `<facts>\n${list}\n</facts>\n\nToday is ${today}.${extra}\n\nQuestion: ${question}`;
 }
 
-async function write(system: string, prompt: string) {
-  const { text } = await generateText({
-    model: MODEL,
-    providerOptions,
-    system,
-    prompt,
-  });
-  const answer = text.trim();
-  return !answer || answer.includes(NO_ANSWER) ? null : answer;
+// Logs why Claude wrote nothing, so a missing answer shows up in the Vercel
+// logs. Facts and questions stay out of them: they may be private.
+async function write(kind: string, system: string, prompt: string) {
+  let result: Awaited<ReturnType<typeof generateText>>;
+  try {
+    result = await generateText({
+      model: MODEL,
+      providerOptions,
+      system,
+      prompt,
+    });
+  } catch (error) {
+    console.error(`Claude failed to write ${kind}`, error);
+    throw error;
+  }
+  const answer = result.text.trim();
+  if (!answer || answer.includes(NO_ANSWER)) {
+    console.warn(
+      `Claude wrote no ${kind}: ${answer ? NO_ANSWER : "empty reply"}`,
+      { finishReason: result.finishReason, usage: result.usage },
+    );
+    return null;
+  }
+  return answer;
 }
 
 // null when the facts don't answer the question.
 export function writeAnswer(question: string, facts: KnowledgeNode[]) {
-  return write(ANSWER_SYSTEM, promptFor(question, facts));
+  return write("answer", ANSWER_SYSTEM, promptFor(question, facts));
 }
 
 // The recipient's reply to `asker`, from facts the recipient can see. null
@@ -66,6 +81,7 @@ export function writeDraft(
 ) {
   const greeting = `Hi ${asker.name.split(" ")[0]}!`;
   return write(
+    "draft",
     DRAFT_SYSTEM,
     promptFor(
       question,

@@ -2,8 +2,9 @@
 
 import { Lock, Maximize, Minus, Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { askGraph, markSeen } from "@/app/(app)/graph/actions";
+import { clusterGraph } from "@/lib/graph/clusters";
 import { SOURCES, ZOOM } from "@/lib/graph/meta";
 import type { AskResult, GraphView } from "@/lib/graph/types";
 import { AskBar } from "./ask-bar";
@@ -71,6 +72,10 @@ export function GraphExplorer({
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const visible = view.nodes.filter((n) => !n.locked).length;
+  const clustering = useMemo(
+    () => clusterGraph(view.nodes, view.edges),
+    [view.nodes, view.edges],
+  );
 
   const centerOn = useCallback(
     (id: string, zoom?: number) => {
@@ -188,6 +193,7 @@ export function GraphExplorer({
       <GraphCanvas
         nodes={view.nodes}
         edges={view.edges}
+        clustering={clustering}
         selectedId={selection?.id ?? null}
         highlight={highlight}
         apiRef={apiRef}
@@ -203,8 +209,8 @@ export function GraphExplorer({
           Company brain
         </h1>
         <p className="mt-1 text-sm text-white/60">
-          {view.nodes.length} facts · you can see {visible}, the rest is known
-          by colleagues
+          {view.nodes.length} facts in {clustering.clusters.length} topics · you
+          can see {visible}, the rest is known by colleagues
         </p>
       </header>
 

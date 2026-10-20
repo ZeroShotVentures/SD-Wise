@@ -26,10 +26,6 @@ const STYLE = `
   .reply h3 { margin-bottom: 2px; }
   .empty { border-radius: 10px; background: var(--soft); padding: 14px; color: var(--muted); text-align: center; }
   .foot { display: flex; justify-content: flex-end; }
-  @media (prefers-color-scheme: dark) {
-    .count, .PENDING { background: #78350f; color: #fde68a; }
-    .ANSWERED { background: #064e3b; color: #a7f3d0; }
-  }
 `;
 
 const script = (inboxUrl: string) => `

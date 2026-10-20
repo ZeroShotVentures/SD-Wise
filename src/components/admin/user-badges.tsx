@@ -16,22 +16,16 @@ export function UserBadges({ user }: UserBadgesProps) {
       {roles.map((role) => (
         <span
           key={role}
-          className={`${badgeClass} bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300`}
+          className={`${badgeClass} bg-indigo-100 text-indigo-800`}
         >
           {role}
         </span>
       ))}
       {user.banned && (
-        <span
-          className={`${badgeClass} bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300`}
-        >
-          banned
-        </span>
+        <span className={`${badgeClass} bg-red-100 text-red-800`}>banned</span>
       )}
       {!user.emailVerified && (
-        <span
-          className={`${badgeClass} bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300`}
-        >
+        <span className={`${badgeClass} bg-zinc-100 text-zinc-700`}>
           unverified
         </span>
       )}

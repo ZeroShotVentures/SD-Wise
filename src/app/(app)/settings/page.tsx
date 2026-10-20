@@ -43,10 +43,10 @@ export default async function Page() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl">
           Settings
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-zinc-500">
           Manage your profile, security and account.
         </p>
       </header>
@@ -68,22 +68,22 @@ export default async function Page() {
         title="Sessions"
         description="Devices that are currently signed in to your account."
       >
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="divide-y divide-zinc-200">
           {sessions.map((s) => (
             <li
               key={s.id}
               className="flex items-center justify-between gap-4 py-3 text-sm"
             >
               <div className="min-w-0 wrap-anywhere">
-                <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                <p className="font-medium text-zinc-900">
                   {describeUserAgent(s.userAgent)}
                   {s.id === session.id && (
-                    <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                    <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">
                       This device
                     </span>
                   )}
                 </p>
-                <p className="text-zinc-500 dark:text-zinc-400">
+                <p className="text-zinc-500">
                   {[
                     s.ipAddress,
                     `signed in ${dateFormat.format(s.createdAt)} UTC`,

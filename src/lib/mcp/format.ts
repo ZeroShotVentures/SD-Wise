@@ -5,6 +5,7 @@ const label = (p: Person) => `${p.name} (${p.role})`;
 // What an MCP client sees for a question. Locked facts never appear, not even
 // their owners: `moreAvailable` is the only hint. `requestUrl` opens a page
 // with an Ask a colleague button, for hosts that can't show the answer card.
+// `askUrl` opens one for picking a colleague, when nothing answers it.
 export function formatAsk(
   result: AskResult,
   nodes: NodeView[],
@@ -12,6 +13,8 @@ export function formatAsk(
 ) {
   const requestUrl = new URL("/inbox/request", baseUrl);
   requestUrl.searchParams.set("question", result.question);
+  const askUrl = new URL("/inbox/ask", baseUrl);
+  askUrl.searchParams.set("question", result.question);
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const hits = result.hits.flatMap((id) => byId.get(id) ?? []);
   return {
@@ -31,6 +34,7 @@ export function formatAsk(
     ),
     moreAvailable: result.moreAvailable,
     requestUrl: result.moreAvailable ? requestUrl.href : null,
+    askUrl: result.askColleague ? askUrl.href : null,
   };
 }
 

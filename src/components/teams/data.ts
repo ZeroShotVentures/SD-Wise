@@ -65,6 +65,7 @@ export type WiseReply = {
   facts: { id: string; title: string; source: KnowledgeSource }[];
   question: string;
   moreAvailable: boolean;
+  askColleague: boolean;
 };
 
 export type Reaction = { emoji: string; count: number; mine?: boolean };

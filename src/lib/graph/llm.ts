@@ -30,6 +30,32 @@ const DRAFT_SYSTEM = `You are SD Wise, the company brain of SD Worx. A colleague
 - The colleague may not be allowed to see these facts, so share only what answers the question.
 ${RULES}`;
 
+// Starts Claude's reply when it can't help, so the card offers a colleague.
+const CANT_HELP = "CANT_HELP";
+
+// When it can't help and doesn't reply properly.
+const CANT_HELP_TEXT =
+  "I can't help you with that. You can ask a colleague with the button below.";
+
+// For questions no fact answers. Claude answers the ones that need no company
+// knowledge, like the time or what SD Wise can do, and says it can't help with
+// the rest, so it can't make up company facts.
+const GENERAL_SYSTEM = `You are SD Wise, the company brain of SD Worx. An employee asks a question, and none of the company knowledge they can see answers it.
+
+- Answer only if the question needs no knowledge of SD Worx, its people, customers, plans or policies: the date or time, a greeting, simple maths, or what you can do (answer questions from the company's chats, emails and meetings, and point to colleagues who know more).
+- Lead with the answer, in 1 or 2 sentences. Plain text, no markdown.
+- Otherwise, reply with ${CANT_HELP} followed by one friendly sentence, in the question's language, saying you can't help with that and they can ask a colleague with the button below.`;
+
+// SD Worx is in Belgium, so the time is Brussels time.
+function now() {
+  const time = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "Europe/Brussels",
+  }).format(new Date());
+  return `${time} (Brussels time)`;
+}
+
 function promptFor(question: string, facts: KnowledgeNode[], extra = "") {
   const list = facts
     .map(
@@ -70,6 +96,23 @@ async function write(kind: string, system: string, prompt: string) {
 // null when the facts don't answer the question.
 export function writeAnswer(question: string, facts: KnowledgeNode[]) {
   return write("answer", ANSWER_SYSTEM, promptFor(question, facts));
+}
+
+// Always has text. `answered` is false when Claude couldn't help, and the
+// text then points to a colleague.
+export async function writeGeneral(question: string) {
+  const text = await write(
+    "general answer",
+    GENERAL_SYSTEM,
+    `It is ${now()}.\n\nQuestion: ${question}`,
+  );
+  if (!text) return { text: CANT_HELP_TEXT, answered: false };
+  if (!text.includes(CANT_HELP)) return { text, answered: true };
+  const rest = text
+    .replace(CANT_HELP, "")
+    .replace(/^[\s:.-]+/, "")
+    .trim();
+  return { text: rest || CANT_HELP_TEXT, answered: false };
 }
 
 // The recipient's reply to `asker`, from facts the recipient can see. null

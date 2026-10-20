@@ -123,6 +123,9 @@ export type AskResult = {
   hits: string[];
   answer: { text: string; nodeIds: string[] } | null;
   moreAvailable: boolean;
+  // Nothing answers it and nobody's locked facts match: offer to send the
+  // question to a colleague the asker picks.
+  askColleague: boolean;
 };
 
 export type InboxItem = Query & {

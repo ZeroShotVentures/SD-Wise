@@ -53,7 +53,9 @@ export function createMcpServer(me: Person) {
             text: `[Ask a colleague](${out.requestUrl})`,
           },
         ]
-      : [];
+      : out.askUrl
+        ? [{ type: "text" as const, text: `[Ask a colleague](${out.askUrl})` }]
+        : [];
     return {
       content: [...json(out).content, ...link],
       structuredContent: out,

@@ -27,6 +27,11 @@ export async function askPerson(input: {
   revalidatePath("/", "layout");
 }
 
+export async function colleagues() {
+  const me = await requirePerson();
+  return graph.colleagues(me);
+}
+
 export async function requestAccess(input: { nodeId: string }) {
   const me = await requirePerson();
   const data = requestAccessInput.parse(input);

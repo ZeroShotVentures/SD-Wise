@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id               String    @id
-  name             String
-  email            String    @unique
-  emailVerified    Boolean
-  image            String?
-  createdAt        DateTime
-  updatedAt        DateTime
-  role             String?
-  banned           Boolean?  @default(false)
-  banReason        String?
-  banExpires       DateTime?
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  role          String?
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
 
-  sessions Session[]
-  accounts Account[]
+  sessions  Session[]
+  mcpTokens McpToken[]
+  accounts  Account[]
 
   personId String? @unique
   person   Person? @relation(fields: [personId], references: [id])
@@ -140,21 +141,21 @@ model Person {
 }
 
 model KnowledgeNode {
-  id                String          @id @default(uuid())
+  id                String                       @id @default(uuid())
   content           String
   contentEmbedding  Unsupported("vector(1536)")?
   contentSummary    String
   access            Person[]
   source            KnowledgeSource
   integrationId     String
-  integration       Integrations    @relation(fields: [integrationId], references: [id])
+  integration       Integrations                 @relation(fields: [integrationId], references: [id])
   sourceDescription String
-  outgoingEdges     KnowledgeEdge[] @relation("EdgeSource")
-  incomingEdges     KnowledgeEdge[] @relation("EdgeTarget")
-  edgeCount         Int             @default(0)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  lastAccessedAt    DateTime        @default(now())
+  outgoingEdges     KnowledgeEdge[]              @relation("EdgeSource")
+  incomingEdges     KnowledgeEdge[]              @relation("EdgeTarget")
+  edgeCount         Int                          @default(0)
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+  lastAccessedAt    DateTime                     @default(now())
 
   @@index([integrationId])
   /// HNSW (vector_cosine_ops) index, created in the knowledge_node_embedding migration
@@ -210,4 +211,19 @@ model Question {
 
   @@index([recipientId, status])
   @@index([askerId])
+}
+
+/// Personal access token for the MCP endpoint. Only the SHA-256 hash is stored.
+model McpToken {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  tokenHash  String    @unique
+  /// First characters of the token, to tell tokens apart in the UI.
+  prefix     String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
 }

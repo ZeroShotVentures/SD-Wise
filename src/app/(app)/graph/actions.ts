@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { requirePerson } from "@/lib/graph/me";
+import {
+  askPersonInput,
+  id,
+  question,
+  requestAccessInput,
+} from "@/lib/graph/schemas";
 import * as graph from "@/lib/graph/service";
-
-const id = z.string().min(1).max(100);
-const question = z.string().trim().min(3).max(500);
 
 export async function askGraph(input: string) {
   const me = await requirePerson();
@@ -19,9 +21,7 @@ export async function askPerson(input: {
   nodeIds: string[];
 }) {
   const me = await requirePerson();
-  const data = z
-    .object({ recipientId: id, question, nodeIds: z.array(id).max(10) })
-    .parse(input);
+  const data = askPersonInput.parse(input);
   await graph.askPerson(me, data.recipientId, data.question, data.nodeIds);
   revalidatePath("/", "layout");
 }
@@ -31,7 +31,7 @@ export async function requestAccess(input: {
   ownerId: string;
 }) {
   const me = await requirePerson();
-  const data = z.object({ nodeId: id, ownerId: id }).parse(input);
+  const data = requestAccessInput.parse(input);
   await graph.requestAccess(me, data.nodeId, data.ownerId);
   revalidatePath("/", "layout");
 }

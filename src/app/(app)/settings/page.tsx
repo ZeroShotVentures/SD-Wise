@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { DeleteAccount } from "@/components/settings/delete-account";
+import { McpTokenForm } from "@/components/settings/mcp-token-form";
 import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
 import { secondaryButtonClass } from "@/components/settings/styles";
+import { env } from "@/env";
+import { listTokens } from "@/lib/mcp/tokens";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
-import { revokeOtherSessions, revokeSession } from "./actions";
+import { revokeMcpToken, revokeOtherSessions, revokeSession } from "./actions";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -20,7 +23,7 @@ const dateFormat = new Intl.DateTimeFormat("en", {
 export default async function Page() {
   const { user, session } = await requireSession();
 
-  const [accounts, sessions] = await Promise.all([
+  const [accounts, sessions, tokens] = await Promise.all([
     prisma.account.findMany({
       where: { userId: user.id },
       select: { providerId: true },
@@ -34,6 +37,7 @@ export default async function Page() {
       select: { id: true, userAgent: true, ipAddress: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
+    listTokens(user.id),
   ]);
   const hasPassword = accounts.some((a) => a.providerId === "credential");
   const otherSessions = sessions.filter((s) => s.id !== session.id);
@@ -107,6 +111,38 @@ export default async function Page() {
             </button>
           </form>
         )}
+      </Section>
+
+      <Section
+        title="Connect your AI"
+        description="Use SD Wise from Cursor or Claude Code over MCP. It acts as you and only sees what you can see."
+      >
+        <ul className="mb-4 divide-y divide-zinc-200 dark:divide-zinc-800">
+          {tokens.map((t) => (
+            <li
+              key={t.id}
+              className="flex items-center justify-between gap-4 py-3 text-sm"
+            >
+              <div>
+                <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                  {t.label}{" "}
+                  <span className="font-mono text-zinc-500">{t.prefix}…</span>
+                </p>
+                <p className="text-zinc-500 dark:text-zinc-400">
+                  {t.lastUsedAt
+                    ? `last used ${dateFormat.format(t.lastUsedAt)} UTC`
+                    : "never used"}
+                </p>
+              </div>
+              <form action={revokeMcpToken.bind(null, t.id)}>
+                <button type="submit" className={secondaryButtonClass}>
+                  Revoke
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+        <McpTokenForm endpoint={`${env.BETTER_AUTH_URL}/api/mcp`} />
       </Section>
 
       <Section

@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { Fragment, useEffect, useState, useTransition } from "react";
 import { disconnectClient } from "@/app/(app)/integrations/actions";
+import { Badge } from "@/components/ui/badge";
+import { secondaryButtonClass } from "@/components/ui/styles";
 import { dateFormat, timeAgo } from "@/lib/graph/meta";
 import type { McpClient } from "@/lib/mcp/clients";
 import type { ToolSummary } from "@/lib/mcp/tools";
@@ -192,7 +194,7 @@ function Rich({ text }: { text: string }) {
     at += part.length;
     if (part.startsWith("**")) {
       return (
-        <strong key={key} className="font-semibold text-navy">
+        <strong key={key} className="font-semibold text-ink">
           {part.slice(2, -2)}
         </strong>
       );
@@ -201,7 +203,7 @@ function Rich({ text }: { text: string }) {
       return (
         <code
           key={key}
-          className="rounded bg-canvas px-1 py-0.5 font-mono text-[12px] text-navy"
+          className="rounded bg-canvas px-1 py-0.5 font-mono text-[12px] text-ink"
         >
           {part.slice(1, -1)}
         </code>
@@ -244,25 +246,19 @@ function Hero({ url, tools }: { url: string; tools: number }) {
   }, [url]);
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-navy p-5 text-white sm:p-8">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 -right-24 size-96 rounded-full bg-brand/30 blur-3xl"
-      />
-      <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+    <section className="rounded-lg border border-line bg-white p-5 shadow-xs sm:p-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-xl">
           <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-xl bg-white">
-              <Logo name="mcp" size="sm" className="ring-0" />
-            </span>
+            <Logo name="mcp" />
             <div>
-              <h2 className="text-xl font-semibold tracking-tight">
+              <h2 className="text-base font-semibold tracking-tight text-ink">
                 SD Wise MCP server
               </h2>
               <StatusDot status={status} />
             </div>
           </div>
-          <p className="mt-4 text-sm text-white/70">
+          <p className="mt-3 text-sm text-muted">
             Bring the company brain into Claude, ChatGPT, Copilot, Cursor or VS
             Code. Your AI signs in as you, so it sees exactly what you can see
             and nothing more.
@@ -271,12 +267,16 @@ function Hero({ url, tools }: { url: string; tools: number }) {
         <ClientStack />
       </div>
 
-      <div className="relative mt-6 flex items-center gap-2 rounded-xl bg-white/5 p-1.5 pl-4 ring-1 ring-white/10">
-        <span className="shrink-0 text-xs font-medium text-white/50">URL</span>
-        <code className="min-w-0 flex-1 truncate font-mono text-sm">{url}</code>
-        <CopyButton value={url} tone="dark" />
+      <div className="mt-5 flex items-center gap-3 rounded-md border border-line bg-canvas p-1.5 pl-3">
+        <span className="shrink-0 text-xs font-medium text-muted">
+          Server URL
+        </span>
+        <code className="min-w-0 flex-1 truncate font-mono text-sm text-ink">
+          {url}
+        </code>
+        <CopyButton value={url} />
       </div>
-      <ul className="relative mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/60">
+      <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted [&>li]:flex [&>li]:items-center [&>li]:gap-1.5 [&>li]:before:size-1 [&>li]:before:rounded-full [&>li]:before:bg-line-strong">
         <li>Streamable HTTP</li>
         <li>OAuth 2.1 sign-in with PKCE</li>
         <li>{tools} tools</li>
@@ -288,18 +288,13 @@ function Hero({ url, tools }: { url: string; tools: number }) {
 
 function StatusDot({ status }: { status: "checking" | "online" | "offline" }) {
   const { dot, label } = {
-    checking: { dot: "bg-white/40", label: "Checking discovery…" },
-    online: { dot: "bg-emerald-400", label: "Online, ready for clients" },
+    checking: { dot: "bg-faint", label: "Checking discovery…" },
+    online: { dot: "bg-emerald-500", label: "Online, ready for clients" },
     offline: { dot: "bg-worx-red", label: "Discovery unreachable" },
   }[status];
   return (
-    <p className="flex items-center gap-1.5 text-xs text-white/60">
-      <span className="relative flex size-1.5">
-        {status === "online" && (
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        )}
-        <span className={`relative inline-flex size-1.5 rounded-full ${dot}`} />
-      </span>
+    <p className="flex items-center gap-1.5 text-xs text-muted">
+      <span className={`inline-flex size-1.5 rounded-full ${dot}`} />
       {label}
     </p>
   );
@@ -308,16 +303,14 @@ function StatusDot({ status }: { status: "checking" | "online" | "offline" }) {
 function ClientStack() {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs whitespace-nowrap text-white/50">
-        Works with
-      </span>
-      <div className="flex -space-x-2">
+      <span className="text-xs whitespace-nowrap text-muted">Works with</span>
+      <div className="flex -space-x-1.5">
         {["claude", "openai", "microsoft", "cursor", "vscode"].map((logo) => (
           <Logo
             key={logo}
             name={logo}
             size="sm"
-            className="animate-rise ring-2 ring-navy transition-transform hover:z-10 hover:-translate-y-1"
+            className="ring-2 ring-white"
           />
         ))}
       </div>
@@ -337,7 +330,7 @@ function SectionTitle({
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
       <div>
-        <h2 className="text-base font-semibold text-navy">{title}</h2>
+        <h2 className="text-sm font-semibold text-ink">{title}</h2>
         <p className="mt-0.5 text-sm text-muted">{description}</p>
       </div>
       {aside}
@@ -353,19 +346,19 @@ function ConnectedClients({ clients }: { clients: McpClient[] }) {
         description="Apps you allowed to use SD Wise as you."
         aside={
           clients.length > 0 && (
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            <Badge tone="success" dot>
               {clients.length} connected
-            </span>
+            </Badge>
           )
         }
       />
       {clients.length === 0 ? (
-        <div className="flex items-center gap-4 rounded-2xl border border-dashed border-line p-5">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-canvas">
+        <div className="flex items-center gap-4 rounded-lg border border-dashed border-line-strong bg-white p-5">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-line bg-subtle">
             <Unplug className="size-5 text-muted" />
           </span>
           <div className="text-sm">
-            <p className="font-medium text-navy">No AI clients yet</p>
+            <p className="font-medium text-ink">No AI clients yet</p>
             <p className="text-muted">
               Add SD Wise to one below. Once you allow it, it shows up here and
               you can cut it off any time.
@@ -373,7 +366,7 @@ function ConnectedClients({ clients }: { clients: McpClient[] }) {
           </div>
         </div>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-2xl bg-white ring-1 ring-line">
+        <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-white shadow-xs">
           {clients.map((client) => (
             <ClientRow key={client.clientId} client={client} />
           ))}
@@ -397,12 +390,12 @@ function ClientRow({ client }: { client: McpClient }) {
       {brand ? (
         <Logo name={brand} />
       ) : (
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-canvas text-sm font-semibold text-navy ring-1 ring-line">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-subtle text-sm font-semibold text-ink ring-1 ring-line">
           {client.name.slice(0, 2)}
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-navy">{client.name}</p>
+        <p className="truncate font-medium text-ink">{client.name}</p>
         <p className="text-xs text-muted">
           Allowed {dateFormat.format(new Date(client.connectedAt))}
           {client.lastActiveAt &&
@@ -412,12 +405,7 @@ function ClientRow({ client }: { client: McpClient }) {
       {!confirming && (
         <div className="hidden flex-wrap gap-1 md:flex">
           {grants(client.scopes).map((grant) => (
-            <span
-              key={grant}
-              className="rounded-full bg-canvas px-2 py-0.5 text-[11px] text-muted"
-            >
-              {grant}
-            </span>
+            <Badge key={grant}>{grant}</Badge>
           ))}
         </div>
       )}
@@ -429,7 +417,7 @@ function ClientRow({ client }: { client: McpClient }) {
           <button
             type="button"
             onClick={() => setConfirming(false)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted hover:bg-canvas hover:text-navy"
+            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted hover:bg-canvas hover:text-ink"
           >
             Cancel
           </button>
@@ -439,7 +427,7 @@ function ClientRow({ client }: { client: McpClient }) {
             onClick={() =>
               startTransition(() => disconnectClient(client.clientId))
             }
-            className="flex items-center gap-1.5 rounded-lg bg-worx-red px-2.5 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-md bg-worx-red px-2.5 py-1.5 text-xs font-medium text-white hover:bg-[#b80032] disabled:opacity-60"
           >
             {pending && <Loader2 className="size-3 animate-spin" />}
             Disconnect
@@ -472,12 +460,12 @@ function Setup({ url }: { url: string }) {
         title="Add SD Wise to your AI"
         description="Pick your client. Setup takes about a minute."
       />
-      <div className="grid overflow-hidden rounded-2xl bg-white ring-1 ring-line md:grid-cols-[15rem_1fr]">
+      <div className="grid overflow-hidden rounded-lg border border-line bg-white shadow-xs md:grid-cols-[15rem_1fr]">
         <div
           role="tablist"
           aria-orientation="vertical"
           aria-label="MCP clients"
-          className="flex gap-1 overflow-x-auto border-b border-line bg-canvas/50 p-2 [scrollbar-width:none] md:flex-col md:border-r md:border-b-0"
+          className="flex gap-0.5 overflow-x-auto border-b border-line bg-canvas p-2 [scrollbar-width:none] md:flex-col md:border-r md:border-b-0"
         >
           {all.map((g) => (
             <button
@@ -488,15 +476,15 @@ function Setup({ url }: { url: string }) {
               aria-selected={g.id === active}
               aria-controls="mcp-guide"
               onClick={() => setActive(g.id)}
-              className={`flex shrink-0 items-center gap-3 rounded-xl p-2 text-left transition-all ${
+              className={`flex shrink-0 items-center gap-3 rounded-md border p-2 text-left transition-colors ${
                 g.id === active
-                  ? "bg-white shadow-sm ring-1 ring-line"
-                  : "hover:bg-white/60"
+                  ? "border-line bg-white shadow-xs"
+                  : "border-transparent hover:bg-white/70"
               }`}
             >
               <Logo name={g.logo} size="sm" />
               <span className="min-w-0">
-                <span className="block text-sm font-medium text-navy">
+                <span className="block text-sm font-medium text-ink">
                   {g.name}
                 </span>
                 <span className="hidden truncate text-xs text-muted md:block">
@@ -518,13 +506,13 @@ function Setup({ url }: { url: string }) {
             <div className="flex items-center gap-3">
               <Logo name={guide.logo} />
               <div>
-                <h3 className="font-semibold text-navy">{guide.name}</h3>
+                <h3 className="font-semibold text-ink">{guide.name}</h3>
                 <p className="text-sm text-muted">{guide.tagline}</p>
               </div>
             </div>
 
             {guide.cloud && local && (
-              <p className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">
+              <p className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                 <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                 <span>
                   {guide.name} connects from the cloud, so it needs a public
@@ -537,7 +525,7 @@ function Setup({ url }: { url: string }) {
             <ol className="flex flex-col gap-3">
               {guide.steps.map((step, i) => (
                 <li key={step} className="flex gap-3 text-sm text-ink">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-line-strong bg-white text-xs font-semibold text-muted tabular-nums">
                     {i + 1}
                   </span>
                   <span className="pt-0.5">
@@ -560,7 +548,7 @@ function Setup({ url }: { url: string }) {
                   guide.action.href.startsWith("http") ? "_blank" : undefined
                 }
                 rel="noreferrer"
-                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-navy-deep sm:self-start sm:py-2"
+                className={`group sm:self-start ${secondaryButtonClass}`}
               >
                 <Logo name={guide.logo} size="xs" className="ring-0" />
                 {guide.action.label}
@@ -569,14 +557,12 @@ function Setup({ url }: { url: string }) {
             )}
 
             <div className="border-t border-line pt-4">
-              <p className="text-xs font-semibold tracking-wider text-muted uppercase">
-                Then try
-              </p>
+              <p className="text-sm font-medium text-ink">Then try</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {PROMPTS.map((prompt) => (
                   <span
                     key={prompt}
-                    className="inline-flex items-center gap-1 rounded-2xl bg-canvas py-1 pr-1 pl-3 text-xs text-ink sm:rounded-full"
+                    className="inline-flex items-center gap-1 rounded-md border border-line bg-canvas py-0.5 pr-0.5 pl-2.5 text-xs text-ink"
                   >
                     “{prompt}”
                     <CopyButton value={prompt} label="Copy prompt" compact />
@@ -593,12 +579,12 @@ function Setup({ url }: { url: string }) {
 
 function Snippet({ label, code }: { label: string; code: string }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-navy-deep text-white">
-      <div className="flex items-center justify-between border-b border-white/10 py-1.5 pr-1.5 pl-4">
-        <span className="font-mono text-xs text-white/50">{label}</span>
-        <CopyButton value={code} tone="dark" />
+    <div className="overflow-hidden rounded-md border border-line bg-canvas">
+      <div className="flex items-center justify-between border-b border-line bg-white py-1.5 pr-1.5 pl-3">
+        <span className="font-mono text-xs text-muted">{label}</span>
+        <CopyButton value={code} />
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-[13px] leading-relaxed">
+      <pre className="overflow-x-auto p-3.5 font-mono text-[13px] leading-relaxed text-ink">
         {code}
       </pre>
     </div>
@@ -612,29 +598,29 @@ function Tools({ tools }: { tools: ToolSummary[] }) {
         title="Tools"
         description="What your AI can do in SD Wise. Every call runs as you."
       />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {tools.map((tool) => (
           <article
             key={tool.name}
-            className="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-line"
+            className="flex flex-col rounded-lg border border-line bg-white p-4 shadow-xs"
           >
             <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
-              <code className="font-mono text-sm font-semibold break-all text-navy">
+              <code className="font-mono text-sm font-semibold break-all text-ink">
                 {tool.name}
               </code>
               {tool.appOnly ? (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
+                <Badge tone="brand">
                   <MousePointerClick className="size-3" /> Only from the answer
                   card
-                </span>
+                </Badge>
               ) : tool.readOnly ? (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                <Badge tone="success">
                   <Eye className="size-3" /> Read-only
-                </span>
+                </Badge>
               ) : (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                <Badge tone="warning">
                   <Send className="size-3" /> Sends as you
-                </span>
+                </Badge>
               )}
             </div>
             <p className="mt-1 text-sm font-medium text-ink">{tool.title}</p>
@@ -646,7 +632,7 @@ function Tools({ tools }: { tools: ToolSummary[] }) {
                 {tool.params.map((param) => (
                   <code
                     key={param.name}
-                    className="rounded-md bg-canvas px-1.5 py-0.5 font-mono text-[11px] text-muted"
+                    className="rounded border border-line bg-canvas px-1.5 py-0.5 font-mono text-[11px] text-muted"
                   >
                     {param.name}
                     {param.required ? "" : "?"}:{" "}

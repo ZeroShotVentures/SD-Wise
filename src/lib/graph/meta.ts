@@ -164,15 +164,17 @@ export const INTEGRATIONS: Record<
   },
 };
 
+// `color` is the source's colour on dark surfaces (Teams); `ink` is the same
+// hue, deep enough to read on the app's light surfaces.
 export const SOURCES: Record<
   KnowledgeSource,
-  { label: string; color: string }
+  { label: string; color: string; ink: string }
 > = {
-  MESSAGE: { label: "Chat", color: "#006dd8" },
-  MEETING: { label: "Meeting", color: "#ffbe00" },
-  EMAIL: { label: "Email", color: "#f1002f" },
-  DOCUMENT: { label: "Document", color: "#8fa3b3" },
-  OTHER: { label: "Answer", color: "#2fd6a3" },
+  MESSAGE: { label: "Chat", color: "#006dd8", ink: "#1a6fd6" },
+  MEETING: { label: "Meeting", color: "#ffbe00", ink: "#e09b00" },
+  EMAIL: { label: "Email", color: "#f1002f", ink: "#d6123f" },
+  DOCUMENT: { label: "Document", color: "#8fa3b3", ink: "#7d8a99" },
+  OTHER: { label: "Answer", color: "#2fd6a3", ink: "#11a37a" },
 };
 
 export const EDGE_KINDS: Record<EdgeKind, string> = {

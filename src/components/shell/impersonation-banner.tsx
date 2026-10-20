@@ -23,7 +23,7 @@ export function ImpersonationBanner() {
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 bg-worx-yellow px-4 py-2 text-xs text-navy sm:gap-4 sm:px-6 sm:text-sm">
+    <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 sm:gap-4 sm:px-6 sm:text-sm">
       <p className="min-w-0 wrap-anywhere">
         Viewing SD Wise as <strong>{data.user.name || data.user.email}</strong>.{" "}
         <span className="max-sm:hidden">
@@ -34,7 +34,7 @@ export function ImpersonationBanner() {
         type="button"
         onClick={handleStop}
         disabled={stopping}
-        className="shrink-0 rounded-lg bg-navy px-3 py-1.5 font-medium text-white transition-colors hover:bg-navy-deep disabled:opacity-50"
+        className="shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1 font-medium text-amber-900 shadow-xs transition-colors hover:bg-amber-100 disabled:opacity-50"
       >
         {stopping ? (
           "Stopping..."

@@ -27,25 +27,25 @@ export function AskResultCard({
 
   return (
     <section
-      className={`animate-rise absolute inset-x-3 top-[4.5rem] z-10 flex max-h-[calc(100%-12rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/30 md:top-24 md:right-auto md:left-6 md:max-h-[calc(100%-15rem)] md:w-[26rem] ${covered ? "max-md:hidden" : ""}`}
+      className={`animate-rise absolute inset-x-3 top-3 z-10 flex max-h-[calc(100%-10rem)] flex-col overflow-hidden rounded-lg border border-line bg-white shadow-xl shadow-ink/10 md:top-4 md:right-auto md:left-4 md:max-h-[calc(100%-11rem)] md:w-[26rem] ${covered ? "max-md:hidden" : ""}`}
     >
-      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3 sm:px-5 sm:py-4">
-        <div>
-          <p className="text-xs font-semibold tracking-wider text-muted uppercase">
-            You asked
+      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-xs text-muted">You asked</p>
+          <p className="mt-0.5 text-sm font-medium text-ink">
+            {result.question}
           </p>
-          <p className="mt-1 font-medium text-navy">{result.question}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="-m-1.5 rounded-md p-2 text-muted hover:bg-canvas hover:text-navy"
+          className="-mr-1.5 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-subtle hover:text-ink"
         >
           <X className="size-4" />
           <span className="sr-only">Clear</span>
         </button>
       </header>
-      <div className="flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain p-4 sm:p-5">
+      <div className="flex min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain p-4">
         {answer && (
           <div>
             {answer.nodeIds.length > 0 && (
@@ -63,11 +63,11 @@ export function AskResultCard({
                     key={id}
                     type="button"
                     onClick={() => onSelectNode(id)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-left text-xs text-muted transition-colors hover:border-brand hover:text-navy sm:px-2 sm:py-0.5"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2 py-1 text-left text-xs text-muted transition-colors hover:border-line-strong hover:bg-subtle hover:text-ink sm:py-0.5"
                   >
                     <span
-                      className="size-1.5 rounded-full"
-                      style={{ backgroundColor: SOURCES[node.source].color }}
+                      className="size-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: SOURCES[node.source].ink }}
                     />
                     {node.title}
                   </button>

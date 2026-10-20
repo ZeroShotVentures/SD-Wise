@@ -7,7 +7,7 @@ import {
   errorClass,
   inputClass,
   labelClass,
-} from "@/components/settings/styles";
+} from "@/components/ui/styles";
 import { admin } from "@/lib/auth-client";
 import { useAdminAction } from "./use-admin-action";
 

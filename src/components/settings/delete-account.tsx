@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { deleteUser } from "@/lib/auth-client";
 import {
   dangerButtonClass,
   errorClass,
   inputClass,
   labelClass,
-} from "./styles";
+} from "@/components/ui/styles";
+import { deleteUser } from "@/lib/auth-client";
 
 type DeleteAccountProps = {
   hasPassword: boolean;

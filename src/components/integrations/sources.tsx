@@ -10,6 +10,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { setConnected } from "@/app/(app)/integrations/actions";
+import { Badge } from "@/components/ui/badge";
+import { secondaryButtonClass } from "@/components/ui/styles";
 import {
   CATEGORIES,
   dateFormat,
@@ -143,9 +145,9 @@ export function Sources({
         }}
       />
 
-      <div className="flex flex-col gap-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted" />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative lg:w-80">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-faint" />
           <input
             ref={search}
             type="search"
@@ -159,16 +161,16 @@ export function Sources({
             }}
             placeholder={`Search ${items.length} sources`}
             aria-label="Search sources"
-            className="w-full rounded-xl bg-white py-2.5 pr-10 pl-10 text-base text-ink ring-1 ring-line transition-shadow outline-none placeholder:text-muted focus:ring-2 focus:ring-brand sm:text-sm"
+            className="w-full rounded-md border border-line-strong bg-white py-2.5 pr-10 pl-9 text-base text-ink shadow-xs transition-[border-color,box-shadow] outline-none placeholder:text-faint focus:border-brand focus:ring-3 focus:ring-brand/15 sm:py-2 sm:text-sm"
           />
           {/* No hint on touch screens: there's no "/" key to press. */}
           {!query && (
-            <kbd className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rounded border border-line px-1.5 font-mono text-[11px] text-muted pointer-coarse:hidden">
+            <kbd className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 rounded border border-line bg-subtle px-1.5 font-mono text-[11px] text-muted pointer-coarse:hidden">
               /
             </kbd>
           )}
         </div>
-        <fieldset className="-mx-4 flex min-w-0 gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-1 sm:px-1">
+        <fieldset className="-mx-4 flex min-w-0 gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
           <legend className="sr-only">Filter sources</legend>
           {filters.map(([key, n]) => (
             <button
@@ -176,28 +178,22 @@ export function Sources({
               type="button"
               aria-pressed={filter === key}
               onClick={() => setFilter(key)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all sm:py-1 ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm font-medium transition-colors sm:py-1 ${
                 filter === key
-                  ? "bg-navy text-white shadow-sm"
-                  : "bg-white text-muted ring-1 ring-line hover:text-navy"
+                  ? "border-line-strong bg-white text-ink shadow-xs"
+                  : "border-transparent text-muted hover:bg-white hover:text-ink"
               }`}
             >
               {key}
-              <span
-                className={`text-xs tabular-nums ${
-                  filter === key ? "text-white/60" : "text-muted/70"
-                }`}
-              >
-                {n}
-              </span>
+              <span className="text-xs text-faint tabular-nums">{n}</span>
             </button>
           ))}
         </fieldset>
       </div>
 
       {groups.length === 0 ? (
-        <div className="animate-fade rounded-2xl border border-dashed border-line px-6 py-12 text-center">
-          <p className="font-medium text-navy">
+        <div className="animate-fade rounded-lg border border-dashed border-line-strong bg-white px-6 py-12 text-center">
+          <p className="text-sm font-medium text-ink">
             {query.trim()
               ? `Nothing matches "${query.trim()}"`
               : "Nothing connected yet"}
@@ -217,7 +213,7 @@ export function Sources({
         groups.map((group) => (
           <section key={group.title ?? "results"}>
             <div className="flex items-baseline justify-between">
-              <h2 className="text-xs font-semibold tracking-wider text-muted uppercase">
+              <h2 className="text-sm font-semibold text-ink">
                 {group.title ?? `${group.items.length} results`}
               </h2>
               {group.title && (
@@ -227,7 +223,7 @@ export function Sources({
                 </span>
               )}
             </div>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {group.items.map((integration, i) => (
                 <IntegrationCard
                   key={integration.id}
@@ -245,10 +241,10 @@ export function Sources({
         ))
       )}
 
-      <p className="flex items-start gap-2.5 text-sm text-muted">
-        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand" />
+      <p className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 text-sm text-muted">
+        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
         <span>
-          <span className="font-medium text-navy">Private by default.</span>{" "}
+          <span className="font-medium text-ink">Private by default.</span>{" "}
           Every fact is owned by the people who were in the conversation, or who
           can open the file. Nobody else sees it unless an owner shares it.
         </span>
@@ -267,7 +263,7 @@ export function Sources({
         createPortal(
           <output
             key={toast.id}
-            className="animate-rise fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl bg-navy py-2.5 pr-2.5 pl-4 text-sm text-white shadow-2xl sm:gap-4 md:bottom-6"
+            className="animate-rise fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-40 flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-lg bg-ink py-2 pr-2 pl-4 text-sm text-white shadow-xl sm:gap-4 md:bottom-6"
           >
             {toast.message}
             {toast.undo && (
@@ -277,7 +273,7 @@ export function Sources({
                   toast.undo?.();
                   setToast(null);
                 }}
-                className="rounded-md bg-white/10 px-2.5 py-1 font-medium text-worx-yellow transition-colors hover:bg-white/20"
+                className="rounded-md bg-white/10 px-2.5 py-1 font-medium text-white transition-colors hover:bg-white/20"
               >
                 Undo
               </button>
@@ -323,30 +319,17 @@ function SuiteHero({
   ];
 
   return (
-    <section className="@container relative overflow-hidden rounded-3xl bg-white p-5 ring-1 ring-line sm:p-8">
-      {/* Microsoft's four colours, blurred into the corner. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 -right-16 size-72 opacity-25 blur-3xl"
-      >
-        <div className="grid size-full grid-cols-2 gap-2">
-          <span className="rounded-full bg-[#f25022]" />
-          <span className="rounded-full bg-[#7fba00]" />
-          <span className="rounded-full bg-[#00a4ef]" />
-          <span className="rounded-full bg-[#ffb900]" />
-        </div>
-      </div>
-
+    <section className="@container rounded-lg border border-line bg-white p-5 shadow-xs sm:p-6">
       <div className="relative flex flex-col gap-6 @3xl:flex-row @3xl:items-center @3xl:justify-between">
         <div className="flex items-start gap-4">
           <Logo name={meta.logo} size="lg" />
           <div>
-            <p className="text-xs font-semibold tracking-wider text-brand uppercase">
-              Suite
-            </p>
-            <h2 className="text-xl font-semibold tracking-tight text-navy">
-              {meta.label}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold tracking-tight text-ink">
+                {meta.label}
+              </h2>
+              <Badge>Suite</Badge>
+            </div>
             <p className="mt-1 max-w-lg text-sm text-muted">
               One sign-in for {apps.slice(0, -1).join(", ")} and {apps.at(-1)}.
               SD Wise reads through {meta.api} with your own permissions, and
@@ -361,7 +344,7 @@ function SuiteHero({
             <button
               type="button"
               onClick={() => onConnect(remaining)}
-              className="group flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-[#2f2f2f] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-black active:scale-[0.98] @3xl:flex-none"
+              className="group flex flex-1 items-center justify-center gap-2.5 rounded-md bg-[#2f2f2f] px-3.5 py-2.5 text-sm font-medium text-white shadow-xs transition-colors hover:bg-black sm:py-2 @3xl:flex-none"
             >
               <Logo name="microsoft" size="xs" className="ring-0" />
               {done === 0
@@ -377,7 +360,7 @@ function SuiteHero({
         </div>
       </div>
 
-      <ul className="relative mt-6 grid grid-cols-2 gap-2 @lg:grid-cols-3 @5xl:grid-cols-6">
+      <ul className="mt-5 grid grid-cols-2 gap-2 border-t border-line pt-5 @lg:grid-cols-3 @5xl:grid-cols-6">
         {items.map((item) => {
           const app = INTEGRATIONS[item.type];
           return (
@@ -391,7 +374,7 @@ function SuiteHero({
                     ? `${app.label} is connected`
                     : `Connect ${app.label}`
                 }
-                className="group flex w-full items-center gap-2.5 rounded-xl bg-white/70 p-2 text-left ring-1 ring-line backdrop-blur transition-all enabled:hover:-translate-y-0.5 enabled:hover:shadow-md enabled:hover:ring-brand/30 disabled:cursor-default"
+                className="group flex w-full items-center gap-2.5 rounded-md border border-line bg-white p-2 text-left transition-colors enabled:hover:border-line-strong enabled:hover:bg-canvas disabled:cursor-default"
               >
                 <span className="relative">
                   <Logo
@@ -410,12 +393,14 @@ function SuiteHero({
                   )}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-xs font-medium text-navy">
+                  <span className="block truncate text-xs font-medium text-ink">
                     {app.label
                       .replace("Microsoft ", "")
                       .replace("Teams meetings", "Meetings")}
                   </span>
-                  <span className="block text-[11px] text-muted">
+                  <span
+                    className={`block text-[11px] ${item.connected ? "text-emerald-700" : "text-brand"}`}
+                  >
                     {item.connected ? "Connected" : "Connect"}
                   </span>
                 </span>
@@ -426,7 +411,7 @@ function SuiteHero({
       </ul>
 
       {facts > 0 && (
-        <p className="relative mt-4 text-xs text-muted">
+        <p className="mt-4 text-xs text-muted">
           {count.format(facts)} facts from {meta.label} so far
         </p>
       )}
@@ -449,7 +434,7 @@ function Ring({ value, total }: { value: number; total: number }) {
           r={r}
           fill="none"
           strokeWidth="4"
-          className="stroke-canvas"
+          className="stroke-subtle"
         />
         <circle
           cx="22"
@@ -465,7 +450,7 @@ function Ring({ value, total }: { value: number; total: number }) {
       </svg>
       <span
         aria-hidden
-        className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-navy tabular-nums"
+        className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-ink tabular-nums"
       >
         {value}/{total}
       </span>
@@ -488,28 +473,20 @@ function IntegrationCard({
 
   return (
     <article
-      className="animate-rise group flex flex-col rounded-2xl bg-white p-5 ring-1 ring-line transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-navy/5"
-      style={{ animationDelay: `${Math.min(index, 8) * 30}ms` }}
+      className="animate-fade group flex flex-col rounded-lg border border-line bg-white p-4 shadow-xs transition-colors hover:border-line-strong"
+      style={{ animationDelay: `${Math.min(index, 8) * 20}ms` }}
     >
       <div className="flex items-start justify-between gap-3">
         <Logo name={meta.logo} />
         {integration.connected ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-            <span className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 [animation-iteration-count:2]" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" />
-            </span>
+          <Badge tone="success" dot>
             Connected
-          </span>
+          </Badge>
         ) : (
-          meta.suite && (
-            <span className="text-[11px] font-medium text-muted">
-              {SUITES[meta.suite].label}
-            </span>
-          )
+          meta.suite && <Badge>{SUITES[meta.suite].label}</Badge>
         )}
       </div>
-      <h3 className="mt-4 font-semibold text-navy">{meta.label}</h3>
+      <h3 className="mt-3 text-sm font-semibold text-ink">{meta.label}</h3>
       <p className="mt-1 flex-1 text-sm text-muted">{meta.description}</p>
       {meta.includes && (
         <div className="mt-3 flex items-center gap-1.5 text-xs text-muted">
@@ -532,7 +509,7 @@ function IntegrationCard({
           <p className="min-w-0 text-xs text-muted">
             {integration.facts > 0 ? (
               <>
-                <span className="font-medium text-navy tabular-nums">
+                <span className="font-medium text-ink tabular-nums">
                   {count.format(integration.facts)}
                 </span>{" "}
                 facts ·{" "}
@@ -556,7 +533,7 @@ function IntegrationCard({
           <button
             type="button"
             onClick={onDisconnect}
-            className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
+            className="shrink-0 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
           >
             Disconnect
           </button>
@@ -565,10 +542,10 @@ function IntegrationCard({
         <button
           type="button"
           onClick={onConnect}
-          className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-brand-soft px-3 py-2.5 text-sm font-medium sm:py-2 text-brand transition-colors hover:bg-brand hover:text-white"
+          className={`mt-4 w-full ${secondaryButtonClass}`}
         >
           Connect
-          <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+          <ArrowRight className="size-3.5 text-faint" />
         </button>
       )}
     </article>

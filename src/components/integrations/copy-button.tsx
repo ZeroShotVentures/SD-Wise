@@ -37,11 +37,11 @@ export function CopyButton({
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-md text-xs ${compact ? "p-1" : "px-2 py-1"} font-medium transition-colors ${
         tone === "dark"
           ? "bg-white/10 text-white hover:bg-white/20"
-          : "bg-white text-navy ring-1 ring-line hover:bg-canvas"
+          : "border border-line bg-white text-ink shadow-xs hover:bg-subtle"
       }`}
     >
       {copied ? (
-        <Check className="animate-pop size-3.5 text-emerald-500" />
+        <Check className="animate-pop size-3.5 text-emerald-600" />
       ) : (
         <Copy className="size-3.5" />
       )}

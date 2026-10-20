@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { updateUser } from "@/lib/auth-client";
 import {
   errorClass,
   inputClass,
   labelClass,
   primaryButtonClass,
   successClass,
-} from "./styles";
+} from "@/components/ui/styles";
+import { updateUser } from "@/lib/auth-client";
 
 export function ProfileForm({ name: initialName }: { name: string }) {
   const router = useRouter();

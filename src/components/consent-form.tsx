@@ -1,6 +1,12 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useState } from "react";
+import {
+  eyebrowClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/styles";
 import { oauth2 } from "@/lib/auth-client";
 
 const SCOPE_LABEL: Record<string, string> = {
@@ -42,44 +48,58 @@ export function ConsentForm({ clientName, email, scopes }: ConsentFormProps) {
   };
 
   return (
-    <div className="w-full max-w-sm space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <div className="w-full max-w-sm">
+      <div className="mb-6 text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-ink">
           Allow {clientName}?
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted">
           It will use SD Wise as {email}, and only see what you can see.
         </p>
       </div>
 
-      <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
-        <li>Ask questions and send them to colleagues</li>
-        {scopes.map((scope) => (
-          <li key={scope}>{SCOPE_LABEL[scope] ?? scope}</li>
-        ))}
-      </ul>
+      <div className="rounded-lg border border-line bg-white shadow-sm">
+        <div className="p-6">
+          <p className={eyebrowClass}>It will be able to</p>
+          <ul className="mt-3 space-y-2.5 text-sm text-ink">
+            {[
+              "Ask questions and send them to colleagues",
+              ...scopes.map((scope) => SCOPE_LABEL[scope] ?? scope),
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2.5">
+                <Check className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                {line}
+              </li>
+            ))}
+          </ul>
+          {error && (
+            <p
+              role="alert"
+              className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              {error}
+            </p>
+          )}
+        </div>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
-
-      <div className="flex gap-3">
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => decide(false)}
-          className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 sm:py-2.5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-        >
-          Deny
-        </button>
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => decide(true)}
-          className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 sm:py-2.5 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Allow
-        </button>
+        <div className="flex gap-2 rounded-b-lg border-t border-line bg-canvas px-6 py-4">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => decide(false)}
+            className={`flex-1 py-2.5 ${secondaryButtonClass}`}
+          >
+            Deny
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => decide(true)}
+            className={`flex-1 ${primaryButtonClass}`}
+          >
+            Allow
+          </button>
+        </div>
       </div>
     </div>
   );

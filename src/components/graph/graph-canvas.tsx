@@ -45,12 +45,17 @@ type GraphCanvasProps = {
   onZoom: (k: number) => void;
 };
 
-const YELLOW = "#ffbe00";
-const RED = "#f1002f";
-const LOCKED_FILL = "#2a3640";
-const LOCKED_STROKE = "#56666f";
-const INK = "rgba(8,16,26,0.86)";
-const LOOSE_COLOR = "#8fa3b3";
+// Drawn on the light canvas: dark ink for text and lines, a white halo
+// behind labels so they stay legible over edges.
+const PATH = "#e09b00";
+const RED = "#d6123f";
+const RING = "#1b2430";
+const LOCKED_FILL = "#d5dae1";
+const LOCKED_STROKE = "#9aa4b1";
+const HALO = "#f7f8fa";
+const TEXT = "#1b2430";
+const TEXT_MUTED = "#5e6a78";
+const LOOSE_COLOR = "#7d8a99";
 
 // Semantic zoom. Zoomed out the graph is a map of topic islands; zooming in
 // fades in the edges, then the names of the busiest facts, then all of them.
@@ -70,8 +75,8 @@ const smooth = ([from, to]: readonly [number, number], k: number) => {
 };
 
 // Batched by colour in the library, so keep the number of distinct colours low.
-const white = (alpha: number) =>
-  `rgba(255,255,255,${(Math.round(alpha * 50) / 50).toFixed(2)})`;
+const slate = (alpha: number) =>
+  `rgba(52,64,84,${(Math.round(alpha * 50) / 50).toFixed(2)})`;
 
 const withAlpha = (hex: string, alpha: number) => {
   const n = Number.parseInt(hex.slice(1), 16);
@@ -111,8 +116,8 @@ function drawLock(
   y: number,
   s: number,
 ) {
-  ctx.strokeStyle = "rgba(255,255,255,0.7)";
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.strokeStyle = "#ffffff";
+  ctx.fillStyle = "#ffffff";
   ctx.lineWidth = s * 0.18;
   ctx.beginPath();
   ctx.arc(x, y - s * 0.15, s * 0.28, Math.PI, 0);
@@ -260,7 +265,7 @@ export default function GraphCanvas({
           cluster,
           island,
           cluster.nodeIds,
-          SOURCES[cluster.source].color,
+          SOURCES[cluster.source].ink,
         );
       }
     });
@@ -379,15 +384,15 @@ export default function GraphCanvas({
       ctx.beginPath();
       ctx.arc(x, y, r + (5 + pulse * 3) / Math.min(k, 1), 0, 2 * Math.PI);
       ctx.fillStyle = isLockedHit
-        ? `rgba(241,0,47,${0.2 + pulse * 0.14})`
-        : `rgba(255,190,0,${0.18 + pulse * 0.12})`;
+        ? `rgba(214,18,63,${0.16 + pulse * 0.12})`
+        : `rgba(242,169,0,${0.22 + pulse * 0.14})`;
       ctx.fill();
     }
     if (view.isNew) {
       const pulse = 0.5 + 0.5 * Math.sin(t * 4);
       ctx.beginPath();
       ctx.arc(x, y, r + (4 + pulse * 4) / Math.min(k, 1), 0, 2 * Math.PI);
-      ctx.strokeStyle = `rgba(47,214,163,${0.9 - pulse * 0.6})`;
+      ctx.strokeStyle = `rgba(17,163,122,${0.9 - pulse * 0.6})`;
       ctx.lineWidth = 1.5 / k;
       ctx.stroke();
     }
@@ -407,10 +412,10 @@ export default function GraphCanvas({
         drawLock(ctx, x, y, r);
       }
     } else {
-      ctx.fillStyle = SOURCES[view.source].color;
+      ctx.fillStyle = SOURCES[view.source].ink;
       ctx.fill();
       if (r * k > 5) {
-        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 1 / k;
         ctx.stroke();
       }
@@ -419,14 +424,14 @@ export default function GraphCanvas({
     if (isVisited || isScan) {
       ctx.beginPath();
       ctx.arc(x, y, r + 2 / k, 0, 2 * Math.PI);
-      ctx.strokeStyle = isScan ? "#ffffff" : isLockedHit ? RED : YELLOW;
+      ctx.strokeStyle = isScan ? RING : isLockedHit ? RED : PATH;
       ctx.lineWidth = (isScan ? 2 : 1.4) / k;
       ctx.stroke();
     }
     if (isSelected || view.id === focus) {
       ctx.beginPath();
       ctx.arc(x, y, r + 3 / k, 0, 2 * Math.PI);
-      ctx.strokeStyle = "#ffffff";
+      ctx.strokeStyle = RING;
       ctx.lineWidth = 2 / k;
       ctx.stroke();
     }
@@ -460,7 +465,7 @@ export default function GraphCanvas({
     const topics = 1 - smooth(LOD.topics, k);
     const dimAll = searching || focus ? 0.4 : 1;
     for (const g of groups) {
-      const glow = (0.05 + 0.13 * topics) * dimAll;
+      const glow = (0.04 + 0.08 * topics) * dimAll;
       const gradient = ctx.createRadialGradient(
         shore(g).x,
         shore(g).y,
@@ -495,7 +500,7 @@ export default function GraphCanvas({
       const cx = (shore(ga).x + shore(gb).x) / 2 - dy * 0.12;
       const cy = (shore(ga).y + shore(gb).y) / 2 + dx * 0.12;
       const strength = Math.min(1, count / 25);
-      ctx.strokeStyle = white((0.05 + 0.2 * strength) * topics * dimAll);
+      ctx.strokeStyle = slate((0.04 + 0.12 * strength) * topics * dimAll);
       ctx.lineWidth = (0.6 + Math.log2(count) * 0.8) / k;
       ctx.beginPath();
       ctx.moveTo(shore(ga).x + dx * from, shore(ga).y + dy * from);
@@ -537,12 +542,10 @@ export default function GraphCanvas({
       if (!strong && overlaps(box, taken)) return false;
       taken.push(box);
       ctx.globalAlpha = alpha;
-      ctx.strokeStyle = INK;
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = HALO;
+      ctx.lineWidth = 4;
       ctx.strokeText(text, sx, top + 8);
-      ctx.fillStyle = node.view.locked
-        ? "rgba(255,255,255,0.45)"
-        : "rgba(255,255,255,0.92)";
+      ctx.fillStyle = node.view.locked ? LOCKED_STROKE : TEXT;
       ctx.fillText(text, sx, top + 8);
       return true;
     };
@@ -592,16 +595,16 @@ export default function GraphCanvas({
 
         ctx.globalAlpha = (topics - 0.5) * 2 * (searching ? 0.55 : 1);
         const nameY = showSub ? sy - 7 : sy;
-        ctx.strokeStyle = INK;
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = HALO;
+        ctx.lineWidth = 6;
         ctx.strokeText(name, sx, nameY);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = TEXT;
         ctx.fillText(name, sx, nameY);
         if (showSub) {
           ctx.font = "500 11px Inter, sans-serif";
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.strokeText(sub, sx, sy + fontSize / 2 + 3);
-          ctx.fillStyle = "rgba(255,255,255,0.6)";
+          ctx.fillStyle = TEXT_MUTED;
           ctx.fillText(sub, sx, sy + fontSize / 2 + 3);
         }
       } else {
@@ -618,10 +621,10 @@ export default function GraphCanvas({
         }
         taken.push(box);
         ctx.globalAlpha = (0.5 - topics) * 2 * (searching || focus ? 0.4 : 1);
-        ctx.strokeStyle = INK;
+        ctx.strokeStyle = HALO;
         ctx.lineWidth = 3;
         ctx.strokeText(caption, sx, sy);
-        ctx.fillStyle = withAlpha(g.color, 0.9);
+        ctx.fillStyle = withAlpha(g.color, 1);
         ctx.fillText(caption, sx, sy);
         ctx.letterSpacing = "0px";
       }
@@ -690,15 +693,15 @@ export default function GraphCanvas({
               : k > LOD.topics[0];
           }}
           linkColor={(link) => {
-            if (selectedId === link.id) return "#ffffff";
-            if (linkLit(link)) return "rgba(255,190,0,0.85)";
-            if (linkFocused(link)) return "rgba(255,255,255,0.85)";
-            if (searching || focus) return white(0.04);
+            if (selectedId === link.id) return RING;
+            if (linkLit(link)) return "rgba(224,155,0,0.9)";
+            if (linkFocused(link)) return slate(0.7);
+            if (searching || focus) return slate(0.04);
             const detail = smooth(LOD.edges, zoomRef.current);
             const base = sameIsland(link)
-              ? 0.08 + 0.24 * detail
-              : 0.05 * smooth(LOD.topics, zoomRef.current);
-            return white(link.view.locked ? base * 0.55 : base);
+              ? 0.06 + 0.16 * detail
+              : 0.04 * smooth(LOD.topics, zoomRef.current);
+            return slate(link.view.locked ? base * 0.55 : base);
           }}
           linkLineDash={(link) =>
             link.view.locked && zoomRef.current > 1 ? [2, 3] : null
@@ -715,7 +718,7 @@ export default function GraphCanvas({
           linkHoverPrecision={6}
           linkDirectionalParticles={(link) => (linkLit(link) ? 2 : 0)}
           linkDirectionalParticleWidth={2.5}
-          linkDirectionalParticleColor={() => YELLOW}
+          linkDirectionalParticleColor={() => PATH}
           onNodeClick={(node) => {
             const group = groupOf.get(node.id);
             // On the map, a click dives into the island.

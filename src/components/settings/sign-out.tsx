@@ -1,7 +1,7 @@
 "use client";
 
 import { useSignOut } from "@/components/shell/sidebar";
-import { secondaryButtonClass } from "./styles";
+import { secondaryButtonClass } from "@/components/ui/styles";
 
 export function SignOut() {
   const { signingOut, handleSignOut } = useSignOut();

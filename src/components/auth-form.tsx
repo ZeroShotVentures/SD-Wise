@@ -2,6 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  inputClass,
+  labelClass,
+  primaryButtonClass,
+} from "@/components/ui/styles";
 import { signIn } from "@/lib/auth-client";
 
 type AuthFormProps = {
@@ -40,22 +45,22 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
   };
 
   return (
-    <div className="w-full max-w-sm space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+    <div className="w-full max-w-sm">
+      <div className="mb-6 text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-ink">
           Sign in
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Enter your credentials to continue
+        <p className="mt-1 text-sm text-muted">
+          Use your work email to open the company brain.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 rounded-lg border border-line bg-white p-6 shadow-sm"
+      >
+        <div className="space-y-1.5">
+          <label htmlFor="email" className={labelClass}>
             Email
           </label>
           <input
@@ -65,17 +70,14 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
             inputMode="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder="you@company.com"
             required
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 sm:py-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400"
+            className={inputClass}
           />
         </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
+        <div className="space-y-1.5">
+          <label htmlFor="password" className={labelClass}>
             Password
           </label>
           <input
@@ -84,22 +86,26 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
             required
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 sm:py-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:ring-zinc-400"
+            className={inputClass}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p
+            role="alert"
+            className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
+            {error}
+          </p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 sm:py-2.5 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className={`w-full ${primaryButtonClass}`}
         >
-          {loading ? "Loading..." : "Sign in"}
+          {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
     </div>

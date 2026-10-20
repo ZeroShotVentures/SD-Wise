@@ -1,16 +1,18 @@
 "use client";
 
-import {
-  ArrowUpRight,
-  Globe,
-  Lock,
-  MessageCircleQuestion,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUpRight, Globe, Inbox, Lock, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { decline, sendAnswer } from "@/app/(app)/inbox/actions";
 import { Avatar } from "@/components/shell/avatar";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
+import {
+  cardClass,
+  eyebrowClass,
+  ghostButtonClass,
+  primaryButtonClass,
+} from "@/components/ui/styles";
+import { Tabs } from "@/components/ui/tabs";
 import { timeAgo } from "@/lib/graph/meta";
 import type { InboxItem, QueryStatus, ShareScope } from "@/lib/graph/types";
 
@@ -28,108 +30,106 @@ export function InboxView({
   const [tab, setTab] = useState<Tab>(initialTab);
   const pending = received.filter((q) => q.status === "PENDING");
   const handled = received.filter((q) => q.status !== "PENDING");
+  const waiting = sent.filter((q) => q.status === "PENDING").length;
 
   return (
     <div>
-      <div
-        role="tablist"
-        className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-line sm:inline-flex"
-      >
-        {(
-          [
-            ["received", "Received", pending.length],
-            ["sent", "Sent", sent.filter((q) => q.status === "PENDING").length],
-          ] as const
-        ).map(([key, label, count]) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => {
-              setTab(key);
-              window.history.replaceState(null, "", `/inbox?tab=${key}`);
-            }}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none sm:py-1.5 ${
-              tab === key ? "bg-navy text-white" : "text-muted hover:text-navy"
-            }`}
-          >
-            {label}
-            {count > 0 && (
-              <span
-                className={`rounded-full px-1.5 text-[11px] ${
-                  tab === key ? "bg-white/20" : "bg-canvas"
-                }`}
-              >
-                {count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label="Inbox"
+        value={tab}
+        onChange={setTab}
+        items={[
+          { key: "received", label: "Received", count: pending.length || "" },
+          { key: "sent", label: "Sent", count: waiting || "" },
+        ]}
+      />
 
       {tab === "received" ? (
-        <div className="mt-6 flex flex-col gap-4">
-          {pending.length === 0 && (
-            <Empty text="You're all caught up. Nobody is waiting on you." />
-          )}
-          {pending.map((item) => (
-            <QuestionReview key={item.id} item={item} />
-          ))}
+        <div className="mt-6 flex flex-col gap-8">
+          <section>
+            <SectionHeading
+              title="Waiting for you"
+              count={pending.length}
+              hint="Colleagues asked about something you know."
+            />
+            {pending.length === 0 ? (
+              <Empty
+                title="You're all caught up"
+                text="Nobody is waiting on an answer from you."
+              />
+            ) : (
+              <div className="flex flex-col gap-4">
+                {pending.map((item) => (
+                  <QuestionReview key={item.id} item={item} />
+                ))}
+              </div>
+            )}
+          </section>
           {handled.length > 0 && (
-            <>
-              <h2 className="mt-6 text-xs font-semibold tracking-wider text-muted uppercase">
-                Handled
-              </h2>
-              {handled.map((item) => (
-                <Resolved key={item.id} item={item} perspective="received" />
-              ))}
-            </>
+            <section>
+              <SectionHeading title="Handled" count={handled.length} />
+              <List items={handled} perspective="received" />
+            </section>
           )}
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-4">
-          {sent.length === 0 && (
-            <Empty text="Questions you ask colleagues from the graph show up here." />
+        <div className="mt-6">
+          {sent.length === 0 ? (
+            <Empty
+              title="No questions sent yet"
+              text="When you ask a colleague from the graph, the question and their answer show up here."
+              action={
+                <Link href="/graph" className={primaryButtonClass}>
+                  Ask the graph
+                </Link>
+              }
+            />
+          ) : (
+            <List items={sent} perspective="sent" />
           )}
-          {sent.map((item) => (
-            <Resolved key={item.id} item={item} perspective="sent" />
-          ))}
         </div>
       )}
     </div>
   );
 }
 
-function Empty({ text }: { text: string }) {
+function SectionHeading({
+  title,
+  count,
+  hint,
+}: {
+  title: string;
+  count: number;
+  hint?: string;
+}) {
   return (
-    <p className="rounded-2xl border border-dashed border-line bg-white p-6 text-center text-sm text-muted sm:p-10">
-      {text}
-    </p>
+    <div className="mb-3 flex items-baseline justify-between gap-4">
+      <h2 className="text-sm font-semibold text-ink">
+        {title}{" "}
+        <span className="font-normal text-muted tabular-nums">{count}</span>
+      </h2>
+      {hint && <p className="text-xs text-muted max-sm:hidden">{hint}</p>}
+    </div>
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
+function Empty({
+  title,
+  text,
+  action,
+}: {
+  title: string;
+  text: string;
+  action?: React.ReactNode;
+}) {
   return (
-    <article className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-line sm:p-6">
-      {children}
-    </article>
-  );
-}
-
-function Asker({ item, verb }: { item: InboxItem; verb: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <Avatar id={item.asker.id} name={item.asker.name} />
-      <p className="flex-1 text-sm">
-        <span className="font-semibold text-navy">{item.asker.name}</span>{" "}
-        <span className="text-muted">
-          {verb} · {item.asker.role}
-        </span>
-      </p>
-      <time className="shrink-0 self-start text-xs text-muted sm:self-auto">
-        {timeAgo(item.createdAt)}
-      </time>
+    <div className="flex flex-col items-center rounded-lg border border-dashed border-line-strong bg-white px-6 py-12 text-center">
+      <span className="flex size-10 items-center justify-center rounded-md border border-line bg-subtle text-muted">
+        <Inbox className="size-5" strokeWidth={1.75} />
+      </span>
+      <p className="mt-3 text-sm font-medium text-ink">{title}</p>
+      <p className="mt-1 max-w-sm text-sm text-muted">{text}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
@@ -152,66 +152,93 @@ function QuestionReview({ item }: { item: InboxItem }) {
     });
 
   return (
-    <Card>
-      <Asker
-        item={item}
-        verb={item.routed ? "asked SD Wise about what you know" : "asked you"}
-      />
-      <p className="mt-4 flex items-start gap-2 text-base font-medium text-navy sm:text-lg">
-        <MessageCircleQuestion className="mt-0.5 size-5 shrink-0 text-brand sm:mt-1" />
-        {item.question}
-      </p>
-
-      <div className="mt-5">
-        <p className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
-          <Sparkles className="size-3.5" />
-          {item.suggestedAnswer
-            ? "Drafted from what you know"
-            : "Nothing you know matches, write an answer"}
-        </p>
-        <textarea
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          rows={4}
-          aria-label="Answer"
-          className="mt-2 w-full resize-y rounded-xl border border-line bg-canvas/50 px-4 py-3 text-base leading-relaxed sm:text-sm outline-none focus:border-brand focus:bg-white"
-        />
-        {item.nodeTitles.length > 0 && (
-          <p className="mt-2 text-xs text-muted">
-            Based on: {item.nodeTitles.join(", ")}
+    <article className={cardClass}>
+      <header className="flex items-start gap-3 border-b border-line px-4 py-3 sm:px-5">
+        <Avatar id={item.asker.id} name={item.asker.name} />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm">
+            <span className="font-medium text-ink">{item.asker.name}</span>{" "}
+            <span className="text-muted">
+              {item.routed ? "asked SD Wise about what you know" : "asked you"}
+            </span>
           </p>
-        )}
+          <p className="text-xs text-muted">{item.asker.role}</p>
+        </div>
+        <time className="shrink-0 text-xs text-muted">
+          {timeAgo(item.createdAt)}
+        </time>
+      </header>
+
+      <div className="px-4 py-4 sm:px-5">
+        <p className="text-base font-medium text-ink">{item.question}</p>
+
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-3">
+            <label
+              htmlFor={`answer-${item.id}`}
+              className="flex items-center gap-1.5 text-sm font-medium text-ink"
+            >
+              Your answer
+            </label>
+            {item.suggestedAnswer ? (
+              <Badge tone="brand">
+                <Sparkles className="size-3" /> Drafted from what you know
+              </Badge>
+            ) : (
+              <span className="text-xs text-muted">
+                Nothing you know matches yet
+              </span>
+            )}
+          </div>
+          <textarea
+            id={`answer-${item.id}`}
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            rows={4}
+            placeholder={`Write what ${askerName} should know…`}
+            className="mt-2 w-full resize-y rounded-md border border-line-strong bg-white px-3 py-2.5 text-base leading-relaxed text-ink shadow-xs transition-[border-color,box-shadow] outline-none placeholder:text-faint focus:border-brand focus:ring-3 focus:ring-brand/15 sm:text-sm"
+          />
+          {item.nodeTitles.length > 0 && (
+            <p className="mt-1.5 text-xs text-muted">
+              Based on {item.nodeTitles.join(", ")}
+            </p>
+          )}
+        </div>
+
+        <fieldset className="mt-5">
+          <legend className="text-sm font-medium text-ink">
+            Who can know this afterwards
+          </legend>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            <ScopeOption
+              checked={scope === "ASKER"}
+              onChange={() => setScope("ASKER")}
+              icon={<Lock className="size-4" />}
+              title={`Only ${askerName}`}
+              text="Stays private in the graph."
+            />
+            <ScopeOption
+              checked={scope === "PUBLIC"}
+              onChange={() => setScope("PUBLIC")}
+              icon={<Globe className="size-4" />}
+              title="Everyone"
+              text="Anyone in the company can find this answer."
+            />
+          </div>
+        </fieldset>
       </div>
 
-      <fieldset className="mt-5">
-        <legend className="text-xs font-semibold tracking-wider text-muted uppercase">
-          Who can know this afterwards
-        </legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          <ScopeOption
-            checked={scope === "ASKER"}
-            onChange={() => setScope("ASKER")}
-            icon={<Lock className="size-4" />}
-            title={`Only ${askerName}`}
-            text={`${askerName} can know it, but it stays private in the graph.`}
-          />
-          <ScopeOption
-            checked={scope === "PUBLIC"}
-            onChange={() => setScope("PUBLIC")}
-            icon={<Globe className="size-4" />}
-            title="Everyone"
-            text="It's not a secret anymore. Anyone can find this answer."
-          />
-        </div>
-      </fieldset>
-
-      {error && <p className="mt-4 text-sm text-worx-red">{error}</p>}
-      <div className="mt-6 flex gap-2 sm:justify-end">
+      <footer className="flex items-center gap-2 rounded-b-lg border-t border-line bg-canvas px-4 py-3 sm:justify-end sm:px-5">
+        {error && (
+          <p role="alert" className="mr-auto text-sm text-worx-red">
+            {error}
+          </p>
+        )}
         <button
           type="button"
           disabled={pending}
           onClick={() => run(() => decline(item.id))}
-          className="rounded-lg px-4 py-2.5 text-sm font-medium text-muted ring-1 ring-line hover:bg-canvas hover:text-navy disabled:opacity-50 max-sm:flex-1 sm:py-2 sm:ring-0"
+          className={`${ghostButtonClass} max-sm:flex-1`}
         >
           Decline
         </button>
@@ -221,16 +248,17 @@ function QuestionReview({ item }: { item: InboxItem }) {
           onClick={() =>
             run(() => sendAnswer({ queryId: item.id, answer, scope }))
           }
-          className="rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50 max-sm:flex-2 sm:py-2"
+          className={`${primaryButtonClass} max-sm:flex-2`}
         >
+          <Send className="size-3.5" />
           {pending
             ? "Sending..."
             : scope === "PUBLIC"
               ? "Send and share with everyone"
               : `Send to ${askerName}`}
         </button>
-      </div>
-    </Card>
+      </footer>
+    </article>
   );
 }
 
@@ -249,10 +277,10 @@ function ScopeOption({
 }) {
   return (
     <label
-      className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition-colors ${
+      className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors has-focus-visible:ring-3 has-focus-visible:ring-brand/15 ${
         checked
-          ? "border-brand bg-brand-soft"
-          : "border-line hover:border-muted"
+          ? "border-brand bg-brand-soft/50"
+          : "border-line hover:border-line-strong hover:bg-canvas"
       }`}
     >
       <input
@@ -261,67 +289,81 @@ function ScopeOption({
         onChange={onChange}
         className="sr-only"
       />
-      <span className={checked ? "text-brand" : "text-muted"}>{icon}</span>
-      <span>
-        <span className="block text-sm font-medium text-navy">{title}</span>
-        <span className="block text-xs text-muted">{text}</span>
+      <span
+        className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border ${
+          checked ? "border-brand bg-brand" : "border-line-strong bg-white"
+        }`}
+      >
+        {checked && <span className="size-1.5 rounded-full bg-white" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+          <span className={checked ? "text-brand" : "text-muted"}>{icon}</span>
+          {title}
+        </span>
+        <span className="mt-0.5 block text-xs text-muted">{text}</span>
       </span>
     </label>
   );
 }
 
-const STATUS: Record<QueryStatus, { label: string; className: string }> = {
-  PENDING: { label: "Waiting", className: "bg-amber-100 text-amber-800" },
-  ANSWERED: { label: "Answered", className: "bg-emerald-100 text-emerald-800" },
-  DECLINED: { label: "Declined", className: "bg-canvas text-muted" },
+const STATUS: Record<QueryStatus, { label: string; tone: BadgeTone }> = {
+  PENDING: { label: "Waiting", tone: "warning" },
+  ANSWERED: { label: "Answered", tone: "success" },
+  DECLINED: { label: "Declined", tone: "neutral" },
 };
 
-function Resolved({
-  item,
+// Resolved and sent questions as one bordered list: who, what, where it
+// stands, and the answer underneath when there is one.
+function List({
+  items,
   perspective,
 }: {
-  item: InboxItem;
+  items: InboxItem[];
   perspective: Tab;
 }) {
-  const other = perspective === "sent" ? item.recipient : item.asker;
-  const status = STATUS[item.status];
-  const when = timeAgo(item.resolvedAt ?? item.createdAt);
-
   return (
-    <Card>
-      <div className="flex items-center gap-3">
-        <Avatar id={other.id} name={other.name} />
-        {/* On phones the time moves under the name to leave room. */}
-        <div className="min-w-0 flex-1 text-sm">
-          <p className="truncate">
-            <span className="text-muted">
-              {perspective === "sent" ? "To" : "From"}{" "}
-            </span>
-            <span className="font-semibold text-navy">{other.name}</span>
-          </p>
-          <time className="text-xs text-muted sm:hidden">{when}</time>
-        </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}
-        >
-          {status.label}
-        </span>
-        <time className="text-xs text-muted max-sm:hidden">{when}</time>
-      </div>
-      <p className="mt-3 font-medium text-navy">{item.question}</p>
-      {item.answer && (
-        <p className="mt-2 rounded-xl bg-canvas px-4 py-3 text-sm leading-relaxed">
-          {item.answer}
-        </p>
-      )}
-      {item.status === "ANSWERED" && item.answerNodeId && (
-        <Link
-          href={`/graph?node=${item.answerNodeId}`}
-          className="mt-3 -mb-2 inline-flex items-center gap-1 py-2 text-sm font-medium text-brand hover:underline"
-        >
-          View in graph <ArrowUpRight className="size-3.5" />
-        </Link>
-      )}
-    </Card>
+    <ul className={`divide-y divide-line ${cardClass}`}>
+      {items.map((item) => {
+        const other = perspective === "sent" ? item.recipient : item.asker;
+        const status = STATUS[item.status];
+        return (
+          <li key={item.id} className="flex gap-3 px-4 py-4 sm:px-5">
+            <Avatar id={other.id} name={other.name} size="sm" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className="min-w-0 truncate text-sm">
+                  <span className="text-muted">
+                    {perspective === "sent" ? "To" : "From"}{" "}
+                  </span>
+                  <span className="font-medium text-ink">{other.name}</span>
+                </p>
+                <Badge tone={status.tone}>{status.label}</Badge>
+                <time className="ml-auto text-xs text-muted">
+                  {timeAgo(item.resolvedAt ?? item.createdAt)}
+                </time>
+              </div>
+              <p className="mt-1 text-sm text-ink">{item.question}</p>
+              {item.answer && (
+                <div className="mt-2.5 rounded-md border border-line bg-canvas px-3 py-2.5">
+                  <p className={eyebrowClass}>Answer</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink">
+                    {item.answer}
+                  </p>
+                </div>
+              )}
+              {item.status === "ANSWERED" && item.answerNodeId && (
+                <Link
+                  href={`/graph?node=${item.answerNodeId}`}
+                  className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-dark"
+                >
+                  View in graph <ArrowUpRight className="size-3.5" />
+                </Link>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

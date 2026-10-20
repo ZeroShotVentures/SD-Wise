@@ -9,7 +9,9 @@ import { RemoveUser } from "@/components/admin/remove-user";
 import { SetPasswordForm } from "@/components/admin/set-password-form";
 import { UserBadges } from "@/components/admin/user-badges";
 import { Section } from "@/components/settings/section";
-import { secondaryButtonClass } from "@/components/settings/styles";
+import { Page as PageShell } from "@/components/shell/page";
+import { Badge } from "@/components/ui/badge";
+import { secondaryButtonClass } from "@/components/ui/styles";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdmin, requireAdmin } from "@/lib/session";
@@ -66,21 +68,17 @@ export default async function Page({
   );
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <Link
-          href="/admin"
-          className="-my-2 inline-block py-2 text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-        >
-          ← All users
-        </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="min-w-0 text-xl font-semibold tracking-tight wrap-anywhere text-zinc-900 sm:text-2xl dark:text-zinc-50">
-            {target.name || target.email}
-          </h1>
+    <PageShell
+      back={{ href: "/admin", label: "All users" }}
+      width="narrow"
+      title={
+        <span className="flex flex-wrap items-center gap-3 wrap-anywhere">
+          {target.name || target.email}
           <UserBadges user={target} />
-        </div>
-        <p className="text-sm wrap-anywhere text-zinc-500 dark:text-zinc-400">
+        </span>
+      }
+      description={
+        <span className="wrap-anywhere">
           {[
             target.email,
             `joined ${dateFormat.format(new Date(target.createdAt))} UTC`,
@@ -88,129 +86,133 @@ export default async function Page({
           ]
             .filter(Boolean)
             .join(" · ")}
-        </p>
-        <p className="font-mono text-xs break-all text-zinc-400 dark:text-zinc-500">
-          {target.id}
-        </p>
-      </header>
-
-      {isSelf ? (
-        <Section title="This is you">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Admin actions are disabled on your own account. Manage it in{" "}
-            <Link href="/settings" className="underline">
-              Settings
-            </Link>
-            .
-          </p>
-        </Section>
-      ) : (
-        <>
-          <Section
-            title="Impersonate"
-            description="Sign in as this user to see what they see. The session ends after an hour or when you stop impersonating, and is hidden from the user's session list."
-          >
-            {targetIsAdmin ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Admins can&apos;t be impersonated.
-              </p>
-            ) : (
-              <ImpersonateButton userId={target.id} />
-            )}
+          <span className="mt-1 block font-mono text-xs break-all text-faint">
+            {target.id}
+          </span>
+        </span>
+      }
+    >
+      <div className="flex flex-col gap-6 md:gap-8">
+        {isSelf ? (
+          <Section title="This is you">
+            <p className="text-sm text-muted">
+              Admin actions are disabled on your own account. Manage it in{" "}
+              <Link
+                href="/settings"
+                className="font-medium text-brand hover:text-brand-dark"
+              >
+                Settings
+              </Link>
+              .
+            </p>
           </Section>
+        ) : (
+          <>
+            <Section
+              title="Impersonate"
+              description="Sign in as this user to see what they see. The session ends after an hour or when you stop impersonating, and is hidden from the user's session list."
+            >
+              {targetIsAdmin ? (
+                <p className="text-sm text-muted">
+                  Admins can&apos;t be impersonated.
+                </p>
+              ) : (
+                <ImpersonateButton userId={target.id} />
+              )}
+            </Section>
 
-          <Section
-            title={target.banned ? "Banned" : "Ban"}
-            description={
-              target.banned
-                ? [
-                    `Reason: ${target.banReason || "none given"}.`,
-                    target.banExpires
-                      ? `Expires ${dateFormat.format(new Date(target.banExpires))} UTC.`
-                      : "Never expires.",
-                  ].join(" ")
-                : "Banned users are signed out everywhere and can't sign in until the ban is lifted or expires."
-            }
-          >
-            <BanForm userId={target.id} banned={!!target.banned} />
-          </Section>
+            <Section
+              title={target.banned ? "Banned" : "Ban"}
+              description={
+                target.banned
+                  ? [
+                      `Reason: ${target.banReason || "none given"}.`,
+                      target.banExpires
+                        ? `Expires ${dateFormat.format(new Date(target.banExpires))} UTC.`
+                        : "Never expires.",
+                    ].join(" ")
+                  : "Banned users are signed out everywhere and can't sign in until the ban is lifted or expires."
+              }
+            >
+              <BanForm userId={target.id} banned={!!target.banned} />
+            </Section>
 
-          <Section
-            title="Sessions"
-            description="Devices currently signed in to this account."
-          >
-            {activeSessions.length === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No active sessions.
-              </p>
-            ) : (
-              <>
-                <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                  {activeSessions.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center justify-between gap-4 py-3 text-sm"
-                    >
-                      <div className="min-w-0 wrap-anywhere">
-                        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                          {describeUserAgent(s.userAgent ?? null)}
-                          {s.impersonatedBy && (
-                            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                              Impersonation
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-zinc-500 dark:text-zinc-400">
-                          {[
-                            s.ipAddress,
-                            `signed in ${dateFormat.format(new Date(s.createdAt))} UTC`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
-                      </div>
-                      <form
-                        action={revokeUserSession.bind(null, target.id, s.id)}
+            <Section
+              title="Sessions"
+              description="Devices currently signed in to this account."
+            >
+              {activeSessions.length === 0 ? (
+                <p className="text-sm text-muted">No active sessions.</p>
+              ) : (
+                <>
+                  <ul className="-my-3 divide-y divide-line">
+                    {activeSessions.map((s) => (
+                      <li
+                        key={s.id}
+                        className="flex items-center justify-between gap-4 py-3 text-sm"
                       >
-                        <button type="submit" className={secondaryButtonClass}>
-                          Revoke
-                        </button>
-                      </form>
-                    </li>
-                  ))}
-                </ul>
-                <form
-                  action={revokeUserSessions.bind(null, target.id)}
-                  className="mt-4"
-                >
-                  <button type="submit" className={secondaryButtonClass}>
-                    Sign out everywhere
-                  </button>
-                </form>
-              </>
-            )}
-          </Section>
+                        <div className="min-w-0 wrap-anywhere">
+                          <p className="flex flex-wrap items-center gap-2 font-medium text-ink">
+                            {describeUserAgent(s.userAgent ?? null)}
+                            {s.impersonatedBy && (
+                              <Badge tone="warning">Impersonation</Badge>
+                            )}
+                          </p>
+                          <p className="text-muted">
+                            {[
+                              s.ipAddress,
+                              `signed in ${dateFormat.format(new Date(s.createdAt))} UTC`,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </div>
+                        <form
+                          action={revokeUserSession.bind(null, target.id, s.id)}
+                        >
+                          <button
+                            type="submit"
+                            className={secondaryButtonClass}
+                          >
+                            Revoke
+                          </button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                  <form
+                    action={revokeUserSessions.bind(null, target.id)}
+                    className="mt-4 border-t border-line pt-4"
+                  >
+                    <button type="submit" className={secondaryButtonClass}>
+                      Sign out everywhere
+                    </button>
+                  </form>
+                </>
+              )}
+            </Section>
 
-          <Section
-            title="Password"
-            description={
-              methods.includes("Password")
-                ? "Replace this user's password. Their existing sessions stay signed in."
-                : "This user has no password yet. Setting one lets them sign in with email and password."
-            }
-          >
-            <SetPasswordForm userId={target.id} />
-          </Section>
+            <Section
+              title="Password"
+              description={
+                methods.includes("Password")
+                  ? "Replace this user's password. Their existing sessions stay signed in."
+                  : "This user has no password yet. Setting one lets them sign in with email and password."
+              }
+            >
+              <SetPasswordForm userId={target.id} />
+            </Section>
 
-          <Section
-            title="Delete user"
-            tone="danger"
-            description="Permanently delete this user and all of their data. This can't be undone."
-          >
-            <RemoveUser userId={target.id} email={target.email} />
-          </Section>
-        </>
-      )}
-    </div>
+            <Section
+              title="Delete user"
+              tone="danger"
+              description="Permanently delete this user and all of their data. This can't be undone."
+            >
+              <RemoveUser userId={target.id} email={target.email} />
+            </Section>
+          </>
+        )}
+      </div>
+    </PageShell>
   );
 }

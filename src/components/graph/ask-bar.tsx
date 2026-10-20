@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Loader2, Sparkles } from "lucide-react";
+import { ArrowUp, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 
 const EXAMPLES = [
@@ -32,12 +32,15 @@ export function AskBar({ busy, narrow, status, onAsk }: AskBarProps) {
   return (
     <div
       className={`pointer-events-none absolute bottom-3 left-0 z-20 flex flex-col items-center gap-2 px-3 sm:bottom-6 sm:gap-3 sm:px-6 ${
-        narrow ? "max-md:hidden md:right-[25rem]" : "right-0"
+        narrow ? "max-md:hidden md:right-96" : "right-0"
       }`}
     >
       {status ? (
-        <p className="animate-rise pointer-events-auto flex items-center gap-2 rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur">
-          <Loader2 className="size-3.5 animate-spin text-worx-yellow" />
+        <p
+          aria-live="polite"
+          className="animate-rise pointer-events-auto flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-medium text-muted shadow-sm"
+        >
+          <Loader2 className="size-3.5 animate-spin text-brand" />
           {status}
         </p>
       ) : (
@@ -48,7 +51,7 @@ export function AskBar({ busy, narrow, status, onAsk }: AskBarProps) {
               key={example}
               type="button"
               onClick={() => submit(example)}
-              className="shrink-0 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs whitespace-nowrap text-white/70 backdrop-blur transition-colors hover:border-white/30 hover:text-white sm:py-1"
+              className="shrink-0 rounded-full border border-line bg-white/90 px-3 py-1.5 text-xs whitespace-nowrap text-muted shadow-xs backdrop-blur transition-colors hover:border-line-strong hover:text-ink sm:py-1"
             >
               {example}
             </button>
@@ -60,21 +63,21 @@ export function AskBar({ busy, narrow, status, onAsk }: AskBarProps) {
           e.preventDefault();
           submit(value);
         }}
-        className="pointer-events-auto flex w-full max-w-2xl items-center gap-3 rounded-2xl bg-white p-2 pl-4 shadow-2xl shadow-black/40 ring-1 ring-black/5 focus-within:ring-2 focus-within:ring-brand"
+        className="pointer-events-auto flex w-full max-w-2xl items-center gap-3 rounded-xl border border-line-strong bg-white p-1.5 pl-4 shadow-lg shadow-ink/5 transition-[border-color,box-shadow] focus-within:border-brand focus-within:ring-3 focus-within:ring-brand/15"
       >
-        <Sparkles className="size-5 shrink-0 text-brand" />
+        <Search className="size-4 shrink-0 text-faint" />
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Ask the company brain anything…"
           aria-label="Ask the graph"
           enterKeyHint="search"
-          className="min-w-0 flex-1 bg-transparent py-2 text-base text-navy outline-none placeholder:text-muted sm:text-sm"
+          className="min-w-0 flex-1 bg-transparent py-2 text-base text-ink outline-none placeholder:text-faint sm:text-sm"
         />
         <button
           type="submit"
           disabled={busy || value.trim().length < 3}
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-dark disabled:bg-line disabled:text-muted sm:size-9"
+          className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand text-white transition-colors hover:bg-brand-dark disabled:bg-subtle disabled:text-faint sm:size-8"
         >
           {busy ? (
             <Loader2 className="size-4 animate-spin" />

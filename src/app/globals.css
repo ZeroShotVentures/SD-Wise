@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
-/* SD Worx logo colours, plus the navy from sdworx.com. */
+/* One light theme. Neutrals are a cool grey ramp; colour is reserved for
+   the brand blue (actions, focus) and the logo's red and yellow (status). */
 @theme inline {
   --color-brand: #006dd8;
   --color-brand-dark: #0057ad;
-  --color-brand-soft: #e6f0fb;
-  --color-worx-red: #f1002f;
-  --color-worx-yellow: #ffbe00;
+  --color-brand-soft: #e8f1fc;
+  --color-worx-red: #d6003a;
+  --color-worx-yellow: #f2a900;
   --color-navy: #1d2830;
   --color-navy-deep: #111a20;
-  --color-ink: #1d2830;
-  --color-muted: #5f6b76;
-  --color-line: #e3e7ec;
-  --color-canvas: #f4f5f8;
+  --color-ink: #1b2430;
+  --color-muted: #5e6a78;
+  --color-faint: #8c96a3;
+  --color-line: #e3e6eb;
+  --color-line-strong: #cfd4dc;
+  --color-subtle: #f3f4f6;
+  --color-canvas: #f7f8fa;
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
@@ -20,6 +24,15 @@
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 18%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 @keyframes rise {

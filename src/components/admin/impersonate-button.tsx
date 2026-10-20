@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { errorClass, primaryButtonClass } from "@/components/settings/styles";
+import { errorClass, primaryButtonClass } from "@/components/ui/styles";
 import { admin } from "@/lib/auth-client";
 import { useAdminAction } from "./use-admin-action";
 

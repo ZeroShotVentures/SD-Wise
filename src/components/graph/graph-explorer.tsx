@@ -50,7 +50,7 @@ function ZoomButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="flex size-11 items-center justify-center transition-colors hover:bg-white/10 hover:text-white md:size-9"
+      className="flex size-11 items-center justify-center text-muted transition-colors hover:bg-subtle hover:text-ink md:size-8"
     >
       {children}
     </button>
@@ -206,128 +206,152 @@ export function GraphExplorer({
     setResult(res);
   };
 
-  return (
-    <div
-      ref={rootRef}
-      className="relative h-full overflow-hidden bg-navy-deep md:min-h-[640px]"
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,109,216,0.18),transparent_65%)]"
-      />
-      <GraphCanvas
-        nodes={view.nodes}
-        edges={view.edges}
-        clustering={clustering}
-        selectedId={selection?.id ?? null}
-        highlight={highlight}
-        apiRef={apiRef}
-        nodeIndex={nodeIndex}
-        onSelectNode={(id) => {
-          selectNode(id);
-          if (isPhone()) centerOn(id);
-        }}
-        onSelectEdge={(id) => setSelection({ kind: "edge", id })}
-        onBackground={() => setSelection(null)}
-        onZoom={setZoomLevel}
-      />
+  const count = new Intl.NumberFormat("en");
 
-      <header className="pointer-events-none absolute top-4 left-4 z-10 sm:top-6 sm:left-6">
-        <h1 className="text-lg font-semibold tracking-tight text-white sm:text-xl">
-          Company brain
-        </h1>
-        <p className="mt-0.5 text-xs text-white/60 sm:mt-1 sm:text-sm">
-          {view.nodes.length} facts in {clustering.clusters.length} topics · you
-          can see {visible}
-          <span className="max-sm:hidden">
-            , the rest is known by colleagues
-          </span>
-        </p>
+  return (
+    <div className="flex h-full flex-col">
+      <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-line bg-white px-4 sm:px-6">
+        <div className="flex min-w-0 items-baseline gap-3">
+          <h1 className="shrink-0 text-base font-semibold tracking-tight text-ink">
+            Company brain
+          </h1>
+          <p className="truncate text-sm text-muted">
+            <span className="text-ink tabular-nums">
+              {count.format(view.nodes.length)}
+            </span>{" "}
+            facts
+            <span className="max-sm:hidden">
+              {" "}
+              in{" "}
+              <span className="text-ink tabular-nums">
+                {clustering.clusters.length}
+              </span>{" "}
+              topics
+            </span>{" "}
+            ·{" "}
+            <span className="text-ink tabular-nums">
+              {count.format(visible)}
+            </span>{" "}
+            visible to you
+          </p>
+        </div>
+        <ul
+          aria-label="Legend"
+          className="hidden shrink-0 items-center gap-4 text-xs text-muted lg:flex"
+        >
+          {(["MESSAGE", "MEETING", "EMAIL", "OTHER"] as const).map((source) => (
+            <li key={source} className="flex items-center gap-1.5">
+              <span
+                className="size-2 rounded-full"
+                style={{ backgroundColor: SOURCES[source].ink }}
+              />
+              {SOURCES[source].label}
+            </li>
+          ))}
+          <li className="flex items-center gap-1.5">
+            <span className="flex size-3 items-center justify-center rounded-full bg-[#d5dae1]">
+              <Lock className="size-2 text-white" strokeWidth={3} />
+            </span>
+            No access
+          </li>
+        </ul>
       </header>
 
-      <ul className="absolute bottom-6 left-6 z-10 hidden flex-col gap-1.5 rounded-xl bg-black/30 p-3 text-xs text-white/70 backdrop-blur xl:flex">
-        {(["MESSAGE", "MEETING", "EMAIL", "OTHER"] as const).map((source) => (
-          <li key={source} className="flex items-center gap-2">
-            <span
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: SOURCES[source].color }}
-            />
-            {SOURCES[source].label}
-          </li>
-        ))}
-        <li className="flex items-center gap-2">
-          <Lock className="size-2.5" /> No access
-        </li>
-      </ul>
-
       <div
-        // On phones the answer card and inspector sheet span the width.
-        className={`absolute top-1/2 right-3 z-10 flex -translate-y-1/2 flex-col overflow-hidden rounded-xl bg-black/30 text-white/70 backdrop-blur transition-[right] ${selection ? "md:right-[26rem]" : "md:right-6"} ${selection || result ? "max-md:hidden" : ""}`}
+        ref={rootRef}
+        className="relative min-h-0 flex-1 overflow-hidden bg-canvas md:min-h-[580px]"
       >
-        <ZoomButton label="Zoom in" onClick={() => zoomBy(ZOOM.step)}>
-          <Plus className="size-4" />
-        </ZoomButton>
-        {/* Phones pinch to zoom; the slider would only get in the way. */}
-        <div className="flex justify-center py-2 max-md:hidden">
-          <input
-            type="range"
-            aria-label="Zoom"
-            min={0}
-            max={100}
-            step={0.5}
-            value={zoomToSlider(zoomLevel)}
-            onChange={(e) =>
-              apiRef.current?.zoom(sliderToZoom(Number(e.target.value)))
-            }
-            className="h-32 w-4 cursor-pointer accent-white [direction:rtl] [writing-mode:vertical-lr]"
-          />
+        <GraphCanvas
+          nodes={view.nodes}
+          edges={view.edges}
+          clustering={clustering}
+          selectedId={selection?.id ?? null}
+          highlight={highlight}
+          apiRef={apiRef}
+          nodeIndex={nodeIndex}
+          onSelectNode={(id) => {
+            selectNode(id);
+            if (isPhone()) centerOn(id);
+          }}
+          onSelectEdge={(id) => setSelection({ kind: "edge", id })}
+          onBackground={() => setSelection(null)}
+          onZoom={setZoomLevel}
+        />
+
+        <div
+          // On phones the answer card and inspector sheet span the width.
+          className={`absolute top-3 right-3 z-10 flex flex-col overflow-hidden rounded-lg border border-line bg-white shadow-sm transition-[right] sm:top-4 ${selection ? "md:right-[25rem]" : "md:right-4"} ${selection || result ? "max-md:hidden" : ""}`}
+        >
+          <ZoomButton label="Zoom in" onClick={() => zoomBy(ZOOM.step)}>
+            <Plus className="size-4" />
+          </ZoomButton>
+          {/* Phones pinch to zoom; the slider would only get in the way. */}
+          <div className="flex justify-center border-y border-line py-2 max-md:hidden">
+            <input
+              type="range"
+              aria-label="Zoom"
+              min={0}
+              max={100}
+              step={0.5}
+              value={zoomToSlider(zoomLevel)}
+              onChange={(e) =>
+                apiRef.current?.zoom(sliderToZoom(Number(e.target.value)))
+              }
+              className="h-24 w-4 cursor-pointer accent-brand [direction:rtl] [writing-mode:vertical-lr]"
+            />
+          </div>
+          <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / ZOOM.step)}>
+            <Minus className="size-4" />
+          </ZoomButton>
+          <div className="border-t border-line">
+            <ZoomButton label="Fit to screen" onClick={fitToScreen}>
+              <Maximize className="size-4" />
+            </ZoomButton>
+          </div>
         </div>
-        <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / ZOOM.step)}>
-          <Minus className="size-4" />
-        </ZoomButton>
-        <ZoomButton label="Fit to screen" onClick={fitToScreen}>
-          <Maximize className="size-4" />
-        </ZoomButton>
+
+        {result && (
+          <AskResultCard
+            result={result}
+            view={view}
+            covered={selection !== null}
+            onSelectNode={(id) => {
+              selectNode(id);
+              centerOn(id);
+            }}
+            onClose={clear}
+          />
+        )}
+
+        {selection && (
+          <Inspector
+            key={selection.id}
+            view={view}
+            selection={selection}
+            onSelectNode={(id) => {
+              selectNode(id);
+              centerOn(id);
+            }}
+            onClose={() => setSelection(null)}
+          />
+        )}
+
+        {error && (
+          <p
+            role="alert"
+            className="absolute bottom-32 left-1/2 z-20 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-center text-sm text-red-700 shadow-sm"
+          >
+            {error}
+          </p>
+        )}
+
+        <AskBar
+          busy={status !== null}
+          narrow={selection !== null}
+          status={status}
+          onAsk={ask}
+        />
       </div>
-
-      {result && (
-        <AskResultCard
-          result={result}
-          view={view}
-          covered={selection !== null}
-          onSelectNode={(id) => {
-            selectNode(id);
-            centerOn(id);
-          }}
-          onClose={clear}
-        />
-      )}
-
-      {selection && (
-        <Inspector
-          key={selection.id}
-          view={view}
-          selection={selection}
-          onSelectNode={(id) => {
-            selectNode(id);
-            centerOn(id);
-          }}
-          onClose={() => setSelection(null)}
-        />
-      )}
-
-      {error && (
-        <p className="absolute bottom-32 left-1/2 z-20 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-lg bg-worx-red px-3 py-1.5 text-center text-sm text-white">
-          {error}
-        </p>
-      )}
-
-      <AskBar
-        busy={status !== null}
-        narrow={selection !== null}
-        status={status}
-        onAsk={ask}
-      />
     </div>
   );
 }

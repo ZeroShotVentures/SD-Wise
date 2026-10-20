@@ -4,6 +4,10 @@ import { ArrowRight, Check, Loader2, Lock, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { setConnected } from "@/app/(app)/integrations/actions";
+import {
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/components/ui/styles";
 import { INTEGRATIONS, SUITES, type Suite } from "@/lib/graph/meta";
 import type { IntegrationStats } from "@/lib/graph/types";
 import { Logo, SdWiseMark } from "./logo";
@@ -110,14 +114,14 @@ export function ConnectDialog({
       onClose={onClose}
       onCancel={(e) => running && e.preventDefault()}
       // A sheet from the bottom on phones, where the thumb is; centred above.
-      className="animate-pop m-0 mt-auto max-h-[calc(100dvh-2rem)] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-0 text-ink shadow-2xl backdrop:bg-navy/60 backdrop:backdrop-blur-sm sm:mx-auto sm:mt-[12vh] sm:mb-auto sm:max-h-[calc(88dvh-1rem)] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-2xl"
+      className="animate-pop m-0 mt-auto max-h-[calc(100dvh-2rem)] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-xl border border-line bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/40 sm:mx-auto sm:mt-[12vh] sm:mb-auto sm:max-h-[calc(88dvh-1rem)] sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-xl"
     >
       <div className="relative p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6">
         {!running && (
           <button
             type="button"
             onClick={close}
-            className="absolute top-3 right-3 rounded-md p-2 text-muted transition-colors hover:bg-canvas hover:text-navy"
+            className="absolute top-3 right-3 rounded-md p-2 text-muted transition-colors hover:bg-canvas hover:text-ink"
           >
             <X className="size-4" />
             <span className="sr-only">Close</span>
@@ -136,7 +140,7 @@ export function ConnectDialog({
           />
         ) : (
           <>
-            <h2 className="mt-5 text-center text-lg font-semibold text-navy">
+            <h2 className="mt-5 text-center text-lg font-semibold text-ink">
               Connect {title}
             </h2>
             <p className="mt-1 text-center text-sm text-muted">
@@ -159,10 +163,10 @@ export function ConnectDialog({
                         return (
                           <label
                             key={item.id}
-                            className={`flex cursor-pointer items-center gap-2.5 rounded-xl p-2.5 text-sm ring-1 transition-all sm:p-2 ${
+                            className={`flex cursor-pointer items-center gap-2.5 rounded-md border p-2.5 text-sm transition-colors sm:p-2 ${
                               on
-                                ? "bg-brand-soft/60 ring-brand/40"
-                                : "ring-line hover:bg-canvas"
+                                ? "border-brand bg-brand-soft/50"
+                                : "border-line hover:bg-canvas"
                             }`}
                           >
                             <input
@@ -178,12 +182,14 @@ export function ConnectDialog({
                               }
                             />
                             <Logo name={meta.logo} size="sm" />
-                            <span className="min-w-0 flex-1 truncate font-medium text-navy">
+                            <span className="min-w-0 flex-1 truncate font-medium text-ink">
                               {meta.label}
                             </span>
                             <span
-                              className={`flex size-4 items-center justify-center rounded-full transition-colors ${
-                                on ? "bg-brand text-white" : "ring-1 ring-line"
+                              className={`flex size-4 items-center justify-center rounded transition-colors ${
+                                on
+                                  ? "bg-brand text-white"
+                                  : "border border-line-strong bg-white"
                               }`}
                             >
                               {on && (
@@ -216,7 +222,7 @@ export function ConnectDialog({
                   </li>
                 </ul>
 
-                <div className="mt-5 rounded-xl bg-canvas p-3">
+                <div className="mt-5 rounded-md border border-line bg-canvas p-3">
                   <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
                     <Lock className="size-3" />
                     Read-only {suite ? SUITES[suite].api : provider} permissions
@@ -225,7 +231,7 @@ export function ConnectDialog({
                     {scopes.map((scope) => (
                       <code
                         key={scope}
-                        className="animate-fade rounded-md bg-white px-1.5 py-0.5 font-mono text-[11px] text-navy ring-1 ring-line"
+                        className="animate-fade rounded-md bg-white px-1.5 py-0.5 font-mono text-[11px] text-ink ring-1 ring-line"
                       >
                         {scope}
                       </code>
@@ -269,8 +275,8 @@ function Handshake({
 }) {
   return (
     <div className="flex items-center justify-center gap-3 pt-2">
-      <span className="flex size-14 items-center justify-center rounded-2xl bg-white ring-1 ring-line">
-        <SdWiseMark className="h-7" />
+      <span className="flex size-12 items-center justify-center rounded-lg bg-white ring-1 ring-line">
+        <SdWiseMark className="h-6" />
       </span>
       <span className="relative flex w-16 items-center justify-center">
         <span
@@ -312,7 +318,7 @@ function ProviderButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`group mt-6 flex w-full items-center justify-center gap-2.5 rounded-lg px-4 py-3 text-sm font-medium text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 sm:py-2.5 ${
+      className={`group mt-6 flex w-full items-center justify-center gap-2.5 rounded-md px-4 py-3 text-sm font-medium text-white shadow-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:py-2.5 ${
         microsoft
           ? "bg-[#2f2f2f] hover:bg-black"
           : "bg-brand hover:bg-brand-dark"
@@ -362,7 +368,7 @@ function Progress({
           </li>
         ))}
       </ol>
-      <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-canvas">
+      <div className="mt-5 h-1 overflow-hidden rounded-full bg-subtle">
         <div
           className="h-full rounded-full bg-brand transition-all duration-500 ease-out"
           style={{ width: `${((step + 1) / steps.length) * 100}%` }}
@@ -379,7 +385,7 @@ function Done({ labels, onClose }: { labels: string[]; onClose: () => void }) {
 
   return (
     <div className="animate-rise text-center">
-      <h2 className="mt-5 text-lg font-semibold text-navy">
+      <h2 className="mt-5 text-lg font-semibold text-ink">
         {labels.length > 1 ? "You're connected" : `${labels[0]} is connected`}
       </h2>
       <p className="mt-1 text-sm text-muted">
@@ -388,17 +394,14 @@ function Done({ labels, onClose }: { labels: string[]; onClose: () => void }) {
         the people they belong to.
       </p>
       <div className="mt-6 flex gap-2">
-        <Link
-          href="/graph"
-          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-navy ring-1 ring-line transition-colors hover:bg-canvas"
-        >
+        <Link href="/graph" className={`flex-1 ${secondaryButtonClass}`}>
           Open graph
         </Link>
         <button
           type="button"
           ref={done}
           onClick={onClose}
-          className="flex-1 rounded-lg bg-navy px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-navy-deep"
+          className={`flex-1 ${primaryButtonClass}`}
         >
           Done
         </button>

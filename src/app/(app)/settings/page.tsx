@@ -5,7 +5,9 @@ import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
 import { SignOut } from "@/components/settings/sign-out";
-import { secondaryButtonClass } from "@/components/settings/styles";
+import { Page as PageShell } from "@/components/shell/page";
+import { Badge } from "@/components/ui/badge";
+import { secondaryButtonClass } from "@/components/ui/styles";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -41,102 +43,104 @@ export default async function Page() {
   const otherSessions = sessions.filter((s) => s.id !== session.id);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
-          Settings
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Manage your profile, security and account.
-        </p>
-      </header>
-
-      <Section title="Profile" description={`Your email is ${user.email}.`}>
-        <ProfileForm name={user.name} />
-      </Section>
-
-      {hasPassword && (
-        <Section
-          title="Password"
-          description="Changing your password signs out all other devices."
-        >
-          <PasswordForm />
+    <PageShell
+      title="Settings"
+      description="Manage your profile, security and account."
+      width="narrow"
+    >
+      <div className="flex flex-col gap-6 md:gap-8">
+        <Section title="Profile" description={`Your email is ${user.email}.`}>
+          <ProfileForm name={user.name} />
         </Section>
-      )}
 
-      <Section
-        title="Sessions"
-        description="Devices that are currently signed in to your account."
-      >
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {sessions.map((s) => (
-            <li
-              key={s.id}
-              className="flex items-center justify-between gap-4 py-3 text-sm"
-            >
-              <div className="min-w-0 wrap-anywhere">
-                <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                  {describeUserAgent(s.userAgent)}
-                  {s.id === session.id && (
-                    <span className="ml-2 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                      This device
-                    </span>
-                  )}
-                </p>
-                <p className="text-zinc-500 dark:text-zinc-400">
-                  {[
-                    s.ipAddress,
-                    `signed in ${dateFormat.format(s.createdAt)} UTC`,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              </div>
-              {s.id !== session.id && (
-                <form action={revokeSession.bind(null, s.id)}>
-                  <button type="submit" className={secondaryButtonClass}>
-                    Revoke
-                  </button>
-                </form>
-              )}
-            </li>
-          ))}
-        </ul>
-        {otherSessions.length > 0 && (
-          <form action={revokeOtherSessions} className="mt-4">
-            <button type="submit" className={secondaryButtonClass}>
-              Sign out all other devices
-            </button>
-          </form>
+        {hasPassword && (
+          <Section
+            title="Password"
+            description="Changing your password signs out all other devices."
+          >
+            <PasswordForm />
+          </Section>
         )}
-      </Section>
 
-      <Section
-        title="Connect your AI"
-        description="Use SD Wise from Claude, ChatGPT, Copilot, Cursor or VS Code over MCP. Your client signs you in here, and it only sees what you can see."
-      >
-        <Link
-          href="/integrations?tab=mcp"
-          className={`inline-block text-center ${secondaryButtonClass}`}
+        <Section
+          title="Sessions"
+          description="Devices that are currently signed in to your account."
         >
-          Set up MCP and manage your AI clients
-        </Link>
-      </Section>
+          <ul className="-my-3 divide-y divide-line">
+            {sessions.map((s) => (
+              <li
+                key={s.id}
+                className="flex items-center justify-between gap-4 py-3 text-sm"
+              >
+                <div className="min-w-0 wrap-anywhere">
+                  <p className="flex flex-wrap items-center gap-2 font-medium text-ink">
+                    {describeUserAgent(s.userAgent)}
+                    {s.id === session.id && (
+                      <Badge tone="success" dot>
+                        This device
+                      </Badge>
+                    )}
+                  </p>
+                  <p className="text-muted">
+                    {[
+                      s.ipAddress,
+                      `signed in ${dateFormat.format(s.createdAt)} UTC`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
+                {s.id !== session.id && (
+                  <form action={revokeSession.bind(null, s.id)}>
+                    <button type="submit" className={secondaryButtonClass}>
+                      Revoke
+                    </button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+          {otherSessions.length > 0 && (
+            <form
+              action={revokeOtherSessions}
+              className="mt-4 border-t border-line pt-4"
+            >
+              <button type="submit" className={secondaryButtonClass}>
+                Sign out all other devices
+              </button>
+            </form>
+          )}
+        </Section>
 
-      {/* The sidebar holds sign out on wider screens. */}
-      <div className="md:hidden">
-        <Section title="Account" description={`Signed in as ${user.email}.`}>
-          <SignOut />
+        <Section
+          title="Connect your AI"
+          description="Use SD Wise from Claude, ChatGPT, Copilot, Cursor or VS Code over MCP. Your client signs you in here, and it only sees what you can see."
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted">
+              Setup guides and the clients you allowed live under Integrations.
+            </p>
+            <Link href="/integrations?tab=mcp" className={secondaryButtonClass}>
+              Manage AI clients
+            </Link>
+          </div>
+        </Section>
+
+        {/* The sidebar holds sign out on wider screens. */}
+        <div className="md:hidden">
+          <Section title="Account" description={`Signed in as ${user.email}.`}>
+            <SignOut />
+          </Section>
+        </div>
+
+        <Section
+          title="Delete account"
+          tone="danger"
+          description="Permanently delete your account and all of its data. This can't be undone."
+        >
+          <DeleteAccount hasPassword={hasPassword} />
         </Section>
       </div>
-
-      <Section
-        title="Delete account"
-        tone="danger"
-        description="Permanently delete your account and all of its data. This can't be undone."
-      >
-        <DeleteAccount hasPassword={hasPassword} />
-      </Section>
-    </div>
+    </PageShell>
   );
 }

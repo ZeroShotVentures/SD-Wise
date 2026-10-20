@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { UserBadges } from "@/components/admin/user-badges";
-import { inputClass, secondaryButtonClass } from "@/components/settings/styles";
+import { Avatar } from "@/components/shell/avatar";
+import { Page as PageShell } from "@/components/shell/page";
+import { inputClass, secondaryButtonClass } from "@/components/ui/styles";
 import { auth } from "@/lib/auth";
 import { requireAdmin } from "@/lib/session";
 
@@ -48,75 +50,76 @@ export default async function Page({
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
-          Admin
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {total} {total === 1 ? "user" : "users"}
-          {query ? ` matching "${query}"` : ""}
-        </p>
-      </header>
-
-      <form className="flex max-w-md gap-2">
-        <input
-          type="search"
-          name="q"
-          defaultValue={query}
-          placeholder="Search by email"
-          aria-label="Search by email"
-          className={inputClass}
-        />
-        <button type="submit" className={secondaryButtonClass}>
-          Search
-        </button>
-      </form>
-
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <PageShell
+      title="Users"
+      description="Everyone with an SD Wise account. Open a user to impersonate, ban or reset them."
+    >
+      <div className="overflow-hidden rounded-lg border border-line bg-white shadow-xs">
+        <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted">
+            <span className="font-medium text-ink tabular-nums">{total}</span>{" "}
+            {total === 1 ? "user" : "users"}
+            {query ? ` matching "${query}"` : ""}
+          </p>
+          <form className="flex gap-2 sm:w-80">
+            <input
+              type="search"
+              name="q"
+              defaultValue={query}
+              placeholder="Search by email"
+              aria-label="Search by email"
+              className={inputClass}
+            />
+            <button type="submit" className={secondaryButtonClass}>
+              Search
+            </button>
+          </form>
+        </div>
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          <thead className="border-b border-line bg-canvas text-xs text-muted">
             <tr>
               <th className="px-4 py-2 font-medium">User</th>
               <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium max-sm:hidden">Joined</th>
+              <th className="px-4 py-2 text-right font-medium max-sm:hidden">
+                Joined
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-line">
             {users.map((user) => (
               // The link stretches over the row, so the whole row is a target.
               <tr
                 key={user.id}
-                className="relative hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="relative transition-colors hover:bg-canvas"
               >
                 <td className="px-4 py-3 wrap-anywhere">
-                  <Link
-                    href={`/admin/users/${user.id}`}
-                    className="font-medium text-zinc-900 after:absolute after:inset-0 hover:underline dark:text-zinc-50"
-                  >
-                    {user.name || user.email}
-                  </Link>
-                  <p className="text-zinc-500 dark:text-zinc-400">
-                    {user.email}
-                  </p>
-                  <p className="text-xs text-zinc-400 sm:hidden dark:text-zinc-500">
+                  <div className="flex items-center gap-3">
+                    <Avatar id={user.id} name={user.name || user.email} />
+                    <div className="min-w-0">
+                      <Link
+                        href={`/admin/users/${user.id}`}
+                        className="font-medium text-ink after:absolute after:inset-0"
+                      >
+                        {user.name || user.email}
+                      </Link>
+                      <p className="text-muted">{user.email}</p>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-muted sm:hidden">
                     Joined {dateFormat.format(new Date(user.createdAt))}
                   </p>
                 </td>
                 <td className="px-4 py-3">
                   <UserBadges user={user} />
                 </td>
-                <td className="px-4 py-3 text-zinc-500 max-sm:hidden dark:text-zinc-400">
+                <td className="px-4 py-3 text-right text-muted tabular-nums max-sm:hidden">
                   {dateFormat.format(new Date(user.createdAt))}
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
               <tr>
-                <td
-                  colSpan={3}
-                  className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400"
-                >
+                <td colSpan={3} className="px-4 py-12 text-center text-muted">
                   No users found.
                 </td>
               </tr>
@@ -126,7 +129,7 @@ export default async function Page({
       </div>
 
       {pageCount > 1 && (
-        <nav className="flex items-center justify-between gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+        <nav className="mt-4 flex items-center justify-between gap-4 text-sm text-muted">
           <span>
             Page {pageNumber} of {pageCount}
           </span>
@@ -150,6 +153,6 @@ export default async function Page({
           </div>
         </nav>
       )}
-    </div>
+    </PageShell>
   );
 }

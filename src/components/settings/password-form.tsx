@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { changePassword } from "@/lib/auth-client";
 import {
   errorClass,
   inputClass,
   labelClass,
   primaryButtonClass,
   successClass,
-} from "./styles";
+} from "@/components/ui/styles";
+import { changePassword } from "@/lib/auth-client";
 
 export function PasswordForm() {
   const router = useRouter();

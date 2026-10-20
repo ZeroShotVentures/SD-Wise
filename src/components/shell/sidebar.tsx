@@ -75,6 +75,7 @@ export function Sidebar({ person, pending }: SidebarProps) {
   const { data } = useSession();
   const { main, secondary } = useNav(pending);
   const { signingOut, handleSignOut } = useSignOut();
+  const name = person?.name ?? data?.user.name ?? "";
 
   const renderLink = ({ href, label, icon: Icon, badge }: NavItem) => {
     const active = pathname.startsWith(href);
@@ -83,20 +84,21 @@ export function Sidebar({ person, pending }: SidebarProps) {
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+        className={`group flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors ${
           active
-            ? "bg-white/10 text-white"
-            : "text-white/60 hover:bg-white/5 hover:text-white"
+            ? "bg-subtle text-ink"
+            : "text-muted hover:bg-subtle/70 hover:text-ink"
         }`}
       >
         <Icon
-          className={`size-4 ${active ? "text-worx-yellow" : ""}`}
-          strokeWidth={2}
+          className={`size-4 shrink-0 ${active ? "text-brand" : "text-faint group-hover:text-muted"}`}
+          strokeWidth={1.75}
         />
         <span className="flex-1">{label}</span>
         {badge > 0 && (
-          <span className="rounded-full bg-worx-red px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white">
+          <span className="min-w-5 rounded-full bg-brand px-1.5 py-px text-center text-[11px] leading-4 font-semibold text-white tabular-nums">
             {badge}
+            <span className="sr-only"> waiting</span>
           </span>
         )}
       </Link>
@@ -104,32 +106,44 @@ export function Sidebar({ person, pending }: SidebarProps) {
   };
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col bg-navy px-3 py-5 md:flex">
-      <Link href="/graph" className="px-3">
-        <Brand />
-      </Link>
-      <nav className="mt-8 flex flex-col gap-1">{main.map(renderLink)}</nav>
-      <nav className="mt-6 flex flex-col gap-1 border-t border-white/10 pt-6">
+    <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-white md:flex">
+      <div className="flex h-14 items-center border-b border-line px-5">
+        <Link href="/graph" aria-label="SD Wise home">
+          <Brand />
+        </Link>
+      </div>
+      <nav aria-label="Main" className="flex flex-col gap-0.5 px-3 pt-4">
+        <p className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-wider text-faint uppercase">
+          Workspace
+        </p>
+        {main.map(renderLink)}
+      </nav>
+      <nav aria-label="Account" className="flex flex-col gap-0.5 px-3 pt-6">
+        <p className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-wider text-faint uppercase">
+          Account
+        </p>
         {secondary.map(renderLink)}
       </nav>
-      <div className="mt-auto flex items-center gap-3 rounded-xl bg-white/5 p-3">
-        {person && <Avatar id={person.id} name={person.name} />}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">
-            {person?.name ?? data?.user.name}
-          </p>
-          <p className="truncate text-xs text-white/50">{person?.role}</p>
+      <div className="mt-auto border-t border-line p-3">
+        <div className="flex items-center gap-2.5 rounded-md px-1.5 py-1">
+          {person && <Avatar id={person.id} name={person.name} />}
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="truncate text-sm font-medium text-ink">{name}</p>
+            <p className="truncate text-xs text-muted">
+              {person?.role ?? data?.user.email}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            title="Sign out"
+            className="rounded-md p-1.5 text-faint transition-colors hover:bg-subtle hover:text-ink disabled:opacity-50"
+          >
+            <LogOut className="size-4" />
+            <span className="sr-only">Sign out</span>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          disabled={signingOut}
-          title="Sign out"
-          className="rounded-md p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
-        >
-          <LogOut className="size-4" />
-          <span className="sr-only">Sign out</span>
-        </button>
       </div>
     </aside>
   );
@@ -144,7 +158,7 @@ export function TabBar({ pending }: { pending: number }) {
   return (
     <nav
       aria-label="Main"
-      className="flex shrink-0 bg-navy px-1 pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="flex shrink-0 border-t border-line bg-white px-1 pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {[...main, ...secondary].map(({ href, label, icon: Icon, badge }) => {
         const active = pathname.startsWith(href);
@@ -154,16 +168,13 @@ export function TabBar({ pending }: { pending: number }) {
             href={href}
             aria-current={active ? "page" : undefined}
             className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${
-              active ? "text-white" : "text-white/55 active:text-white"
+              active ? "text-brand" : "text-muted active:text-ink"
             }`}
           >
             <span className="relative">
-              <Icon
-                className={`size-5 ${active ? "text-worx-yellow" : ""}`}
-                strokeWidth={2}
-              />
+              <Icon className="size-5" strokeWidth={active ? 2 : 1.75} />
               {badge > 0 && (
-                <span className="absolute -top-1.5 left-3 rounded-full bg-worx-red px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white ring-2 ring-navy">
+                <span className="absolute -top-1.5 left-3 rounded-full bg-brand px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white ring-2 ring-white">
                   {badge}
                   <span className="sr-only"> waiting</span>
                 </span>

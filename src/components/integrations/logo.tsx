@@ -30,10 +30,10 @@ export function Logo({
 }
 
 const SIZES = {
-  xs: { tile: "size-6 rounded-md", px: 14 },
-  sm: { tile: "size-8 rounded-lg", px: 18 },
-  md: { tile: "size-11 rounded-xl", px: 26 },
-  lg: { tile: "size-14 rounded-2xl", px: 32 },
+  xs: { tile: "size-6 rounded", px: 14 },
+  sm: { tile: "size-8 rounded-md", px: 18 },
+  md: { tile: "size-10 rounded-lg", px: 22 },
+  lg: { tile: "size-12 rounded-lg", px: 28 },
 };
 
 // The three bars of the SD Wise logo, for square spots.

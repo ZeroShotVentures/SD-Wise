@@ -155,7 +155,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--ink);font-
       <div style="display:flex"><div class="av" style="width:44px;height:44px;background:var(--red);font-size:15px;border:3px solid #fff">LJ</div><div class="av" style="width:44px;height:44px;background:var(--slate);font-size:15px;border:3px solid #fff;margin-left:-12px">PC</div></div>
     </div>
     <div id="s6body" style="margin-top:20px">
-      <div style="font-size:34px;font-weight:600;letter-spacing:-.02em">Kras: custom rate agreed</div>
+      <div style="font-size:34px;font-weight:600;letter-spacing:-.02em">Norvik: custom rate agreed</div>
       <div style="font-size:22px;color:var(--muted);margin-top:12px;line-height:1.45">Confirmed in the Q3 call with their CFO. Applies from January, reviewed yearly.</div>
     </div>
     <div id="s6lock" class="abs" style="left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center">
@@ -291,7 +291,7 @@ function sceneVis(t){
 // ---------- S1 build ----------
 const PEOPLE=[['LJ','#e0003a','Lotte Janssens'],['PC','#596273','Pieter Claes'],['SP','#f5ab00','Sofie Peeters'],['BD','#006dd8','Bram De Smet'],['AM','#22c493','An Maes'],['KW','#7d86a0','Kobe Willems']];
 const MSGS=[
- ['Who knows the Kras rate?','SLACK · #sales'],['Double holiday pay is 92%, right?','TEAMS · HR'],['Is the v3 launch still March?','SLACK · #payroll'],
+ ['Who knows the Norvik rate?','SLACK · #sales'],['Double holiday pay is 92%, right?','TEAMS · HR'],['Is the v3 launch still March?','SLACK · #payroll'],
  ['Can someone resend the SLA?','OUTLOOK'],['Ask Lotte, she was in that call','TEAMS · CHAT'],['Notes from Tuesday\'s sync →','GOOGLE MEET'],
  ['We decided that last quarter','ZOOM · RECORDING'],['Where is the latest policy?','GMAIL'],['Pieter has the context on this','SLACK · DM'],
  ['Wait, didn\'t we change that?','TEAMS · CHAT'],['I\'ll dig through my inbox…','OUTLOOK'],['Who owns the onboarding flow?','SLACK · #ops']];
@@ -358,7 +358,7 @@ function S2(t){
 (function(){
   setHTML($('s3msgs'),[
    ['LJ','#e0003a','Lotte','Heads-up: <span class="hl" id="hl0">v3 launch moves to March</span>. Pilot customers first.'],
-   ['PC','#596273','Pieter','Noted. And Kras? <span class="hl" id="hl1">They keep their custom rate</span>, agreed on the call.'],
+   ['PC','#596273','Pieter','Noted. And Norvik? <span class="hl" id="hl1">They keep their custom rate</span>, agreed on the call.'],
    ['SP','#f5ab00','Sofie','Also for HR: <span class="hl" id="hl2">double holiday pay is 92%</span> of the monthly wage.']
   ].map((m,i)=>`<div id="s3m${i}" style="display:flex;gap:16px;padding:22px 0;border-bottom:1px solid ${i<2?'var(--line)':'transparent'}">
     <div class="av" style="width:50px;height:50px;background:${m[1]};font-size:17px">${m[0]}</div>
@@ -366,7 +366,7 @@ function S2(t){
     <div style="font-size:21px;line-height:1.5;color:#3b4650;margin-top:4px">${m[3]}</div></div></div>`).join(''));
   setHTML($('s3mini'),`<div style="width:170px;height:59px">${logoSVG('light','lg3')}</div>`);
   setHTML($('s3chips'),[
-   ['Launch','v3 → March','#006dd8','CHAT'],['Kras','Custom rate kept','#e0003a','CHAT'],['Holiday pay','92% of wage','#f5ab00','CHAT']
+   ['Launch','v3 → March','#006dd8','CHAT'],['Norvik','Custom rate kept','#e0003a','CHAT'],['Holiday pay','92% of wage','#f5ab00','CHAT']
   ].map((c,i)=>`<div class="chip" id="s3c${i}"><div style="flex:1"><div class="k">${c[0]}</div><div style="margin-top:4px">${c[1]}</div></div><div class="d" style="width:12px;height:12px;border-radius:50%;background:${c[2]}"></div></div>`).join('')+
   `<div id="s3own" style="margin-top:22px;padding-top:22px;border-top:1px solid var(--line)"><div class="k mono" style="font-size:12px;letter-spacing:.14em;color:#9aa3ad">OWNED BY</div>
    <div style="display:flex;margin-top:12px">${PEOPLE.slice(0,3).map((p,i)=>`<div class="av" style="width:46px;height:46px;background:${p[1]};font-size:15px;border:3px solid #fff;margin-left:${i?-12:0}px">${p[0]}</div>`).join('')}</div></div>`);
@@ -400,8 +400,8 @@ const NODES=[
  {id:'a',x:1560,y:440,t:'Launch moved to March',s:'Meeting',c:'#f5ab00'},
  {id:'b',x:1590,y:780,t:'Pilot customers first',s:'Chat',c:'#006dd8'},
  {id:'d',x:900,y:820,t:'Release notes v3',s:'Document',c:'#8fa3b3'},
- {id:'e',x:820,y:500,t:'v3 pricing for Kras',s:'Answer',c:'#22c493'},
- {id:'f',x:500,y:720,t:'Kras custom rate',s:'Email',c:'#e0003a'},
+ {id:'e',x:820,y:500,t:'v3 pricing for Norvik',s:'Answer',c:'#22c493'},
+ {id:'f',x:500,y:720,t:'Norvik custom rate',s:'Email',c:'#e0003a'},
  {id:'g',x:1260,y:930,t:'Onboarding checklist',s:'Document',c:'#8fa3b3'},
  {id:'h',x:440,y:960,t:'Double holiday pay: 92%',s:'Meeting',c:'#f5ab00'},
  {id:'i',x:1680,y:980,t:'Support rota Q1',s:'Chat',c:'#006dd8'},

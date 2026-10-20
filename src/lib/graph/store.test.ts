@@ -102,7 +102,7 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       const routed = await answered(
         tx,
         { askerId: "p-julien", recipientId: "p-bram", routed: true },
-        ["n-kras-pricing"],
+        ["n-norvik-pricing"],
       );
       await saveAnswer(tx, toQuery(routed));
       await tx.integrations.update({
@@ -117,8 +117,8 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
         demoQuestions.map((q) => q.id).toSorted(),
       );
       expect(await readNodes(tx, [answerNodeId(asked.id)])).toEqual([]);
-      const pricing = nodes.find((n) => n.id === "n-kras-pricing");
-      expect(await node(tx, "n-kras-pricing")).toEqual({
+      const pricing = nodes.find((n) => n.id === "n-norvik-pricing");
+      expect(await node(tx, "n-norvik-pricing")).toEqual({
         ...pricing,
         createdAt: new Date(pricing?.createdAt ?? "").toISOString(),
       });
@@ -164,7 +164,7 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       const row = await answered(
         tx,
         { askerId: "p-kobe", recipientId: "p-filip" },
-        ["n-cutoff-december", "n-kras-pricing"],
+        ["n-cutoff-december", "n-norvik-pricing"],
       );
       await saveAnswer(tx, toQuery(row));
 
@@ -172,7 +172,7 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       expect(answer.ownerIds).toEqual(["p-filip"]);
       expect(canSee(answer, "p-kobe")).toBe(true);
       expect(canSee(answer, "p-julien")).toBe(false);
-      // Filip can't see the Kras pricing, so the answer isn't linked to it.
+      // Filip can't see the Norvik pricing, so the answer isn't linked to it.
       const linked = await tx.knowledgeEdge.findMany({
         where: { sourceId: answer.id },
       });
@@ -193,13 +193,13 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       const row = await answered(
         tx,
         { askerId: "p-julien", recipientId: "p-bram", routed: true },
-        ["n-kras-pricing"],
+        ["n-norvik-pricing"],
       );
       const answer = await saveAnswer(tx, toQuery(row));
       const saved = await node(tx, answer.id);
       expect(canSee(saved, "p-julien")).toBe(true);
       expect(canSee(saved, "p-kobe")).toBe(false);
-      const pricing = await node(tx, "n-kras-pricing");
+      const pricing = await node(tx, "n-norvik-pricing");
       expect(canSee(pricing, "p-julien")).toBe(false);
       expect(pricing.accessIds).toEqual(["p-bram", "p-lotte"]);
     }));
@@ -219,11 +219,11 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
   it("links an answer based on nothing the recipient could see", () =>
     rolledBack(async (tx) => {
       await linkLooseFacts(tx);
-      // Julien can't see the Kras pricing, so his answer has no fact to link.
+      // Julien can't see the Norvik pricing, so his answer has no fact to link.
       const row = await answered(
         tx,
         { askerId: "p-kobe", recipientId: "p-julien" },
-        ["n-kras-pricing"],
+        ["n-norvik-pricing"],
       );
       await saveAnswer(tx, toQuery(row));
       const id = answerNodeId(row.id);

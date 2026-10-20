@@ -129,14 +129,14 @@ type NodeSeed = {
 };
 
 const nodeSeeds: NodeSeed[] = [
-  // Sales: Kras
+  // Sales: Norvik
   {
-    id: "n-kras-customer",
-    title: "Kras is a payroll customer",
+    id: "n-norvik-customer",
+    title: "Norvik is a payroll customer",
     summary:
-      "Kras has been an SD Worx payroll customer since 2024, about 1,200 employees across Belgium.",
+      "Norvik has been an SD Worx payroll customer since 2024, about 1,200 employees across Belgium.",
     content:
-      "Bram: Kras signed in spring 2024, ~1,200 FTE, all Belgian entities. Main contact is their HR director.",
+      "Bram: Norvik signed in spring 2024, ~1,200 FTE, all Belgian entities. Main contact is their HR director.",
     source: "MESSAGE",
     integrationId: "i-slack",
     from: "#sales-benelux",
@@ -145,38 +145,38 @@ const nodeSeeds: NodeSeed[] = [
     at: "2026-03-11",
   },
   {
-    id: "n-kras-pricing",
-    title: "Kras pricing",
-    summary: "Kras pays €4.20 per payslip per month, billed quarterly.",
+    id: "n-norvik-pricing",
+    title: "Norvik pricing",
+    summary: "Norvik pays €4.20 per payslip per month, billed quarterly.",
     content:
-      "Lotte, confirming the Kras contract: €4.20 per payslip per month, quarterly invoicing, 3-year term. — Bram",
+      "Lotte, confirming the Norvik contract: €4.20 per payslip per month, quarterly invoicing, 3-year term. — Bram",
     source: "EMAIL",
     integrationId: "i-outlook",
-    from: "Email: Kras contract terms",
+    from: "Email: Norvik contract terms",
     visibility: "PRIVATE",
     owners: ["p-bram", "p-lotte"],
     at: "2026-04-02",
   },
   {
-    id: "n-kras-renewal",
-    title: "Kras renewal discount",
+    id: "n-norvik-renewal",
+    title: "Norvik renewal discount",
     summary:
-      "For the 2027 renewal Kras gets an 8% discount if they move to Payroll Cloud v3.",
+      "For the 2027 renewal Norvik gets an 8% discount if they move to Payroll Cloud v3.",
     content:
       "Dario: we can go to 8% if they migrate to v3. Lotte: fine, as long as it's tied to v3. Bram: I'll propose it Friday.",
     source: "MEETING",
     integrationId: "i-teams-meetings",
-    from: "Meeting: Kras renewal prep",
+    from: "Meeting: Norvik renewal prep",
     visibility: "PRIVATE",
     owners: ["p-bram", "p-lotte", "p-dario"],
     at: "2026-09-10",
   },
   {
-    id: "n-kras-api",
-    title: "Kras wants API access",
-    summary: "Kras wants access to the Payroll API by Q1 2027 for their ERP.",
+    id: "n-norvik-api",
+    title: "Norvik wants API access",
+    summary: "Norvik wants access to the Payroll API by Q1 2027 for their ERP.",
     content:
-      "Bram: Kras asked again about the Payroll API, they want to sync with their ERP by Q1. Victor: doable once OAuth is live.",
+      "Bram: Norvik asked again about the Payroll API, they want to sync with their ERP by Q1. Victor: doable once OAuth is live.",
     source: "MESSAGE",
     integrationId: "i-teams",
     from: "Teams chat: Bram & Victor",
@@ -573,15 +573,20 @@ export const nodes: KnowledgeNode[] = [
 
 const edgeSeeds: [string, string, EdgeKind, string][] = [
   [
-    "n-kras-pricing",
-    "n-kras-customer",
+    "n-norvik-pricing",
+    "n-norvik-customer",
     "RELATES_TO",
-    "Contract terms for Kras",
+    "Contract terms for Norvik",
   ],
-  ["n-kras-renewal", "n-kras-pricing", "UPDATES", "Renewal changes the price"],
-  ["n-kras-renewal", "n-v3-launch", "DEPENDS_ON", "Discount is tied to v3"],
-  ["n-kras-api", "n-kras-customer", "RELATES_TO", "Request from Kras"],
-  ["n-kras-api", "n-api-oauth", "DEPENDS_ON", "Needs OAuth to be live"],
+  [
+    "n-norvik-renewal",
+    "n-norvik-pricing",
+    "UPDATES",
+    "Renewal changes the price",
+  ],
+  ["n-norvik-renewal", "n-v3-launch", "DEPENDS_ON", "Discount is tied to v3"],
+  ["n-norvik-api", "n-norvik-customer", "RELATES_TO", "Request from Norvik"],
+  ["n-norvik-api", "n-api-oauth", "DEPENDS_ON", "Needs OAuth to be live"],
   ["n-v3-indexation", "n-v3-launch", "DEPENDS_ON", "Blocks the v3 launch"],
   ["n-indexation-2027", "n-v3-indexation", "RELATES_TO", "The missing numbers"],
   ["n-api-oauth", "n-api-rate-limit", "UPDATES", "New auth for the same API"],
@@ -631,7 +636,7 @@ const edgeSeeds: [string, string, EdgeKind, string][] = [
   ["n-pitch-metric", "n-launch-video", "RELATES_TO", "Same storyline"],
   ["n-llm-vendors", "n-ai-budget", "DEPENDS_ON", "Paid from the AI budget"],
   ["n-llm-vendors", "n-wise-search", "RELATES_TO", "Model used for search"],
-  ["n-ai-budget", "n-kras-pricing", "RELATES_TO", "Finance owns both"],
+  ["n-ai-budget", "n-norvik-pricing", "RELATES_TO", "Finance owns both"],
   ["n-payslip-bug", "n-v3-launch", "RELATES_TO", "Fixed before v3"],
   [
     "n-year-end-run",

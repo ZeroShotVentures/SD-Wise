@@ -155,8 +155,8 @@ function scene(a, b, html, init, fn) { const e = el(`<div class="scene">${html}<
 
 // ================= S1: knowledge scattered everywhere (0 - 10) =================
 const FRAGS = [
-  ['mail', 'RE: Kras contract – pricing', 'Lotte, confirming €4.20 per payslip, quarterly…', 'OUTLOOK · LOTTE J.'],
-  ['msg', '#payroll-benelux', 'Is the Kras go-live still 1 November?', 'SLACK · BRAM D.S.'],
+  ['mail', 'RE: Norvik contract – pricing', 'Lotte, confirming €4.20 per payslip, quarterly…', 'OUTLOOK · LOTTE J.'],
+  ['msg', '#payroll-benelux', 'Is the Norvik go-live still 1 November?', 'SLACK · BRAM D.S.'],
   ['meet', 'Q4 payroll steering', 'Transcript · 47 min · 6 participants', 'TEAMS MEETING'],
   ['doc', 'Onboarding_policy_v7.docx', 'Updated probation rules for new hires', 'SHAREPOINT'],
   ['msg', 'Dario ↔ Victor', 'Fixed the Dimona export, it was the encoding', 'PRIVATE CHAT'],
@@ -332,8 +332,8 @@ scene(20, 28, `
 
 // ================= S5: connect (28 - 36), light =================
 const GC = [ // labeled facts in the graph
-  { x: 1180, y: 250, ic: 'meet', t: 'Kras go-live moved to 1 Nov', s: 'TEAMS MEETING · 12 SEP', av: [['BD', '#006dd8'], ['LJ', '#00a58e']] },
-  { x: 1650, y: 200, ic: 'mail', t: 'Kras pricing addendum', s: 'OUTLOOK · LOTTE J.', av: [['LJ', '#00a58e']] },
+  { x: 1180, y: 250, ic: 'meet', t: 'Norvik go-live moved to 1 Nov', s: 'TEAMS MEETING · 12 SEP', av: [['BD', '#006dd8'], ['LJ', '#00a58e']] },
+  { x: 1650, y: 200, ic: 'mail', t: 'Norvik pricing addendum', s: 'OUTLOOK · LOTTE J.', av: [['LJ', '#00a58e']] },
   { x: 1690, y: 560, ic: 'mail', t: 'Q4 payroll budget approved', s: 'OUTLOOK · FINANCE', av: [['LJ', '#00a58e'], ['KW', '#8b6cff']] },
   { x: 1090, y: 600, ic: 'msg', t: 'Dimona export fix', s: 'PRIVATE CHAT · 2 PEOPLE', av: [['DA', '#f1002f'], ['VI', '#e8a200']], lock: true },
   { x: 1450, y: 880, ic: 'doc', t: 'Onboarding policy v7', s: 'SHAREPOINT · HR', av: [['SP', '#5b5fc7']] },
@@ -399,8 +399,8 @@ scene(28, 36, `
   });
 
 // ================= S6: reason / ask (36 - 46) =================
-const Q1 = 'What did we decide on the Kras go-live?';
-const A1 = 'Go-live moved to 1 November. Kras’ HR director approved a parallel payroll run in the 12 Sep steering meeting, and Lotte confirmed the pricing addendum by mail the next day.';
+const Q1 = 'What did we decide on the Norvik go-live?';
+const A1 = 'Go-live moved to 1 November. Norvik’ HR director approved a parallel payroll run in the 12 Sep steering meeting, and Lotte confirmed the pricing addendum by mail the next day.';
 scene(36, 46, `
   <div class="bg-dark"></div><div class="beam"></div>
   <div class="abs" style="inset:0">${stars(70, 31)}</div>

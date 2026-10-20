@@ -10,6 +10,8 @@ import type { AskResult, GraphView } from "@/lib/graph/types";
 type AskResultProps = {
   result: AskResult;
   view: GraphView;
+  // On phones the inspector sheet takes over; the answer comes back after.
+  covered: boolean;
   onSelectNode: (id: string) => void;
   onClose: () => void;
 };
@@ -17,14 +19,17 @@ type AskResultProps = {
 export function AskResultCard({
   result,
   view,
+  covered,
   onSelectNode,
   onClose,
 }: AskResultProps) {
   const { answer, moreAvailable } = result;
 
   return (
-    <section className="animate-rise absolute top-24 left-6 z-10 flex max-h-[calc(100%-15rem)] w-[26rem] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/30">
-      <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
+    <section
+      className={`animate-rise absolute inset-x-3 top-[4.5rem] z-10 flex max-h-[calc(100%-12rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/30 md:top-24 md:right-auto md:left-6 md:max-h-[calc(100%-15rem)] md:w-[26rem] ${covered ? "max-md:hidden" : ""}`}
+    >
+      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3 sm:px-5 sm:py-4">
         <div>
           <p className="text-xs font-semibold tracking-wider text-muted uppercase">
             You asked
@@ -34,13 +39,13 @@ export function AskResultCard({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1 text-muted hover:bg-canvas hover:text-navy"
+          className="-m-1.5 rounded-md p-2 text-muted hover:bg-canvas hover:text-navy"
         >
           <X className="size-4" />
           <span className="sr-only">Clear</span>
         </button>
       </header>
-      <div className="flex flex-col gap-5 overflow-y-auto p-5">
+      <div className="flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain p-4 sm:p-5">
         {answer && (
           <div>
             <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
@@ -58,7 +63,7 @@ export function AskResultCard({
                     key={id}
                     type="button"
                     onClick={() => onSelectNode(id)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-0.5 text-xs text-muted transition-colors hover:border-brand hover:text-navy"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-left text-xs text-muted transition-colors hover:border-brand hover:text-navy sm:px-2 sm:py-0.5"
                   >
                     <span
                       className="size-1.5 rounded-full"
@@ -91,7 +96,7 @@ export function AskResultCard({
 
 // The request reruns the search on the server, so it carries the original
 // question rather than an edited one.
-function RequestMore({ question }: { question: string }) {
+export function RequestMore({ question }: { question: string }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
@@ -133,7 +138,7 @@ function RequestMore({ question }: { question: string }) {
           type="button"
           onClick={send}
           disabled={pending}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50 sm:py-1.5"
         >
           <Send className="size-3" />
           {pending ? "Requesting..." : "Request access"}

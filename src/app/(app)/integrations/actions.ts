@@ -4,14 +4,31 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requirePerson } from "@/lib/graph/me";
 import * as graph from "@/lib/graph/service";
+import { disconnectMcpClient } from "@/lib/mcp/clients";
+import { requireSession } from "@/lib/session";
 
-// Mocked: no OAuth, connecting just flips the flag. Facts from a disconnected
-// source drop out of the graph and search.
-export async function setConnected(input: { id: string; connected: boolean }) {
+const id = z.string().min(1).max(100);
+
+// Mocked: no OAuth, connecting just flips the flags. Facts from a
+// disconnected source drop out of the graph and search.
+export async function setConnected(input: {
+  ids: string[];
+  connected: boolean;
+}) {
   await requirePerson();
   const data = z
-    .object({ id: z.string().min(1).max(100), connected: z.boolean() })
+    .object({ ids: z.array(id).min(1).max(20), connected: z.boolean() })
     .parse(input);
-  graph.setConnected(data.id, data.connected);
+  graph.setConnected(data.ids, data.connected);
   revalidatePath("/", "layout");
+}
+
+// Real: revokes what the user granted an MCP client.
+export async function disconnectClient(clientId: string) {
+  const { user } = await requireSession();
+  await disconnectMcpClient(
+    user.id,
+    z.string().min(1).max(2048).parse(clientId),
+  );
+  revalidatePath("/integrations");
 }

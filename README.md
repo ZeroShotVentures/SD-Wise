@@ -50,13 +50,19 @@ Every person in the graph has an account, all with the password `password123`. C
 
 A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can request access from the graph too.
 
-## Use SD Wise from Cursor or Claude (MCP)
+## Use SD Wise from your AI (MCP)
 
 SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](https://better-auth.com/docs/plugins/mcp). Add the URL to your client; it signs you in to SD Wise in the browser and asks you to allow it. It acts as you, so answers follow the same visibility rules as the app.
+
+**Integrations → MCP** in the app has the setup steps for Claude, ChatGPT, Copilot Studio, Claude Code, Cursor (one-click), VS Code (one-click) and Windsurf, lists the clients you allowed, and lets you disconnect them. Disconnecting deletes the consent and revokes the client's refresh tokens; an access token already issued keeps working until it expires (at most an hour).
 
 - **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
 - **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
 
-Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only), `list_inbox`.
+Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get a Request access link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
 
-The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. claude.ai's custom connectors need a public URL too.
+The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. Claude, ChatGPT and Copilot Studio connect from the cloud and need a public URL too.
+
+## Sources
+
+**Integrations → Sources** connects Microsoft 365 (Teams, Teams meetings, Outlook, SharePoint, OneDrive, OneNote) with one sign-in, plus Slack, Google Workspace, Zoom, Notion and Confluence. Sources are still mocked: connecting flips a flag in memory and facts come from the fixtures. Logos in `public/logos` come from the [Iconify](https://iconify.design) `logos`, `vscode-icons` and `simple-icons` sets.

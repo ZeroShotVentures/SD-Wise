@@ -50,7 +50,7 @@ export default async function Page({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
           Admin
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -79,30 +79,34 @@ export default async function Page({
             <tr>
               <th className="px-4 py-2 font-medium">User</th>
               <th className="px-4 py-2 font-medium">Status</th>
-              <th className="px-4 py-2 font-medium">Joined</th>
+              <th className="px-4 py-2 font-medium max-sm:hidden">Joined</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {users.map((user) => (
+              // The link stretches over the row, so the whole row is a target.
               <tr
                 key={user.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="relative hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
               >
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 wrap-anywhere">
                   <Link
                     href={`/admin/users/${user.id}`}
-                    className="font-medium text-zinc-900 hover:underline dark:text-zinc-50"
+                    className="font-medium text-zinc-900 after:absolute after:inset-0 hover:underline dark:text-zinc-50"
                   >
                     {user.name || user.email}
                   </Link>
                   <p className="text-zinc-500 dark:text-zinc-400">
                     {user.email}
                   </p>
+                  <p className="text-xs text-zinc-400 sm:hidden dark:text-zinc-500">
+                    Joined {dateFormat.format(new Date(user.createdAt))}
+                  </p>
                 </td>
                 <td className="px-4 py-3">
                   <UserBadges user={user} />
                 </td>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-3 text-zinc-500 max-sm:hidden dark:text-zinc-400">
                   {dateFormat.format(new Date(user.createdAt))}
                 </td>
               </tr>
@@ -122,7 +126,7 @@ export default async function Page({
       </div>
 
       {pageCount > 1 && (
-        <nav className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+        <nav className="flex items-center justify-between gap-4 text-sm text-zinc-500 dark:text-zinc-400">
           <span>
             Page {pageNumber} of {pageCount}
           </span>

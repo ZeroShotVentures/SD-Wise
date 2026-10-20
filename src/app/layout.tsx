@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { env } from "@/env";
 import "./globals.css";
@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   },
   description:
     "Ask your company brain. Get an answer, or the person who knows.",
+};
+
+// "cover" lets the bottom tab bar pad itself clear of the home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

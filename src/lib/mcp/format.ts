@@ -3,9 +3,15 @@ import type { AskResult, InboxItem, NodeView, Person } from "@/lib/graph/types";
 const label = (p: Person) => `${p.name} (${p.role})`;
 
 // What an MCP client sees for a question. Locked facts never appear, not even
-// their owners: `moreAvailable` is the only hint, and `request_more` routes
-// the question to them.
-export function formatAsk(result: AskResult, nodes: NodeView[]) {
+// their owners: `moreAvailable` is the only hint. `requestUrl` opens a page
+// with a Request access button, for hosts that can't show the answer card.
+export function formatAsk(
+  result: AskResult,
+  nodes: NodeView[],
+  baseUrl: string,
+) {
+  const requestUrl = new URL("/inbox/request", baseUrl);
+  requestUrl.searchParams.set("question", result.question);
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const hits = result.hits.flatMap((id) => byId.get(id) ?? []);
   return {
@@ -24,6 +30,7 @@ export function formatAsk(result: AskResult, nodes: NodeView[]) {
           ],
     ),
     moreAvailable: result.moreAvailable,
+    requestUrl: result.moreAvailable ? requestUrl.href : null,
   };
 }
 

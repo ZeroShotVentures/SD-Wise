@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
+import { SignOut } from "@/components/settings/sign-out";
 import { secondaryButtonClass } from "@/components/settings/styles";
-import { mcpResource } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -17,9 +18,6 @@ const dateFormat = new Intl.DateTimeFormat("en", {
   timeStyle: "short",
   timeZone: "UTC",
 });
-
-const codeClass =
-  "overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs dark:bg-zinc-800";
 
 export default async function Page() {
   const { user, session } = await requireSession();
@@ -45,7 +43,7 @@ export default async function Page() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
           Settings
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -76,7 +74,7 @@ export default async function Page() {
               key={s.id}
               className="flex items-center justify-between gap-4 py-3 text-sm"
             >
-              <div>
+              <div className="min-w-0 wrap-anywhere">
                 <p className="font-medium text-zinc-900 dark:text-zinc-50">
                   {describeUserAgent(s.userAgent)}
                   {s.id === session.id && (
@@ -115,25 +113,22 @@ export default async function Page() {
 
       <Section
         title="Connect your AI"
-        description="Use SD Wise from Cursor or Claude over MCP. Your client signs you in here, and it only sees what you can see."
+        description="Use SD Wise from Claude, ChatGPT, Copilot, Cursor or VS Code over MCP. Your client signs you in here, and it only sees what you can see."
       >
-        <div className="space-y-3 text-sm">
-          <p className="text-zinc-500 dark:text-zinc-400">
-            Cursor (<code>.cursor/mcp.json</code>)
-          </p>
-          <pre className={codeClass}>
-            {JSON.stringify(
-              { mcpServers: { sdwise: { url: mcpResource } } },
-              null,
-              2,
-            )}
-          </pre>
-          <p className="text-zinc-500 dark:text-zinc-400">Claude Code</p>
-          <pre className={codeClass}>
-            {`claude mcp add --transport http sdwise ${mcpResource}`}
-          </pre>
-        </div>
+        <Link
+          href="/integrations?tab=mcp"
+          className={`inline-block text-center ${secondaryButtonClass}`}
+        >
+          Set up MCP and manage your AI clients
+        </Link>
       </Section>
+
+      {/* The sidebar holds sign out on wider screens. */}
+      <div className="md:hidden">
+        <Section title="Account" description={`Signed in as ${user.email}.`}>
+          <SignOut />
+        </Section>
+      </div>
 
       <Section
         title="Delete account"

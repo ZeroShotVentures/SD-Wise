@@ -46,7 +46,13 @@ export function createMcpServer(me: Person) {
       graph.getGraph(me),
     ]);
     const out = formatAsk(result, view.nodes, env.BETTER_AUTH_URL);
-    return { ...json(out), structuredContent: out };
+    const link = out.requestUrl
+      ? [{ type: "text" as const, text: `[Request access](${out.requestUrl})` }]
+      : [];
+    return {
+      content: [...json(out).content, ...link],
+      structuredContent: out,
+    };
   });
 
   registerAppTool(server, "request_more", tools.request_more, async (input) => {

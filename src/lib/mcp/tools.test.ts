@@ -19,6 +19,8 @@ describe("toolSummaries", () => {
     expect(summaries.filter((t) => !t.readOnly).map((t) => t.name)).toEqual([
       "request_more",
     ]);
-    expect(summaries.filter((t) => t.appOnly).map((t) => t.name)).toEqual([]);
+    expect(summaries.filter((t) => t.appOnly).map((t) => t.name)).toEqual([
+      "request_more",
+    ]);
   });
 });

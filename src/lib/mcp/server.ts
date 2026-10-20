@@ -5,6 +5,7 @@ import {
   registerAppTool,
 } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/server";
+import { env } from "@/env";
 import { question, requestMoreInput } from "@/lib/graph/schemas";
 import * as graph from "@/lib/graph/service";
 import type { Person } from "@/lib/graph/types";
@@ -44,8 +45,14 @@ export function createMcpServer(me: Person) {
       graph.ask(me, question.parse(input.question)),
       graph.getGraph(me),
     ]);
-    const out = formatAsk(result, view.nodes);
-    return { ...json(out), structuredContent: out };
+    const out = formatAsk(result, view.nodes, env.BETTER_AUTH_URL);
+    const link = out.requestUrl
+      ? [{ type: "text" as const, text: `[Request access](${out.requestUrl})` }]
+      : [];
+    return {
+      content: [...json(out).content, ...link],
+      structuredContent: out,
+    };
   });
 
   registerAppTool(server, "request_more", tools.request_more, async (input) => {

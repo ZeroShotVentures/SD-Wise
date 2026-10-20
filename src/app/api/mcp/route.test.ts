@@ -215,10 +215,14 @@ describe("/api/mcp", () => {
         asUser,
       ),
     );
-    const text = (await result(res)).content[0].text as string;
+    const [data, link] = (await result(res)).content;
+    const text = data.text as string;
     expect(mocks.personFor).toHaveBeenCalledWith("u-julien");
     expect(JSON.parse(text).moreAvailable).toBe(true);
     expect(text).not.toContain("€4.20");
     expect(text).not.toContain("p-bram");
+    expect(link.text).toMatch(
+      /^\[Request access\]\(http.+\/inbox\/request\?question=What\+does\+Kras/,
+    );
   });
 });

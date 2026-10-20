@@ -19,13 +19,26 @@ describe("formatAsk", () => {
     if (!pricing) throw new Error("fixture");
     expect(hits).toContain(pricing.id);
 
-    const out = formatAsk(result, views);
+    const out = formatAsk(result, views, "https://sdwise.be");
     const text = JSON.stringify(out);
     expect(out.moreAvailable).toBe(true);
+    expect(out.requestUrl).toBe(
+      "https://sdwise.be/inbox/request?question=What+does+Kras+pay+per+payslip%3F",
+    );
     expect(text).not.toContain(pricing.id);
     expect(text).not.toContain(pricing.content);
     expect(text).not.toContain(pricing.contentSummary);
     expect(text).not.toContain(pricing.title);
     for (const ownerId of pricing.ownerIds) expect(text).not.toContain(ownerId);
+  });
+
+  it("has no request link when there's nothing more", () => {
+    const question = "What does Kras pay per payslip?";
+    const bram = people.find((p) => p.id === "p-bram");
+    if (!bram) throw new Error("fixture");
+    const { hits, visited } = searchGraph(question, nodes, edges);
+    const result = answerFor(question, bram.id, hits, visited, nodes);
+    const views = nodes.map((n) => toNodeView(n, bram.id));
+    expect(formatAsk(result, views, "https://sdwise.be").requestUrl).toBeNull();
   });
 });

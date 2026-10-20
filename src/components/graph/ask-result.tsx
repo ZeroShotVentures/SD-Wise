@@ -91,7 +91,7 @@ export function AskResultCard({
 
 // The request reruns the search on the server, so it carries the original
 // question rather than an edited one.
-function RequestMore({ question }: { question: string }) {
+export function RequestMore({ question }: { question: string }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();

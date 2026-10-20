@@ -10,7 +10,7 @@ export const tools = {
   ask: {
     title: "Ask the company brain",
     description:
-      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. The answer card has a Request access button for the rest.",
+      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card with a Request access button; there, don't repeat the answer word for word or draw your own visual of it, just add what the card doesn't say. If the card isn't shown, give the answer yourself and, when `moreAvailable` is true, show `requestUrl` as a \"Request access\" link or button (also in any visual you make). It opens SD Wise, where the user clicks to send the request. You can't send it yourself.",
     inputSchema: z.object({
       question: question.describe("The question, in plain language"),
     }),
@@ -18,11 +18,12 @@ export const tools = {
     _meta: { ui: { resourceUri: ASK_APP_URI } },
   },
   // Only the answer card's button calls this, so a request always comes from
-  // the user clicking, never from the model on its own.
+  // the user clicking, never from the model on its own. Hosts without the
+  // card use `requestUrl`, which ends in a button too.
   request_more: {
     title: "Request the rest of an answer",
     description:
-      "Forward a question to whoever holds the locked information behind `moreAvailable`. They decide whether to share it.",
+      "Forward a question to whoever holds the locked information behind `moreAvailable`. They decide whether to share it; the user never learns who they are.",
     inputSchema: requestMoreInput,
     annotations: {
       readOnlyHint: false,
@@ -35,7 +36,7 @@ export const tools = {
   list_inbox: {
     title: "List your inbox",
     description:
-      "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show them in an inbox card. Replying happens in SD Wise itself; the card links there.",
+      "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show the result in an inbox card; there, don't repeat the inbox as a table or draw your own visual of it, just point out in a sentence or two what needs attention. If the card isn't shown, summarize what needs attention yourself. Replying happens in SD Wise itself, in the Inbox.",
     annotations: { readOnlyHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: INBOX_APP_URI } },
   },

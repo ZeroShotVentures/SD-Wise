@@ -1,6 +1,6 @@
 # Accounts
 
-Every person in the graph has an account, and every account is one person: the owners of a fact are the accounts that can sign in and see it. All 313 share the password `password123`. Seeded by `pnpm db:seed:accounts` (or `pnpm db:seed:demo`, which also adds the demo questions).
+Every person in the graph has an account, and every account is one person: the owners of a fact are the accounts that can sign in and see it. All 312 share the password `password123`. Seeded by `pnpm db:seed:accounts` (or `pnpm db:seed:demo`, which also adds the demo questions).
 
 "Owns" counts the facts that person was part of; "Can see" counts the facts that aren't locked in their graph (owned, shared with them, or public) out of 4300. Answers to questions add a few on top.
 
@@ -17,8 +17,8 @@ Generated from the fixtures by `pnpm db:seed:accounts --docs`; don't edit by han
 | Lotte Janssens | `lotte@sdwise.be` | Financial controller | FINANCE | 6 | 1241 |
 | Pieter Claes | `pieter@sdwise.be` | Support team lead | CUSTOMER_SERVICE | 4 | 1236 |
 | An Maes | `an@sdwise.be` | Payroll legal expert | HR | 3 | 1238 |
-| Kobe Verdonck | `kobe@sdwise.be` | Platform lead | IT | 9 | 1329 |
-| Filip Dierckx | `filip@sdwise.be` | Payroll operations lead | PRODUCTION | 4 | 1347 |
+| Kobe Verdonck | `kobe@sdwise.be` | Platform lead | IT | 27 | 1252 |
+| Filip Dierckx | `filip@sdwise.be` | Payroll operations lead | PRODUCTION | 24 | 1254 |
 | Olivier Pauwels | `olivier.pauwels@sdwise.be` | Payroll consultant | PRODUCTION | 51 | 1269 |
 | Ruben Martens | `ruben.martens@sdwise.be` | Senior payroll consultant | PRODUCTION | 52 | 1269 |
 | Nele Aerts | `nele.aerts@sdwise.be` | Payroll team lead | PRODUCTION | 53 | 1274 |
@@ -216,7 +216,6 @@ Generated from the fixtures by `pnpm db:seed:accounts --docs`; don't edit by han
 | Yannick Wuyts | `yannick.wuyts@sdwise.be` | Payroll Processing Specialist | HR | 22 | 1257 |
 | Pieter Pauwels | `pieter.pauwels@sdwise.be` | Junior Payroll Support Analyst | IT | 5 | 1240 |
 | Tom Maes | `tom.maes@sdwise.be` | Payroll Compliance Specialist | PRODUCTION | 4 | 1239 |
-| Fatima Stevens | `fatima.stevens@sdwise.be` | Customer Support Representative (Payroll Queries) | CUSTOMER_SERVICE | 0 | 1235 |
 | Kaat Lambert | `kaat.lambert@sdwise.be` | Tier-1 Helpdesk Agent (HR Services) | CUSTOMER_SERVICE | 4 | 1239 |
 | Hanne Declercq | `hanne.declercq@sdwise.be` | Financial Controller | FINANCE | 17 | 1252 |
 | Lore Pauwels | `lore.pauwels@sdwise.be` | Payroll Processing Expert | CUSTOMER_SERVICE | 1 | 1236 |

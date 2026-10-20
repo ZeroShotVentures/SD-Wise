@@ -29,17 +29,36 @@ describe("accounts", () => {
     }
   });
 
-  it("locks exactly the private facts Kobe and Filip weren't given", () => {
-    for (const id of ["p-kobe", "p-filip"]) {
-      const locked = nodes.filter((n) => !canSee(n, id));
-      expect(locked.length).toBeGreaterThan(0);
-      for (const n of locked) {
-        expect(n.visibility).toBe("PRIVATE");
-        expect(n.ownerIds).not.toContain(id);
-        expect(n.accessIds).not.toContain(id);
-      }
+  it("lets everyone see exactly the public facts and their own", () => {
+    for (const n of nodes) expect(n.accessIds).toEqual(n.ownerIds);
+    for (const { person } of accounts) {
+      const seen = nodes.filter((n) => canSee(n, person.id));
+      const expected = nodes.filter(
+        (n) => n.visibility === "PUBLIC" || n.ownerIds.includes(person.id),
+      );
+      expect(seen).toEqual(expected);
+    }
+  });
+
+  it("only has people who own at least one fact", () => {
+    const owners = new Set(nodes.flatMap((n) => n.ownerIds));
+    expect(people.filter((p) => !owners.has(p.id))).toEqual([]);
+  });
+
+  it("makes Kobe and Filip take part in their own team's conversations", () => {
+    for (const [id, department] of [
+      ["p-kobe", "IT"],
+      ["p-filip", "PRODUCTION"],
+    ] as const) {
       const owned = nodes.filter((n) => n.ownerIds.includes(id));
-      expect(owned.every((n) => canSee(n, id))).toBe(true);
+      expect(owned.length).toBeGreaterThan(15);
+      expect(owned.length).toBeLessThan(60);
+      // Generated facts they joined are their own team's: the first owner is
+      // the one the conversation was picked for.
+      for (const fact of owned.filter((n) => n.id.startsWith("n-bulk-"))) {
+        const first = people.find((p) => p.id === fact.ownerIds[0]);
+        expect(first?.department).toBe(department);
+      }
     }
   });
 

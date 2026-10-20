@@ -1,6 +1,6 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph) and an account for every person in the graph: lint, typecheck, `next build` and all 73 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph) an account for every person in the graph, and access that starts with the owners only: lint, typecheck, `next build` and all 75 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
 
 ## In short
 
@@ -19,12 +19,12 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
-| Facts, edges and people | Mocked | 🟡 | 4,300 facts, 6,216 edges and 313 people, all in code: 30 hand-written demo facts ([fixtures.ts](../src/lib/graph/fixtures.ts)), 3,940 generated from a fixed seed ([bulk-fixtures.ts](../src/lib/graph/bulk-fixtures.ts)), and 330 AI-generated ones moved out of the database ([db-fixtures.ts](../src/lib/graph/db-fixtures.ts)). The `KnowledgeNode` and `KnowledgeEdge` tables exist but are empty and never read. |
-| Who can see each fact | Real logic, mock data | 🟡 | Owners and access lists are assigned in the fixtures, not taken from the source (channel members, mail recipients, meeting attendees). Every owner is an account ([Accounts](#accounts)), so the locks in the graph are the signed-in person's own. Kobe and Filip were also given access to about 140 facts each from conversations they weren't in, so they have more to see in a demo. |
+| Facts, edges and people | Mocked | 🟡 | 4,300 facts, 6,216 edges and 312 people, all in code: 30 hand-written demo facts ([fixtures.ts](../src/lib/graph/fixtures.ts)), 3,940 generated from a fixed seed ([bulk-fixtures.ts](../src/lib/graph/bulk-fixtures.ts)), and 330 AI-generated ones moved out of the database ([db-fixtures.ts](../src/lib/graph/db-fixtures.ts)). The `KnowledgeNode` and `KnowledgeEdge` tables exist but are empty and never read. |
+| Who can see each fact | Real logic, mock data | 🟡 | One rule for everyone: a private fact is visible to its owners, the people who were in the conversation. The fixtures only set owners; access starts as exactly the owners ([fixtures.ts](../src/lib/graph/fixtures.ts)) and only grows in SD Wise, when an owner shares a fact or answers a question. Every owner is an account ([Accounts](#accounts)), so the locks in the graph are the signed-in person's own. Kobe and Filip take part in some of their own team's conversations (IT and Production), like everyone else, so they own 27 and 24 facts. Tested for every account. Still 🟡 because owners come from the fixtures, not from the source (channel members, mail recipients, meeting attendees). |
 | Redaction of locked facts | Real logic, mock data | ✅ | Done on the server, so locked content never reaches the browser. Edges touching a locked fact lose their meaning too. Tested. |
 | Graph view (semantic zoom, zoom slider, fit to screen, legend) | Real | ✅ | Renders every fact; locked ones show as a lock. Detail depends on zoom: zoomed out you see topic islands with names, fact counts and bundled links between topics; zooming in fades in the edges and moves island names to the island's edge as captions; zoomed in shows fact names wherever they fit without overlapping. Click an island to zoom into it; hover a fact to highlight its neighbours. Screenshots in [graph-semantic-zoom](graph-semantic-zoom/README.md). The legend has no entry for documents, but no fact is a document yet. |
 | Topic islands and their names | Real logic, mock data | ✅ | Computed in the browser from the graph's edges (Louvain, [clusters.ts](../src/lib/graph/clusters.ts)): 41 topics on the demo graph. Names are the phrases most typical of each topic, taken only from titles the viewer can see, so they never leak a locked fact; a topic with nothing visible is "Private knowledge". Facts without edges share a "Not connected yet" island. Tested. Some names are generic ("Cohort", "Budget") because the mock titles are. |
-| Fact and connection inspector | Real | 🟡 | Shows content, source, owners and connections for visible facts; owners and a "Request access" button for locked ones. Showing owners of locked facts undoes part of the privacy work in `ask`: clicking a lock tells you who knows what. |
+| Fact and connection inspector | Real | ✅ | Shows content, source, owners and connections for visible facts. A locked fact shows only its source and date, and a "Request access" button: its owners never reach the browser, so clicking a lock doesn't tell you who knows what. Tested, and clicked through in a browser. |
 | Facts stored in Postgres with pgvector | Unused | ❌ | Schema, migration and `contentEmbedding vector(1536)` exist, but since `785f062` the app reads only the fixtures. |
 
 ## Asking SD Wise
@@ -57,7 +57,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
-| Request access to a locked fact | Real | ✅ | From the inspector. Stored as an `ACCESS` question; a second request for the same fact reuses the pending one. |
+| Request access to a locked fact | Real | ✅ | From the inspector. Goes to the fact's first owner, picked on the server, so the asker doesn't learn who it went to until they share. Stored as an `ACCESS` question; a second request for the same fact reuses the pending one. |
 | Request the rest of an answer | Real | ✅ | The "Request access" button on the answer card. The server reruns the search and sends one request per owner of the locked matches, with the asker's question attached, so the asker never learns which facts or whose. It responds the same whether or not anything matched. Goes to the first owner of each fact only. |
 | Owner stays hidden until they share | Real | ✅ | In the asker's Sent tab a pending or declined request shows as sent to "The owner". Owners still see who asked. |
 | Approve or decline | Real | ✅ | Owners see the asker's question on the request. `approveAccess` checks owners in the full graph, so access to someone's private answer can be approved too. |
@@ -90,7 +90,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | --- | --- | --- | --- |
 | Sign in with email and password | Real | ✅ | Tested. Rate limiting is stored in the database. |
 | Sign up | Not built (on purpose) | — | Accounts only come from `pnpm db:seed:accounts` (or `pnpm db:seed:demo`). |
-| One account per person | Real | ✅ | Every person in the graph has exactly one account and every account is one person: `user.personId` is required and unique, and deleting a person deletes their account. `pnpm db:seed:accounts` creates the 313 accounts, removes accounts and people that aren't in the graph, and resets every password. Safe to re-run; existing accounts keep their sessions. Tested, and checked by signing in as Kobe, Filip and three others: the graph's "you can see" count matches [accounts.md](accounts.md). |
+| One account per person | Real | ✅ | Every person in the graph has exactly one account and every account is one person: `user.personId` is required and unique, and deleting a person deletes their account. `pnpm db:seed:accounts` creates the 312 accounts, removes accounts and people that aren't in the graph, and resets every password. Safe to re-run; existing accounts keep their sessions. Everyone in the graph owns at least one fact. Tested, and checked by signing in as Kobe, Filip and three others: the graph's "you can see" count matches [accounts.md](accounts.md). |
 | Demo questions | Real | ✅ | `pnpm db:seed:demo` seeds the accounts, then adds six questions to inboxes. `--reset` clears all questions first. |
 | Settings: name, password, sessions, delete account | Real | ✅ | A deleted account comes back with the next `pnpm db:seed:accounts`. Until then that person can't sign in. |
 | Settings: "Connect your AI" | Real | ✅ | Shows the Cursor and Claude Code config for this deployment's URL. |
@@ -101,7 +101,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 Every person in the graph can sign in. All accounts share the password **`password123`**. Run `pnpm db:seed:accounts` (or `pnpm db:seed:demo`) to create them.
 
-The demo cast below signs in with their first name. Everyone else uses `first.last@sdwise.be`, without accents and with multi-word last names joined: Amélie Goossens is `amelie.goossens@sdwise.be`, Sanne Van den Berg is `sanne.vandenberg@sdwise.be`. [accounts.md](accounts.md) lists all 313 with their role and how many facts each owns and can see.
+The demo cast below signs in with their first name. Everyone else uses `first.last@sdwise.be`, without accents and with multi-word last names joined: Amélie Goossens is `amelie.goossens@sdwise.be`, Sanne Van den Berg is `sanne.vandenberg@sdwise.be`. [accounts.md](accounts.md) lists all 312 with their role and how many facts each owns and can see.
 
 | Name | Email | Password | Role |
 | --- | --- | --- | --- |
@@ -129,5 +129,5 @@ The demo cast below signs in with their first name. Everyone else uses `first.la
 1. **Search:** build the walk from [node-finding.md](node-finding.md) on embeddings. Claude writes the answer and the drafted reply, but only from what the keyword search finds.
 2. **Graph in the database:** read facts and edges from Postgres instead of fixtures, and save answers as real facts.
 3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation.
-4. **Privacy:** stop the inspector from showing owners of locked facts, hide who asked from owners until they share, let owners mark facts as never hinted, and rate-limit questions that only produce a hint.
+4. **Privacy:** hide who asked from owners until they share, let owners mark facts as never hinted, and rate-limit questions that only produce a hint.
 5. **Small fixes:** a way to ask a colleague again, per-user (or persisted) integration state, and notifications for new questions.

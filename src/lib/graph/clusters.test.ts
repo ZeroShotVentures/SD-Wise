@@ -22,7 +22,6 @@ const fact = (id: string, title: string, locked = false): NodeView =>
         locked: true,
         source: "EMAIL",
         integrationId: null,
-        ownerIds: [],
         createdAt: "2026-01-01",
         isNew: false,
       }

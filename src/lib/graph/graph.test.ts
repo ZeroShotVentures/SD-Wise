@@ -54,6 +54,11 @@ describe("redaction", () => {
     const view = toNodeView(pricing, julien.id);
     expect(view).toEqual(expect.objectContaining({ locked: true }));
     expect(JSON.stringify(view)).not.toContain("€4.20");
+    // Nor who knows it.
+    expect(view).not.toHaveProperty("ownerIds");
+    for (const id of pricing.ownerIds) {
+      expect(JSON.stringify(view)).not.toContain(id);
+    }
   });
 
   it("hides the meaning of edges touching a locked node", () => {

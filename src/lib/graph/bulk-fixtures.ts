@@ -2,8 +2,8 @@ import type {
   Department,
   EdgeKind,
   KnowledgeEdge,
-  KnowledgeNode,
   KnowledgeSource,
+  NodeFixture,
   Person,
 } from "./types";
 
@@ -1096,7 +1096,7 @@ export function generateBulk() {
   }
 
   // Nodes
-  const nodes: KnowledgeNode[] = [];
+  const nodes: NodeFixture[] = [];
   const tagsByNode: string[][] = [];
   const kindsByNode: (EdgeKind | undefined)[] = [];
   const members = new Map<string, number[]>();
@@ -1149,10 +1149,13 @@ export function generateBulk() {
     const isPublic = r() < 0.3;
     const day = new Date(start + r() * (end - start));
     const ownerIds = colleagues.map((p) => p.id);
-    // A few facts are also shared with the demo accounts.
-    const accessIds = [...ownerIds];
-    if (r() < 0.04) accessIds.push("p-kobe");
-    if (r() < 0.04) accessIds.push("p-filip");
+    // Kobe and Filip also take part in some of their own team's
+    // conversations. Both draws always happen, so the rest of the graph
+    // doesn't depend on who joins.
+    const withKobe = r() < 0.03;
+    const withFilip = r() < 0.03;
+    if (withKobe && department === "IT") ownerIds.push("p-kobe");
+    if (withFilip && department === "PRODUCTION") ownerIds.push("p-filip");
 
     nodes.push({
       id: `n-bulk-${i + 1}`,
@@ -1164,7 +1167,6 @@ export function generateBulk() {
       sourceDescription: draft.from,
       visibility: isPublic ? "PUBLIC" : "PRIVATE",
       ownerIds,
-      accessIds,
       createdAt: day.toISOString().slice(0, 10),
     });
     tagsByNode.push(draft.tags);

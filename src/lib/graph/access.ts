@@ -4,7 +4,8 @@ export function canSee(node: KnowledgeNode, personId: string) {
   return node.visibility === "PUBLIC" || node.accessIds.includes(personId);
 }
 
-// Redaction happens on the server so locked content never reaches the client.
+// Redaction happens on the server so locked content, and who knows it, never
+// reaches the client.
 export function toNodeView(
   node: KnowledgeNode,
   personId: string,
@@ -16,7 +17,6 @@ export function toNodeView(
       locked: true,
       source: node.source,
       integrationId: node.integrationId,
-      ownerIds: node.ownerIds,
       createdAt: node.createdAt,
       isNew: false,
     };

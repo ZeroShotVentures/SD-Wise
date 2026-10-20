@@ -114,10 +114,9 @@ export async function ask(me: Person, question: string): Promise<AskResult> {
 
 // Lets a client cite an answer's facts without loading the whole graph.
 export async function factsFor(me: Person, ids: string[]) {
-  const { nodes } = await loadGraph();
-  const wanted = new Set(ids);
+  const nodes = await readNodes(prisma, ids.map(parseId));
   return nodes
-    .filter((n) => wanted.has(n.id) && canSee(n, me.id))
+    .filter((n) => canSee(n, me.id))
     .map(({ id, title, source }) => ({ id, title, source }));
 }
 

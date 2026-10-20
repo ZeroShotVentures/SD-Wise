@@ -237,8 +237,7 @@ function Hero({ url, tools }: { url: string; tools: number }) {
 
   // A real check: MCP clients start at the protected resource metadata.
   useEffect(() => {
-    const path = new URL(url).pathname;
-    fetch(`/.well-known/oauth-protected-resource${path}`)
+    fetch("/.well-known/oauth-protected-resource/api/mcp")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => setStatus(data?.resource === url ? "online" : "offline"))
       .catch(() => setStatus("offline"));

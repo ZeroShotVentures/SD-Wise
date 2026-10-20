@@ -210,6 +210,9 @@ model Question {
   nodeIds     String[]
   status      QuestionStatus @default(PENDING)
   answer      String?
+  /// QUESTION: the reply Claude drafted for the recipient. "" when nothing
+  /// they know answers it, null until it's written.
+  draft       String?
   shareScope  ShareScope?
   createdAt   DateTime       @default(now())
   resolvedAt  DateTime?

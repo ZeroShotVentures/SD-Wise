@@ -79,6 +79,8 @@ const SOURCE_LABEL: Record<KnowledgeSource, string> = {
   OTHER: "an answer",
 };
 
+// The answer's text joins the summaries of the visible hits; `ask` in the
+// service has Claude write the real one from the same facts.
 export function answerFor(
   question: string,
   viewerId: string,
@@ -136,11 +138,10 @@ export function answerFor(
   return { question, visited, hits, answer, people: suggested };
 }
 
-// Drafts a reply from what the recipient can see. The real version is an LLM
-// call over the same nodes.
-export function draftAnswer(
+// What the recipient can draft a reply from: the matched facts they can see,
+// plus their own best matches for the question. Claude writes the draft.
+export function draftFacts(
   question: string,
-  asker: Person,
   recipientId: string,
   nodeIds: string[],
   nodes: KnowledgeNode[],
@@ -149,9 +150,5 @@ export function draftAnswer(
   const own = nodes.filter((n) => canSee(n, recipientId));
   const { hits } = searchGraph(question, own, edges, 2);
   const ids = [...new Set([...nodeIds, ...hits])];
-  const used = ids.flatMap((id) => own.find((n) => n.id === id) ?? []);
-  if (!used.length) return null;
-  const firstName = asker.name.split(" ")[0];
-  const facts = used.map((n) => n.contentSummary).join(" ");
-  return { text: `Hi ${firstName}! ${facts}`, nodeIds: used.map((n) => n.id) };
+  return ids.flatMap((id) => own.find((n) => n.id === id) ?? []);
 }

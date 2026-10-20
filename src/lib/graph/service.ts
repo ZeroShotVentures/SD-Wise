@@ -1,9 +1,10 @@
 import "server-only";
+import { after } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
-import { answerFor, draftAnswer, searchGraph } from "./ai";
+import { answerFor, draftFacts, searchGraph } from "./ai";
 import {
   answerNodeId,
   applyAnswers,
@@ -12,11 +13,14 @@ import {
   unseenFor,
 } from "./answers";
 import * as fixtures from "./fixtures";
+import { writeAnswer, writeDraft } from "./llm";
 import type {
   AskResult,
   GraphView,
   InboxItem,
   Integration,
+  KnowledgeEdge,
+  KnowledgeNode,
   Person,
   ShareScope,
 } from "./types";
@@ -171,7 +175,24 @@ export async function markSeen(me: Person, rawNodeId: string) {
 export async function ask(me: Person, question: string): Promise<AskResult> {
   const { nodes, edges } = await loadGraph();
   const { hits, visited } = searchGraph(question, nodes, edges);
-  return answerFor(question, me.id, hits, visited, nodes, fixtures.people);
+  const result = answerFor(
+    question,
+    me.id,
+    hits,
+    visited,
+    nodes,
+    fixtures.people,
+  );
+  if (!result.answer) return result;
+  // answerFor only puts facts `me` can see in the answer.
+  const facts = result.answer.nodeIds.flatMap(
+    (id) => nodes.find((n) => n.id === id) ?? [],
+  );
+  const text = await writeAnswer(question, facts);
+  return {
+    ...result,
+    answer: text ? { text, nodeIds: result.answer.nodeIds } : null,
+  };
 }
 
 export async function askPerson(
@@ -186,7 +207,7 @@ export async function askPerson(
     select: { id: true },
   });
   if (!recipient) throw new Error("Unknown person");
-  return prisma.question.create({
+  const created = await prisma.question.create({
     data: {
       kind: "QUESTION",
       askerId: me.id,
@@ -194,7 +215,44 @@ export async function askPerson(
       question,
       nodeIds,
     },
+    include: withPeople,
   });
+  // Draft the reply now, so it's ready when the recipient opens their inbox.
+  after(async () => {
+    await draftReply(toQuery(created), await loadGraph());
+  });
+  return created;
+}
+
+// Claude drafts the recipient's reply once, from what they can see, and it's
+// stored: "" when nothing they know answers it, null until written. A failed
+// call leaves it null, so the next inbox load tries again.
+async function draftReply(
+  q: ResolvedQuery,
+  graph: { nodes: KnowledgeNode[]; edges: KnowledgeEdge[] },
+) {
+  const facts = draftFacts(
+    q.question,
+    q.recipientId,
+    q.nodeIds,
+    graph.nodes,
+    graph.edges,
+  );
+  let draft: string;
+  try {
+    draft = facts.length
+      ? ((await writeDraft(q.question, q.asker, facts)) ?? "")
+      : "";
+  } catch (error) {
+    console.error(`Drafting a reply to question ${q.id} failed`, error);
+    return null;
+  }
+  // Keeps the first draft when the inbox and `after` race to write one.
+  await prisma.question.updateMany({
+    where: { id: q.id, draft: null },
+    data: { draft },
+  });
+  return draft;
 }
 
 export async function requestAccess(
@@ -288,29 +346,28 @@ export async function getInbox(me: Person) {
     loadGraph(),
   ]);
 
-  const toItem = (q: ResolvedQuery): InboxItem => {
-    const suggested =
-      q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING"
-        ? draftAnswer(
-            q.question,
-            q.asker,
-            me.id,
-            q.nodeIds,
-            graph.nodes,
-            graph.edges,
-          )
-        : null;
-    return {
-      ...q,
-      suggestedAnswer: suggested?.text ?? null,
-      nodeTitles: q.nodeIds.flatMap((id) => {
-        const node = graph.all.find((n) => n.id === id);
-        return node && canSee(node, me.id) ? [node.title] : [];
-      }),
-    };
-  };
-
   const queries = rows.map(toQuery);
+
+  // Only the recipient ever sees the draft. Questions sent before drafting
+  // existed, or whose drafting failed, get theirs now.
+  const drafts = new Map(rows.map((row) => [row.id, row.draft]));
+  const draftable = (q: ResolvedQuery) =>
+    q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING";
+  await Promise.all(
+    queries
+      .filter((q) => draftable(q) && drafts.get(q.id) === null)
+      .map(async (q) => drafts.set(q.id, await draftReply(q, graph))),
+  );
+
+  const toItem = (q: ResolvedQuery): InboxItem => ({
+    ...q,
+    suggestedAnswer: (draftable(q) && drafts.get(q.id)) || null,
+    nodeTitles: q.nodeIds.flatMap((id) => {
+      const node = graph.all.find((n) => n.id === id);
+      return node && canSee(node, me.id) ? [node.title] : [];
+    }),
+  });
+
   return {
     received: queries.filter((q) => q.recipientId === me.id).map(toItem),
     sent: queries.filter((q) => q.askerId === me.id).map(toItem),

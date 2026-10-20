@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canSee, toEdgeView, toNodeView } from "./access";
-import { answerFor, draftAnswer, searchGraph } from "./ai";
+import { answerFor, draftFacts, searchGraph } from "./ai";
 import {
   answerNodeId,
   applyAnswers,
@@ -80,15 +80,15 @@ describe("ask", () => {
   });
 
   it("drafts Filip's reply from what he knows", () => {
-    const draft = draftAnswer(
+    const facts = draftFacts(
       "When is the payroll cut-off in December?",
-      kobe,
       filip.id,
       ["n-cutoff-december"],
       nodes,
       edges,
     );
-    expect(draft?.text).toMatch(/^Hi Kobe! .*14 December/);
+    expect(facts.map((n) => n.id)).toContain("n-cutoff-december");
+    expect(facts.every((n) => canSee(n, filip.id))).toBe(true);
   });
 
   it("points Filip to Kobe for the deploy freeze", () => {
@@ -98,15 +98,27 @@ describe("ask", () => {
   });
 
   it("drafts Kobe's reply from what he knows", () => {
-    const draft = draftAnswer(
+    const facts = draftFacts(
       "Is there a deploy freeze over the holidays?",
-      filip,
       kobe.id,
       ["n-deploy-freeze"],
       nodes,
       edges,
     );
-    expect(draft?.text).toMatch(/^Hi Filip! .*14 December to 4 January/);
+    expect(facts.map((n) => n.id)).toContain("n-deploy-freeze");
+    expect(facts.every((n) => canSee(n, kobe.id))).toBe(true);
+  });
+
+  it("drafts nothing from facts the recipient can't see", () => {
+    expect(
+      draftFacts(
+        "What do we charge Kras?",
+        julien.id,
+        ["n-kras-pricing"],
+        nodes,
+        edges,
+      ).map((n) => n.id),
+    ).not.toContain("n-kras-pricing");
   });
 
   it("links Kobe's and Filip's knowledge in the graph", () => {

@@ -5,7 +5,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 ## In short
 
 - **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too.
-- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, the answer and the drafted reply are stitched-together summaries instead of LLM output, and integrations are an in-memory on/off switch.
+- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, and integrations are an in-memory on/off switch. Claude does write the answer and the drafted reply, from whatever that search finds.
 - **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and document sources.
 
 ## Legend
@@ -32,7 +32,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | --- | --- | --- | --- |
 | Search | Mocked | 🟡 | [ai.ts](../src/lib/graph/ai.ts) is a stand-in: keyword overlap (title words count 3, body words 1), then one hop to neighbours. Works for the scripted demo questions, misses paraphrases and synonyms. |
 | Search per [node-finding.md](node-finding.md) | Not built | ❌ | No embedding lookup, in-degree scoring, beam walk, or "nearest visible fact" substitute. |
-| Answer text | Mocked | 🟡 | The summaries of the matching facts you can see, joined together. No LLM writes an answer. |
+| Answer text | Real logic, mock data | 🟡 | Claude Sonnet 5.5, through the Vercel AI Gateway, writes it from the full text of the matching facts you can see. If they don't answer the question, you get the people who might know instead. Needs `AI_GATEWAY_API_KEY`. Not yet tried against the live model. |
 | "Others know more" suggestions | Real logic, mock data | ✅ | Owners of the matching locked facts, top 3 by number of facts, with the source ("from an email"). Tested for the Kobe ↔ Filip walkthrough. |
 | Search animation | Mocked | — | Random nodes flash for at least 1.4 s as the "embedding lookup", then the real visit order is replayed. Cosmetic. |
 | Embedding script (`pnpm db:embed`) | Unused | ❌ | Embeds database rows with `openai/text-embedding-3-small`, but the database has no facts and the search doesn't read embeddings. |
@@ -43,7 +43,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | Ask a colleague | Real | ✅ | Stored in the `Question` table. The colleague must exist as a `Person` row; `pnpm db:seed:demo` creates one for every fixture person. |
-| Drafted reply for the colleague | Mocked | 🟡 | "Hi {first name}!" followed by summaries of the facts the colleague can see. No LLM. |
+| Drafted reply for the colleague | Real logic, mock data | 🟡 | Claude Sonnet 5.5 writes it once, right after the question is sent, from the facts the colleague can see, and it's stored on the question. Questions without one (demo questions, failed calls) get it on the next inbox load. Not yet tried against the live model. |
 | Inbox: received and sent, answer, decline | Real | ✅ | A question can only be resolved once. |
 | Share an answer with the asker or everyone | Real | ✅ | "Everyone" makes the new fact public. Tested. |
 | Answers become new facts in the asker's graph | Real logic, mock data | ✅ | Rebuilt on every read from answered questions and linked to the facts they were based on; not saved as graph rows. Tested. |
@@ -98,7 +98,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 ## Biggest gaps
 
-1. **Search and answers:** build the walk from [node-finding.md](node-finding.md) on embeddings, and have an LLM write the answer and the drafted reply from the facts it found.
+1. **Search:** build the walk from [node-finding.md](node-finding.md) on embeddings. Claude writes the answer and the drafted reply, but only from what the keyword search finds.
 2. **Graph in the database:** read facts and edges from Postgres instead of fixtures, and save answers as real facts.
 3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation.
 4. **Small fixes:** approving access to an answer, per-user (or persisted) integration state, and notifications for new questions.

@@ -27,13 +27,10 @@ export async function askPerson(input: {
   revalidatePath("/", "layout");
 }
 
-export async function requestAccess(input: {
-  nodeId: string;
-  ownerId: string;
-}) {
+export async function requestAccess(input: { nodeId: string }) {
   const me = await requirePerson();
   const data = requestAccessInput.parse(input);
-  await graph.requestAccess(me, data.nodeId, data.ownerId);
+  await graph.requestAccess(me, data.nodeId);
   revalidatePath("/", "layout");
 }
 

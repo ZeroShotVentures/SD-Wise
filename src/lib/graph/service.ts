@@ -5,139 +5,63 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
-import {
-  answerNodeId,
-  applyAnswers,
-  questionIdOf,
-  type ResolvedQuery,
-  unseenFor,
-} from "./answers";
-import * as fixtures from "./fixtures";
+import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
 import { writeAnswer, writeDraft } from "./llm";
+import {
+  type Db,
+  grantAccess,
+  integrationStats,
+  personSelect,
+  readGraph,
+  readIntegrations,
+  readNodes,
+  readPeople,
+  saveAnswer,
+  toQuery,
+  withPeople,
+} from "./store";
 import type {
   AskResult,
   GraphView,
   InboxItem,
-  Integration,
+  IntegrationStats,
   KnowledgeEdge,
   KnowledgeNode,
   Person,
   ShareScope,
 } from "./types";
 
-// The knowledge graph and integrations are still mocked (fixtures, in
-// memory). Questions between people are stored in the database, so asking,
-// answering and access requests work across instances.
-
-const globalForGraph = globalThis as unknown as {
-  sdWiseIntegrations?: Integration[];
-};
-
-function integrations() {
-  globalForGraph.sdWiseIntegrations ??= structuredClone(fixtures.integrations);
-  return globalForGraph.sdWiseIntegrations;
-}
-
-export function resetIntegrations() {
-  globalForGraph.sdWiseIntegrations = undefined;
-}
-
-const withPeople = {
-  asker: { include: { user: { select: { name: true } } } },
-  recipient: { include: { user: { select: { name: true } } } },
-} satisfies Prisma.QuestionInclude;
-
-type QuestionRow = Prisma.QuestionGetPayload<{ include: typeof withPeople }>;
-type PersonRow = QuestionRow["asker"];
-
-// Names come from the fixtures (the graph's people), else from the linked
-// account.
-function toPerson(row: PersonRow): Person {
-  return (
-    fixtures.people.find((p) => p.id === row.id) ?? {
-      id: row.id,
-      name: row.user?.name ?? row.role,
-      role: row.role,
-      department: row.department,
-    }
-  );
-}
-
-function toQuery(row: QuestionRow): ResolvedQuery {
-  const answered = row.status === "ANSWERED";
-  return {
-    id: row.id,
-    kind: row.kind,
-    askerId: row.askerId,
-    recipientId: row.recipientId,
-    question: row.question,
-    nodeIds: row.nodeIds,
-    status: row.status,
-    answer: row.answer,
-    shareScope: row.shareScope,
-    answerNodeId: !answered
-      ? null
-      : row.kind === "ACCESS"
-        ? (row.nodeIds[0] ?? null)
-        : answerNodeId(row.id),
-    createdAt: row.createdAt.toISOString(),
-    resolvedAt: row.resolvedAt?.toISOString() ?? null,
-    seenAt: row.seenAt?.toISOString() ?? null,
-    asker: toPerson(row.asker),
-    recipient: toPerson(row.recipient),
-  };
-}
+// The knowledge graph lives in Postgres (store.ts): facts, edges, who can see
+// them, and the questions between people that add answers and access to it.
+// Integrations are still mocked: connecting a source only flips a flag.
 
 export async function personFor(userId: string): Promise<Person | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { name: true, person: true },
+    select: { person: { select: personSelect } },
   });
-  if (!user?.person) return null;
-  return toPerson({ ...user.person, user: { name: user.name } });
-}
-
-// The fixture graph with answers layered on, minus disconnected sources.
-async function loadGraph() {
-  const answered = (
-    await prisma.question.findMany({
-      where: { status: "ANSWERED" },
-      include: withPeople,
-      orderBy: { resolvedAt: "asc" },
-    })
-  ).map(toQuery);
-  const { nodes, edges } = applyAnswers(
-    fixtures.nodes,
-    fixtures.edges,
-    answered,
-  );
-  const off = new Set(
-    integrations()
-      .filter((i) => !i.connected)
-      .map((i) => i.id),
-  );
-  const live = nodes.filter(
-    (n) => !n.integrationId || !off.has(n.integrationId),
-  );
-  const ids = new Set(live.map((n) => n.id));
-  return {
-    all: nodes,
-    nodes: live,
-    edges: edges.filter((e) => ids.has(e.sourceId) && ids.has(e.targetId)),
-    answered,
-  };
+  return user?.person ?? null;
 }
 
 export async function getGraph(me: Person): Promise<GraphView> {
-  const { nodes, edges, answered } = await loadGraph();
+  const [{ nodes, edges }, people, integrations, unseenAnswers] =
+    await Promise.all([
+      readGraph(prisma),
+      readPeople(prisma),
+      readIntegrations(prisma),
+      prisma.question.findMany({
+        where: { askerId: me.id, status: "ANSWERED", seenAt: null },
+        include: withPeople,
+      }),
+    ]);
   const visible = new Set(
     nodes.filter((n) => canSee(n, me.id)).map((n) => n.id),
   );
-  const unseen = unseenFor(me.id, answered);
+  const unseen = unseenFor(me.id, unseenAnswers.map(toQuery));
   return {
     me,
-    people: fixtures.people,
-    integrations: integrations(),
+    people,
+    integrations,
     nodes: nodes.map((n) => toNodeView(n, me.id, unseen)),
     edges: edges.map((e) => toEdgeView(e, visible)),
   };
@@ -173,7 +97,7 @@ export async function markSeen(me: Person, rawNodeId: string) {
 }
 
 export async function ask(me: Person, question: string): Promise<AskResult> {
-  const { nodes, edges } = await loadGraph();
+  const { nodes, edges } = await readGraph(prisma);
   const { hits, visited } = searchGraph(question, nodes, edges);
   const result = answerFor(question, me.id, hits, visited, nodes);
   if (!result.answer) return result;
@@ -202,7 +126,7 @@ export async function factsFor(me: Person, ids: string[]) {
 // request per owner, carrying the asker's question as context. Returns
 // nothing either way, so a request can't confirm that anything matched.
 export async function requestMore(me: Person, question: string) {
-  const { nodes, edges } = await loadGraph();
+  const { nodes, edges } = await readGraph(prisma);
   const { hits } = searchGraph(question, nodes, edges);
   const byOwner = new Map<string, string[]>();
   for (const node of lockedHits(me.id, hits, nodes)) {
@@ -259,7 +183,7 @@ export async function askPerson(
   });
   // Draft the reply now, so it's ready when the recipient opens their inbox.
   after(async () => {
-    await draftReply(toQuery(created), await loadGraph());
+    await draftReply(toQuery(created), await readGraph(prisma));
   });
   return created;
 }
@@ -295,15 +219,13 @@ async function draftReply(
   return draft;
 }
 
-export async function requestAccess(
-  me: Person,
-  nodeId: string,
-  ownerId: string,
-) {
-  const { all } = await loadGraph();
-  const node = all.find((n) => n.id === nodeId);
-  if (!node) throw new Error("Unknown node");
-  if (!node.ownerIds.includes(ownerId)) throw new Error("Not an owner");
+// The asker doesn't get to see or pick the owners of a locked fact, so the
+// request goes to the first one, as with requestMore.
+export async function requestAccess(me: Person, rawNodeId: string) {
+  const nodeId = parseId(rawNodeId);
+  const [node] = await readNodes(prisma, [nodeId]);
+  const ownerId = node?.ownerIds[0];
+  if (!node || !ownerId) throw new Error("Unknown node");
   if (canSee(node, me.id)) throw new Error("Already has access");
   const existing = await prisma.question.findFirst({
     where: {
@@ -328,13 +250,14 @@ export async function requestAccess(
 // Resolves a pending question addressed to me. The status check is part of
 // the update, so a question can only be resolved once.
 async function resolve(
+  db: Db,
   me: Person,
   rawQueryId: string,
   kind: "QUESTION" | "ACCESS" | undefined,
   data: Prisma.QuestionUpdateManyMutationInput,
 ) {
   const queryId = parseId(rawQueryId);
-  const { count } = await prisma.question.updateMany({
+  const { count } = await db.question.updateMany({
     where: {
       id: { equals: queryId },
       recipientId: me.id,
@@ -346,50 +269,58 @@ async function resolve(
   if (count === 0) throw new Error("Nothing to answer");
 }
 
+// The answer becomes a node in the same transaction, so a question is never
+// answered without one.
 export async function answerQuery(
   me: Person,
-  queryId: string,
+  rawQueryId: string,
   answer: string,
   scope: ShareScope,
 ) {
-  await resolve(me, queryId, "QUESTION", {
-    status: "ANSWERED",
-    answer,
-    shareScope: scope,
+  const queryId = parseId(rawQueryId);
+  await prisma.$transaction(async (tx) => {
+    await resolve(tx, me, queryId, "QUESTION", {
+      status: "ANSWERED",
+      answer,
+      shareScope: scope,
+    });
+    const row = await tx.question.findUniqueOrThrow({
+      where: { id: queryId },
+      include: withPeople,
+    });
+    await saveAnswer(tx, toQuery(row));
   });
 }
 
 export async function approveAccess(me: Person, rawQueryId: string) {
   const queryId = parseId(rawQueryId);
-  const [query, { all }] = await Promise.all([
-    prisma.question.findUnique({ where: { id: queryId } }),
-    loadGraph(),
-  ]);
-  const owns = query?.nodeIds.every((id) =>
-    all.find((n) => n.id === id)?.ownerIds.includes(me.id),
-  );
-  if (query?.kind === "ACCESS" && !owns) throw new Error("Not an owner");
-  await resolve(me, queryId, "ACCESS", {
-    status: "ANSWERED",
-    shareScope: "ASKER",
+  await prisma.$transaction(async (tx) => {
+    const query = await tx.question.findUnique({ where: { id: queryId } });
+    const nodes = await readNodes(tx, query?.nodeIds ?? []);
+    const owns = query?.nodeIds.every((id) =>
+      nodes.find((n) => n.id === id)?.ownerIds.includes(me.id),
+    );
+    if (query?.kind === "ACCESS" && !owns) throw new Error("Not an owner");
+    await resolve(tx, me, queryId, "ACCESS", {
+      status: "ANSWERED",
+      shareScope: "ASKER",
+    });
+    if (query) await grantAccess(tx, query);
   });
 }
 
 export async function declineQuery(me: Person, queryId: string) {
-  await resolve(me, queryId, undefined, { status: "DECLINED" });
+  await resolve(prisma, me, queryId, undefined, { status: "DECLINED" });
 }
 
 const HIDDEN_OWNER = { id: "owner", name: "The owner", role: "Owner" };
 
 export async function getInbox(me: Person) {
-  const [rows, graph] = await Promise.all([
-    prisma.question.findMany({
-      where: { OR: [{ recipientId: me.id }, { askerId: me.id }] },
-      include: withPeople,
-      orderBy: { createdAt: "desc" },
-    }),
-    loadGraph(),
-  ]);
+  const rows = await prisma.question.findMany({
+    where: { OR: [{ recipientId: me.id }, { askerId: me.id }] },
+    include: withPeople,
+    orderBy: { createdAt: "desc" },
+  });
 
   const queries = rows.map(toQuery);
 
@@ -398,17 +329,27 @@ export async function getInbox(me: Person) {
   const drafts = new Map(rows.map((row) => [row.id, row.draft]));
   const draftable = (q: ResolvedQuery) =>
     q.recipientId === me.id && q.kind === "QUESTION" && q.status === "PENDING";
-  await Promise.all(
-    queries
-      .filter((q) => draftable(q) && drafts.get(q.id) === null)
-      .map(async (q) => drafts.set(q.id, await draftReply(q, graph))),
+  const undrafted = queries.filter(
+    (q) => draftable(q) && drafts.get(q.id) === null,
   );
+  const draftMissing = async () => {
+    if (undrafted.length === 0) return;
+    const graph = await readGraph(prisma);
+    await Promise.all(
+      undrafted.map(async (q) => drafts.set(q.id, await draftReply(q, graph))),
+    );
+  };
+  const [nodes] = await Promise.all([
+    readNodes(prisma, [...new Set(queries.flatMap((q) => q.nodeIds))]),
+    draftMissing(),
+  ]);
+  const byId = new Map(nodes.map((n) => [n.id, n]));
 
   const toItem = (q: ResolvedQuery): InboxItem => ({
     ...q,
     suggestedAnswer: (draftable(q) && drafts.get(q.id)) || null,
     nodeTitles: q.nodeIds.flatMap((id) => {
-      const node = graph.all.find((n) => n.id === id);
+      const node = byId.get(id);
       return node && canSee(node, me.id) ? [node.title] : [];
     }),
   });
@@ -439,35 +380,28 @@ export function pendingCount(me: Person) {
   });
 }
 
-export function getIntegrations() {
-  return integrations().map((integration) => {
-    const nodes = fixtures.nodes.filter(
-      (n) => n.integrationId === integration.id,
-    );
-    return {
-      id: integration.id,
-      type: integration.type,
-      connected: integration.connected,
-      connectedAt: integration.connectedAt,
-      facts: nodes.length,
-      people: new Set(nodes.flatMap((n) => n.ownerIds)).size,
+export async function getIntegrations(): Promise<IntegrationStats[]> {
+  const [integrations, stats] = await Promise.all([
+    readIntegrations(prisma),
+    integrationStats(prisma),
+  ]);
+  return integrations.map((integration) => {
+    const { facts, people } = stats.get(integration.id) ?? {
+      facts: 0,
+      people: 0,
     };
+    return Object.assign(integration, { facts, people });
   });
 }
 
-// Mocked: no OAuth, connecting just flips the flags in memory. A suite
+// Mocked: no OAuth, connecting just flips the flags, for everyone. A suite
 // (Microsoft 365) connects several integrations with one sign-in.
-export function setConnected(ids: string[], connected: boolean) {
-  const all = integrations();
-  const targets = ids.map((id) => {
-    const integration = all.find((i) => i.id === id);
-    if (!integration) throw new Error("Unknown integration");
-    return integration;
+export async function setConnected(ids: string[], connected: boolean) {
+  await prisma.$transaction(async (tx) => {
+    const { count } = await tx.integrations.updateMany({
+      where: { id: { in: ids } },
+      data: { connected, connectedAt: connected ? new Date() : null },
+    });
+    if (count !== new Set(ids).size) throw new Error("Unknown integration");
   });
-  const now = new Date().toISOString();
-  for (const integration of targets) {
-    integration.connected = connected;
-    integration.connectedAt = connected ? now : null;
-  }
-  return targets;
 }

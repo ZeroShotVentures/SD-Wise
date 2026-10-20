@@ -23,8 +23,10 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  personId String? @unique
-  person   Person? @relation(fields: [personId], references: [id])
+  /// Every account is exactly one person in the graph, and a person has at
+  /// most one account (pnpm db:seed:accounts gives each of them one).
+  personId String @unique
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   oauthclients       OauthClient[]
   oauthrefreshtokens OauthRefreshToken[]
@@ -116,10 +118,22 @@ enum Department {
 
 /// graph schema
 
+/// Declared in the order the Integrations page lists them: Postgres sorts an
+/// enum column by this order.
 enum IntegrationType {
   slack
-  email
+  teams
+  outlook
+  teams_meetings
   google_meet
+  gmail
+  zoom
+  sharepoint
+  onedrive
+  onenote
+  google_drive
+  notion
+  confluence
 }
 
 enum KnowledgeSource {
@@ -130,35 +144,64 @@ enum KnowledgeSource {
   OTHER
 }
 
+/// PUBLIC nodes are readable by everyone, PRIVATE ones by their access list.
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
+/// ANSWERS links an answer written in SD Wise to the facts it was based on.
+enum EdgeKind {
+  RELATES_TO
+  UPDATES
+  DEPENDS_ON
+  ANSWERS
+}
+
+/// Connecting is still mocked: it only flips `connected`, for everyone.
+/// Facts from a disconnected source drop out of the graph and search.
 model Integrations {
-  id    String          @id @default(uuid())
-  type  IntegrationType
-  nodes KnowledgeNode[]
+  id          String          @id @default(uuid())
+  type        IntegrationType
+  connected   Boolean         @default(false)
+  connectedAt DateTime?
+  nodes       KnowledgeNode[]
 }
 
 model Person {
-  id         String          @id @default(uuid())
+  id         String       @id @default(uuid())
+  name       String
   // role in the company ()
   role       String
   department Department
   user       User?
-  knowledge  KnowledgeNode[]
-  asked      Question[]      @relation("QuestionAsker")
-  received   Question[]      @relation("QuestionRecipient")
+  knowledge  NodeAccess[]
+  asked      Question[]   @relation("QuestionAsker")
+  received   Question[]   @relation("QuestionRecipient")
 }
 
 model KnowledgeNode {
   id                String                       @id @default(uuid())
+  /// Short label for the graph.
+  title             String
   content           String
   contentEmbedding  Unsupported("vector(1536)")?
   contentSummary    String
-  access            Person[]
+  visibility        Visibility                   @default(PRIVATE)
+  access            NodeAccess[]
   source            KnowledgeSource
-  integrationId     String
-  integration       Integrations                 @relation(fields: [integrationId], references: [id])
+  /// Null for answers written in SD Wise.
+  integrationId     String?
+  integration       Integrations?                @relation(fields: [integrationId], references: [id])
   sourceDescription String
+  /// For an answer written in SD Wise: the question it answers. Deleting the
+  /// question deletes the answer.
+  questionId        String?                      @unique
+  question          Question?                    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   outgoingEdges     KnowledgeEdge[]              @relation("EdgeSource")
   incomingEdges     KnowledgeEdge[]              @relation("EdgeTarget")
+  /// Edges in and out. Recounted by `pnpm db:seed` and when an answer is
+  /// linked to its facts.
   edgeCount         Int                          @default(0)
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
@@ -169,12 +212,35 @@ model KnowledgeNode {
   @@index([contentEmbedding])
 }
 
+/// Who can read a PRIVATE node. Owners were part of the conversation the node
+/// came from; the others were given access by an owner.
+model NodeAccess {
+  nodeId     String
+  node       KnowledgeNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  personId   String
+  person     Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+  owner      Boolean       @default(false)
+  /// Owners are listed in this order; access requests go to the first.
+  position   Int           @default(0)
+  /// The approved access request that gave this access. Deleting the request
+  /// takes the access away again.
+  questionId String?
+  question   Question?     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+
+  @@id([nodeId, personId])
+  @@index([personId])
+  @@index([questionId])
+}
+
 model KnowledgeEdge {
-  id       String        @id @default(uuid())
-  sourceId String
-  source   KnowledgeNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
-  targetId String
-  target   KnowledgeNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  id          String        @id @default(uuid())
+  sourceId    String
+  source      KnowledgeNode @relation("EdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  targetId    String
+  target      KnowledgeNode @relation("EdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  kind        EdgeKind
+  description String
 
   @@unique([sourceId, targetId])
   @@index([targetId])
@@ -206,7 +272,7 @@ model Question {
   recipient   Person         @relation("QuestionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   question    String
   /// QUESTION: nodes the search matched. ACCESS: the node being requested.
-  /// No relation: the graph is still mocked, so these are fixture ids.
+  /// No relation, so a question keeps its ids if a node is deleted.
   nodeIds     String[]
   status      QuestionStatus @default(PENDING)
   answer      String?
@@ -218,6 +284,9 @@ model Question {
   resolvedAt  DateTime?
   /// When the asker first looked at the answer or granted node.
   seenAt      DateTime?
+  /// QUESTION: the node the answer became. ACCESS: the access it granted.
+  answerNode  KnowledgeNode?
+  granted     NodeAccess[]
 
   @@index([recipientId, status])
   @@index([askerId])

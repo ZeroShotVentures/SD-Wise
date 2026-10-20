@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
 import {
+  answerGraph,
   answerNodeId,
-  applyAnswers,
   type ResolvedQuery,
   unseenFor,
 } from "./answers";
@@ -19,9 +19,6 @@ const kobe = person("p-kobe");
 const filip = person("p-filip");
 const julien = person("p-julien");
 const bram = person("p-bram");
-
-const pricingIn = (list: typeof nodes) =>
-  list.find((n) => n.id === "n-kras-pricing") as (typeof nodes)[0];
 
 const ask = (me: typeof kobe, question: string, graph = { nodes, edges }) => {
   const { hits, visited } = searchGraph(question, graph.nodes, graph.edges);
@@ -47,6 +44,18 @@ const query = (q: Partial<ResolvedQuery>): ResolvedQuery => ({
   ...q,
 });
 
+// The fixture graph with one answer added, as store.ts writes it.
+const withAnswer = (q: ResolvedQuery) => {
+  const answer = answerGraph(q, nodes);
+  return {
+    ...answer,
+    graph: {
+      nodes: [...nodes, answer.node],
+      edges: [...edges, ...answer.edges],
+    },
+  };
+};
+
 describe("redaction", () => {
   it("never sends locked content to the viewer", () => {
     const pricing = nodes.find((n) => n.id === "n-kras-pricing");
@@ -54,6 +63,11 @@ describe("redaction", () => {
     const view = toNodeView(pricing, julien.id);
     expect(view).toEqual(expect.objectContaining({ locked: true }));
     expect(JSON.stringify(view)).not.toContain("€4.20");
+    // Nor who knows it.
+    expect(view).not.toHaveProperty("ownerIds");
+    for (const id of pricing.ownerIds) {
+      expect(JSON.stringify(view)).not.toContain(id);
+    }
   });
 
   it("hides the meaning of edges touching a locked node", () => {
@@ -150,14 +164,17 @@ describe("ask", () => {
 
 describe("answers", () => {
   it("become a node only the asker and recipient can see", () => {
-    const graph = applyAnswers(nodes, edges, [query({})]);
-    const id = answerNodeId("q-1");
-    const node = graph.nodes.find((n) => n.id === id);
-    if (!node) throw new Error("no answer node");
+    const { node, graph } = withAnswer(query({}));
+    expect(node.id).toBe(answerNodeId("q-1"));
+    expect(node.ownerIds).toEqual([filip.id]);
     expect(canSee(node, kobe.id)).toBe(true);
     expect(canSee(node, julien.id)).toBe(false);
     expect(graph.edges).toContainEqual(
-      expect.objectContaining({ sourceId: id, targetId: "n-cutoff-december" }),
+      expect.objectContaining({
+        sourceId: node.id,
+        targetId: "n-cutoff-december",
+        kind: "ANSWERS",
+      }),
     );
     expect(ask(kobe, "payroll cut-off december", graph).answer?.text).toBe(
       "14 December.",
@@ -165,14 +182,19 @@ describe("answers", () => {
   });
 
   it("are public when shared with everyone", () => {
-    const graph = applyAnswers(nodes, edges, [query({ shareScope: "PUBLIC" })]);
-    const node = graph.nodes.find((n) => n.id === answerNodeId("q-1"));
-    expect(node && canSee(node, julien.id)).toBe(true);
+    const { node } = withAnswer(query({ shareScope: "PUBLIC" }));
+    expect(canSee(node, julien.id)).toBe(true);
   });
 
-  it("ignore pending questions", () => {
-    const graph = applyAnswers(nodes, edges, [query({ status: "PENDING" })]);
-    expect(graph.nodes).toHaveLength(nodes.length);
+  it("only link facts the recipient can see", () => {
+    const { edges: added } = withAnswer(
+      query({
+        recipientId: julien.id,
+        recipient: julien,
+        nodeIds: ["n-kras-pricing", "n-kras-customer"],
+      }),
+    );
+    expect(added.map((e) => e.targetId)).toEqual(["n-kras-customer"]);
   });
 
   it("are new to the asker until seen", () => {
@@ -183,23 +205,6 @@ describe("answers", () => {
     expect(
       unseenFor(kobe.id, [query({ seenAt: "2026-09-30T12:00:00Z" })]),
     ).toEqual(new Set());
-  });
-});
-
-describe("access requests", () => {
-  it("grant access to the asker only, without touching the fixtures", () => {
-    const approved = query({
-      kind: "ACCESS",
-      askerId: julien.id,
-      asker: julien,
-      recipientId: bram.id,
-      recipient: bram,
-      nodeIds: ["n-kras-pricing"],
-    });
-    const graph = applyAnswers(nodes, edges, [approved]);
-    expect(canSee(pricingIn(graph.nodes), julien.id)).toBe(true);
-    expect(canSee(pricingIn(graph.nodes), kobe.id)).toBe(false);
-    expect(canSee(pricingIn(nodes), julien.id)).toBe(false);
   });
 });
 

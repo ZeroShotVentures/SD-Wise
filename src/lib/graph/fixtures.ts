@@ -6,12 +6,13 @@ import type {
   KnowledgeEdge,
   KnowledgeNode,
   KnowledgeSource,
+  NodeFixture,
   Person,
   Visibility,
 } from "./types";
 
-// Mock company brain for SD Worx. The people are also seeded as Person rows
-// (pnpm db:seed:demo) so questions between them can be stored for real.
+// Mock company brain for SD Worx. `pnpm db:seed` writes it to the database
+// (seed.ts), which is what the app reads; tests use it as plain data.
 
 const bulk = generateBulk();
 
@@ -547,7 +548,7 @@ const nodeSeeds: NodeSeed[] = [
   },
 ];
 
-const coreNodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
+const coreNodes: NodeFixture[] = nodeSeeds.map((n) => ({
   id: n.id,
   title: n.title,
   content: n.content,
@@ -557,15 +558,16 @@ const coreNodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
   sourceDescription: n.from,
   visibility: n.visibility,
   ownerIds: n.owners,
-  accessIds: [...n.owners],
   createdAt: n.at,
 }));
 
+// Only the people who were there can see a private fact. Anyone else gets
+// access in SD Wise: an owner approves their request, or answers them.
 export const nodes: KnowledgeNode[] = [
   ...coreNodes,
   ...bulk.nodes,
   ...db.nodes,
-];
+].map((node) => Object.assign(node, { accessIds: [...node.ownerIds] }));
 
 const edgeSeeds: [string, string, EdgeKind, string][] = [
   [

@@ -1,55 +1,50 @@
 import type {
   Department,
+  EdgeKind,
+  IntegrationType,
   KnowledgeSource,
   QuestionKind,
   QuestionStatus,
   ShareScope,
+  Visibility,
 } from "@/generated/prisma/enums";
 
-export type { Department, KnowledgeSource, QuestionStatus, ShareScope };
+export type {
+  Department,
+  EdgeKind,
+  KnowledgeSource,
+  QuestionStatus,
+  ShareScope,
+  Visibility,
+};
 
-// Shapes mirror prisma/schema.prisma so the mock service can be swapped for a
-// Prisma-backed one. Fields marked "proposal" don't exist in the schema yet.
+// The graph as the app works with it. store.ts maps the rows in
+// prisma/schema.prisma to these shapes; dates are ISO strings so they can
+// cross to the client.
 
-// proposal: the schema enum only has slack, email and google_meet.
-export type IntegrationKind =
-  | "slack"
-  | "teams"
-  | "outlook"
-  | "gmail"
-  | "google_meet"
-  | "teams_meetings"
-  | "zoom"
-  | "sharepoint"
-  | "onedrive"
-  | "onenote"
-  | "google_drive"
-  | "notion"
-  | "confluence";
+export type IntegrationKind = IntegrationType;
 
 export type Integration = {
   id: string;
   type: IntegrationKind;
-  connected: boolean; // proposal
-  connectedAt: string | null; // proposal
+  connected: boolean;
+  connectedAt: string | null;
 };
 
 export type IntegrationStats = Integration & { facts: number; people: number };
 
 export type Person = {
   id: string;
-  name: string; // proposal: Person has no name without a User
+  name: string;
   role: string;
   department: Department;
 };
 
-// proposal: Visibility and owners. Owners were part of the conversation the
-// node came from; access = owners + anyone they shared it with.
-export type Visibility = "PRIVATE" | "PUBLIC";
-
+// Owners were part of the conversation the node came from; access = owners +
+// anyone they shared it with in SD Wise.
 export type KnowledgeNode = {
   id: string;
-  title: string; // proposal: short label for the graph
+  title: string;
   content: string;
   contentSummary: string;
   source: KnowledgeSource;
@@ -61,8 +56,9 @@ export type KnowledgeNode = {
   createdAt: string;
 };
 
-// proposal: edges carry meaning ("updates", "relates to", ...).
-export type EdgeKind = "RELATES_TO" | "UPDATES" | "DEPENDS_ON" | "ANSWERS";
+// A node as written in the fixtures: access is never set by hand, it starts
+// as the owners (see fixtures.ts).
+export type NodeFixture = Omit<KnowledgeNode, "accessIds">;
 
 export type KnowledgeEdge = {
   id: string;
@@ -93,7 +89,8 @@ export type Query = {
   seenAt: string | null;
 };
 
-// What a viewer receives. Locked nodes never carry content to the client.
+// What a viewer receives. Locked nodes never carry content or owners to the
+// client: who knows something is private too.
 export type NodeView =
   | (Omit<KnowledgeNode, "accessIds"> & { locked: false; isNew: boolean })
   | {
@@ -101,7 +98,6 @@ export type NodeView =
       locked: true;
       source: KnowledgeSource;
       integrationId: string | null;
-      ownerIds: string[];
       createdAt: string;
       isNew: false;
     };

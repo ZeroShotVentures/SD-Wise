@@ -22,7 +22,7 @@ That gives one of three results:
 
 - **You can see everything.** You get the full answer.
 - **Someone else holds part of it.** You get what SD Wise can already tell you, plus a suggestion like *"Filip knows something related from an email"*. One click sends Filip your question, and SD Wise has already drafted a reply from what Filip can see. Filip checks it and sends it, or declines.
-- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists and who owns it, but not what it says. You can request access, and the owner approves or declines.
+- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists, but not what it says or who knows it. You can request access, and an owner approves or declines.
 
 When someone answers you, the answer becomes new knowledge: a new node in your graph, linked to the facts it came from.
 
@@ -32,9 +32,22 @@ Every fact, and who is allowed to see it, is stored in the database. SD Wise onl
 
 ## How to test
 
+### Run it locally
+
+```sh
+pnpm install
+pnpm db:up            # Postgres with pgvector, in Docker
+pnpm db:deploy        # migrations
+pnpm db:seed          # the company graph: people, facts, access, edges
+pnpm db:seed:demo     # an account for every person, and the demo questions
+pnpm dev
+```
+
+`pnpm db:seed` writes the graph from `src/lib/graph/fixtures.ts` and is safe to re-run; `pnpm db:seed:demo` needs it first. `pnpm db:seed:demo --reset` clears every question, and the answers and access they added, before a demo.
+
 ### Accounts
 
-Sign in with one of these two accounts:
+Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus demo questions) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
 
 | User | Email | Password | Role |
 | --- | --- | --- | --- |
@@ -43,10 +56,12 @@ Sign in with one of these two accounts:
 
 ### Walkthrough
 
-1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*, click **Ask Filip** and send.
-2. Sign in as **Filip**. The question is in the inbox with a drafted answer; send it.
-3. Still as **Filip**, ask *"Is there a deploy freeze over the holidays?"*, click **Ask Kobe** and send.
-4. Sign in as **Kobe**. Answer from the inbox, and Filip sees the answer as a new node in his graph.
+1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Request access**.
+2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
+3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
+4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and request access; as **Kobe**, share it.
+
+A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can request access from the graph too.
 
 ## Use SD Wise from your AI (MCP)
 
@@ -63,4 +78,4 @@ The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, s
 
 ## Sources
 
-**Integrations → Sources** connects Microsoft 365 (Teams, Teams meetings, Outlook, SharePoint, OneDrive, OneNote) with one sign-in, plus Slack, Google Workspace, Zoom, Notion and Confluence. Sources are still mocked: connecting flips a flag in memory and facts come from the fixtures. Logos in `public/logos` come from the [Iconify](https://iconify.design) `logos`, `vscode-icons` and `simple-icons` sets.
+**Integrations → Sources** connects Microsoft 365 (Teams, Teams meetings, Outlook, SharePoint, OneDrive, OneNote) with one sign-in, plus Slack, Google Workspace, Zoom, Notion and Confluence. Sources are still mocked: connecting flips a flag in the database, for everyone, and the facts are the seeded graph. Logos in `public/logos` come from the [Iconify](https://iconify.design) `logos`, `vscode-icons` and `simple-icons` sets.

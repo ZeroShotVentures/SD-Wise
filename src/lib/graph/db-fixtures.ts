@@ -1,6 +1,8 @@
-// The knowledge graph prisma/seed.ts generated into the database, moved here
-// so the database no longer holds any of it.
-import type { KnowledgeEdge, KnowledgeNode, Person } from "./types";
+// The knowledge graph an earlier, AI-generating prisma/seed.ts wrote to the
+// database, frozen here. `pnpm db:seed` now writes it back with the rest.
+// People who owned no fact were left out: everyone in the graph knows
+// something.
+import type { KnowledgeEdge, NodeFixture, Person } from "./types";
 
 export const people: Person[] = [
   {
@@ -272,12 +274,6 @@ export const people: Person[] = [
     name: "Tom Maes",
     role: "Payroll Compliance Specialist",
     department: "PRODUCTION",
-  },
-  {
-    id: "44e79047-fde0-4c7c-afd8-9a12724b5e7b",
-    name: "Fatima Stevens",
-    role: "Customer Support Representative (Payroll Queries)",
-    department: "CUSTOMER_SERVICE",
   },
   {
     id: "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
@@ -905,7 +901,7 @@ export const people: Person[] = [
   },
 ];
 
-export const nodes: KnowledgeNode[] = [
+export const nodes: NodeFixture[] = [
   {
     id: "24cb1288-9c87-4ba6-ab8e-db696312f56f",
     title: "Compliance Audit Specialist reports contract…",
@@ -918,11 +914,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Global Compliance Lead",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -945,11 +936,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -964,11 +950,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Head of Production",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -991,11 +972,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1010,11 +986,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Quarterly Audit Strategy Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1039,13 +1010,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1064,11 +1028,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1083,13 +1042,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#internal-controls Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "fa6de2cd-fad8-44ce-8a10-de4061f0673d",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1115,11 +1067,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1134,11 +1081,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly audit operations sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1161,11 +1103,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1180,11 +1117,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Board of Directors on audit readiness",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1209,13 +1141,6 @@ export const nodes: KnowledgeNode[] = [
       "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
       "87f3bb06-a924-4653-b7e6-a4ccee01c213",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1230,11 +1155,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Payroll Operations Manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1257,11 +1177,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1276,11 +1191,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Quarterly cross-departmental alignment meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1304,11 +1214,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1323,11 +1228,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-compliance Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1351,11 +1251,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1370,13 +1265,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#audit-data-quality Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
@@ -1402,11 +1290,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "9c052ef6-3e7c-4717-9448-40802fa80912",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1421,13 +1304,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-ops Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1454,12 +1330,6 @@ export const nodes: KnowledgeNode[] = [
       "9c052ef6-3e7c-4717-9448-40802fa80912",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1474,13 +1344,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "HR Solutions Architecture sync",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1509,15 +1372,6 @@ export const nodes: KnowledgeNode[] = [
       "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1532,13 +1386,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#hr-service-desk Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1565,13 +1412,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1586,13 +1426,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Payroll and HR Service Sync",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1621,15 +1454,6 @@ export const nodes: KnowledgeNode[] = [
       "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
       "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
-      "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1644,13 +1468,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the HR Department Manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1677,13 +1494,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1704,13 +1514,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1725,15 +1528,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-prod-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "3f3bc931-ef74-4cad-a3a8-08556eededc4",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
       "0339111f-1a42-4b04-bb39-e22a326a7451",
@@ -1764,15 +1558,6 @@ export const nodes: KnowledgeNode[] = [
       "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
       "3087e571-2e4c-4c21-b835-1208709e1c83",
     ],
-    accessIds: [
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
-      "3087e571-2e4c-4c21-b835-1208709e1c83",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1787,13 +1572,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#resource-planning Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1822,15 +1600,6 @@ export const nodes: KnowledgeNode[] = [
       "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
       "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
-      "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1851,13 +1620,6 @@ export const nodes: KnowledgeNode[] = [
       "0339111f-1a42-4b04-bb39-e22a326a7451",
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1872,13 +1634,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Head of Operations",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
       "0339111f-1a42-4b04-bb39-e22a326a7451",
@@ -1906,13 +1661,6 @@ export const nodes: KnowledgeNode[] = [
       "0339111f-1a42-4b04-bb39-e22a326a7451",
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1927,13 +1675,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#hr-ops-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
@@ -1960,13 +1701,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -1981,13 +1715,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Compliance Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
-    accessIds: [
       "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
       "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
       "0339111f-1a42-4b04-bb39-e22a326a7451",
@@ -2014,13 +1741,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2041,13 +1761,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "d39d8695-6109-4912-b288-fa3b0512516e",
     ],
-    accessIds: [
-      "55c8d055-bea4-4e8d-998f-29a746a8bb0a",
-      "aa5c192e-b3ed-4482-b6b5-7feee672df4a",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2062,7 +1775,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Maintenance & Production Sync",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2077,7 +1789,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Facilities Team Slack Channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2092,7 +1803,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to IT Support & Facilities Team",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2111,11 +1821,6 @@ export const nodes: KnowledgeNode[] = [
       "817a5094-2201-447a-a419-72a3add4cd16",
       "799775f3-c434-4838-9158-40a03c272dd3",
     ],
-    accessIds: [
-      "d79dfbe3-656e-43ea-88f6-dc37f3c7c98c",
-      "817a5094-2201-447a-a419-72a3add4cd16",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2130,7 +1835,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to External Cleaning Contractor",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2145,7 +1849,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "IT Support Daily Standup",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2160,7 +1863,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Junior Facilities Techs Channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2175,7 +1877,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Operations & Maintenance Team",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2190,7 +1891,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#maintenance-ops Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2205,7 +1905,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#it-support Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2220,7 +1919,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Payroll Operations Manager",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2239,11 +1937,6 @@ export const nodes: KnowledgeNode[] = [
       "283fd5b5-4590-44fe-8727-c960d66798fa",
       "185b0fb0-5517-4bc3-a24c-9412745cdf38",
     ],
-    accessIds: [
-      "d79dfbe3-656e-43ea-88f6-dc37f3c7c98c",
-      "283fd5b5-4590-44fe-8727-c960d66798fa",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2258,7 +1951,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#general Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2277,11 +1969,6 @@ export const nodes: KnowledgeNode[] = [
       "64f97f7a-d87c-4b34-accd-90824d527665",
       "c12447c1-5610-45ad-b841-811c92b63e52",
     ],
-    accessIds: [
-      "d79dfbe3-656e-43ea-88f6-dc37f3c7c98c",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-      "c12447c1-5610-45ad-b841-811c92b63e52",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2296,7 +1983,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the logistics lead",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2311,7 +1997,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#facilities-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2326,7 +2011,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#facilities-internal Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2341,7 +2025,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Payroll System Maintenance Team Lead",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2356,7 +2039,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Quarterly Maintenance and Operations Meeting",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2371,7 +2053,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#it-support-antwerp Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2391,11 +2072,6 @@ export const nodes: KnowledgeNode[] = [
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
     ],
-    accessIds: [
-      "d79dfbe3-656e-43ea-88f6-dc37f3c7c98c",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2411,7 +2087,6 @@ export const nodes: KnowledgeNode[] = [
       "Daily Standup with Production (Payroll Processing) and IT",
     visibility: "PRIVATE",
     ownerIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
-    accessIds: ["d79dfbe3-656e-43ea-88f6-dc37f3c7c98c"],
     createdAt: "2026-09-30",
   },
   {
@@ -2426,7 +2101,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Reception Operations Strategy Meeting",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2441,7 +2115,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the IT Support Team",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2456,7 +2129,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly IT Sync Meeting",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2471,7 +2143,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#reception-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2490,11 +2161,6 @@ export const nodes: KnowledgeNode[] = [
       "d39d8695-6109-4912-b288-fa3b0512516e",
       "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
     ],
-    accessIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2509,7 +2175,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Reception Operations Meeting",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2524,11 +2189,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#reception-leadership Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-    ],
-    accessIds: [
       "deaa5d47-eccc-480f-9ea8-a67e24053479",
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
@@ -2550,10 +2210,6 @@ export const nodes: KnowledgeNode[] = [
       "deaa5d47-eccc-480f-9ea8-a67e24053479",
       "2c705119-f527-44c0-bd82-3e8b00fa23af",
     ],
-    accessIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2572,11 +2228,6 @@ export const nodes: KnowledgeNode[] = [
       "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
       "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
     ],
-    accessIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2591,7 +2242,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-intake Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2606,11 +2256,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Payroll Operations Director",
     visibility: "PRIVATE",
     ownerIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "1f421029-62d3-404b-86cf-bd9578405503",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-    ],
-    accessIds: [
       "deaa5d47-eccc-480f-9ea8-a67e24053479",
       "1f421029-62d3-404b-86cf-bd9578405503",
       "9f601f55-0736-4006-9335-da27e71c8b57",
@@ -2630,7 +2275,6 @@ export const nodes: KnowledgeNode[] = [
       "Team huddle for senior staff at the Reception Operations meeting",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2645,7 +2289,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#front-desk Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2660,7 +2303,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to client service manager for AcmeCorp",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2680,11 +2322,6 @@ export const nodes: KnowledgeNode[] = [
       "9c052ef6-3e7c-4717-9448-40802fa80912",
       "4dfc7437-71e0-4905-b8ab-d1698178226e",
     ],
-    accessIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "9c052ef6-3e7c-4717-9448-40802fa80912",
-      "4dfc7437-71e0-4905-b8ab-d1698178226e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2700,7 +2337,6 @@ export const nodes: KnowledgeNode[] = [
       "Email to the IT team for visitor registration system support",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2715,7 +2351,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly reception operations sync",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2730,7 +2365,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to all Reception Team Leaders",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2745,7 +2379,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-intake Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2765,11 +2398,6 @@ export const nodes: KnowledgeNode[] = [
       "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
       "185b0fb0-5517-4bc3-a24c-9412745cdf38",
     ],
-    accessIds: [
-      "deaa5d47-eccc-480f-9ea8-a67e24053479",
-      "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2784,7 +2412,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to IT support ticket #8842",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2799,7 +2426,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#reception-internal Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
-    accessIds: ["deaa5d47-eccc-480f-9ea8-a67e24053479"],
     createdAt: "2026-09-30",
   },
   {
@@ -2814,10 +2440,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#sec-soc-alerts Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
@@ -2839,10 +2461,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2861,10 +2479,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2879,12 +2493,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#it-helpdesk Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-      "7012d377-07aa-4138-ab92-bd4e84a6f3cc",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
       "5f9efefc-6f44-4b8d-a997-05da362c99f1",
@@ -2908,10 +2516,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2929,10 +2533,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2947,12 +2547,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Security Operations Meeting.",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "4df3cdd9-2305-48f2-8650-c506f80ddf85",
-      "e96b83f9-e62d-4ed7-a9b1-c9bd51995720",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
       "4df3cdd9-2305-48f2-8650-c506f80ddf85",
@@ -2977,12 +2571,6 @@ export const nodes: KnowledgeNode[] = [
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
       "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -2997,12 +2585,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Security architecture design sync",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
       "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
@@ -3025,10 +2607,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3043,10 +2621,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#soc-escalations Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
@@ -3067,10 +2641,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3088,10 +2658,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3106,12 +2672,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to all employees",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
       "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
@@ -3136,12 +2696,6 @@ export const nodes: KnowledgeNode[] = [
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
       "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-      "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3159,10 +2713,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3177,10 +2727,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#security-alerts Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
@@ -3203,12 +2749,6 @@ export const nodes: KnowledgeNode[] = [
       "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
       "980d7905-adcb-4ef9-9543-e44c4b705b43",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
-      "980d7905-adcb-4ef9-9543-e44c4b705b43",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3223,10 +2763,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Ticket #98765 resolution notification",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
@@ -3249,12 +2785,6 @@ export const nodes: KnowledgeNode[] = [
       "1a4b0182-a14c-4be8-b400-055d6a18600b",
       "d4d41761-cebb-4e3e-b632-661baf1fa8be",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "d4d41761-cebb-4e3e-b632-661baf1fa8be",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3269,10 +2799,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Internal announcement to all staff",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
-    accessIds: [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
@@ -3293,10 +2819,6 @@ export const nodes: KnowledgeNode[] = [
       "ad64327f-7b4b-430d-aa4c-59079ab208e4",
       "5345d44b-5b92-407a-8a82-e4b3f8f85337",
     ],
-    accessIds: [
-      "ad64327f-7b4b-430d-aa4c-59079ab208e4",
-      "5345d44b-5b92-407a-8a82-e4b3f8f85337",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3311,10 +2833,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#production-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3336,10 +2854,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3354,10 +2868,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly department sync meeting notes",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3378,10 +2888,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3396,10 +2902,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Workforce Management team",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3422,12 +2924,6 @@ export const nodes: KnowledgeNode[] = [
       "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
       "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3445,10 +2941,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3463,12 +2955,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Department Team Leads and Production Managers",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
       "040520c2-520a-4323-b234-46ca668fd989",
@@ -3493,12 +2979,6 @@ export const nodes: KnowledgeNode[] = [
       "fa6de2cd-fad8-44ce-8a10-de4061f0673d",
       "91d21f17-93bd-4435-a984-5feb68184f25",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "fa6de2cd-fad8-44ce-8a10-de4061f0673d",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3517,10 +2997,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3536,10 +3012,6 @@ export const nodes: KnowledgeNode[] = [
       "Email to Senior Payroll Specialists and HR Ops Coordinators regarding Q3 capacity planning",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3562,12 +3034,6 @@ export const nodes: KnowledgeNode[] = [
       "b1831c2d-dac9-4604-a03c-b90087d276ba",
       "283fd5b5-4590-44fe-8727-c960d66798fa",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "b1831c2d-dac9-4604-a03c-b90087d276ba",
-      "283fd5b5-4590-44fe-8727-c960d66798fa",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3582,10 +3048,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Department Team Lead Sync",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3607,10 +3069,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3625,10 +3083,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#workforce-management Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
@@ -3650,10 +3104,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3671,10 +3121,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3689,12 +3135,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Department Team Lead's weekly meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
       "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
@@ -3719,12 +3159,6 @@ export const nodes: KnowledgeNode[] = [
       "ad706096-7b23-4b4d-911b-508182149dab",
       "7021c5e6-a41c-4eda-8b6a-e723ec729a3b",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "ad706096-7b23-4b4d-911b-508182149dab",
-      "7021c5e6-a41c-4eda-8b6a-e723ec729a3b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3742,10 +3176,6 @@ export const nodes: KnowledgeNode[] = [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3760,12 +3190,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to IT Department",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "85274486-c8b1-4cea-b7a1-5de5df0d87d9",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-    ],
-    accessIds: [
       "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
       "1eee2e28-2d05-43b1-ac09-eb3086752503",
       "85274486-c8b1-4cea-b7a1-5de5df0d87d9",
@@ -3790,12 +3214,6 @@ export const nodes: KnowledgeNode[] = [
       "d39d8695-6109-4912-b288-fa3b0512516e",
       "980d7905-adcb-4ef9-9543-e44c4b705b43",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "1eee2e28-2d05-43b1-ac09-eb3086752503",
-      "d39d8695-6109-4912-b288-fa3b0512516e",
-      "980d7905-adcb-4ef9-9543-e44c4b705b43",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3810,13 +3228,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Payroll Manager and HR Director",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
@@ -3843,13 +3254,6 @@ export const nodes: KnowledgeNode[] = [
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3864,13 +3268,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#accounts-payable-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -3898,14 +3295,6 @@ export const nodes: KnowledgeNode[] = [
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
       "4dfc7437-71e0-4905-b8ab-d1698178226e",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-      "4dfc7437-71e0-4905-b8ab-d1698178226e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3920,13 +3309,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Financial Close Review Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
@@ -3953,13 +3335,6 @@ export const nodes: KnowledgeNode[] = [
       "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
     ],
-    accessIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -3974,13 +3349,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Payroll Manager and Production Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -4007,13 +3375,6 @@ export const nodes: KnowledgeNode[] = [
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4028,13 +3389,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly payroll operations sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
@@ -4061,13 +3415,6 @@ export const nodes: KnowledgeNode[] = [
       "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4082,13 +3429,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to IT Support and Finance team",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -4115,13 +3455,6 @@ export const nodes: KnowledgeNode[] = [
       "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4136,13 +3469,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly financial close review meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -4170,14 +3496,6 @@ export const nodes: KnowledgeNode[] = [
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "3087e571-2e4c-4c21-b835-1208709e1c83",
     ],
-    accessIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "3087e571-2e4c-4c21-b835-1208709e1c83",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4198,13 +3516,6 @@ export const nodes: KnowledgeNode[] = [
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4219,15 +3530,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Audit preparation sync for healthcare clients",
     visibility: "PRIVATE",
     ownerIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-      "3f3bc931-ef74-4cad-a3a8-08556eededc4",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-    ],
-    accessIds: [
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -4258,15 +3560,6 @@ export const nodes: KnowledgeNode[] = [
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
       "e8005db2-6481-4335-b76c-d2116802768a",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "e8005db2-6481-4335-b76c-d2116802768a",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4287,13 +3580,6 @@ export const nodes: KnowledgeNode[] = [
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
       "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4308,13 +3594,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Holiday payroll production planning meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-    ],
-    accessIds: [
       "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
@@ -4343,15 +3622,6 @@ export const nodes: KnowledgeNode[] = [
       "3dbd0031-c01f-4984-b0f0-5347418f66f6",
       "35b98bc7-6b34-4604-8e81-aa022a2258e3",
     ],
-    accessIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-      "3dbd0031-c01f-4984-b0f0-5347418f66f6",
-      "35b98bc7-6b34-4604-8e81-aa022a2258e3",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4366,13 +3636,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Payroll Manager and HR",
     visibility: "PRIVATE",
     ownerIds: [
-      "f51e48fb-9620-4960-a534-0a2395bc2d67",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
-    accessIds: [
       "f51e48fb-9620-4960-a534-0a2395bc2d67",
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
@@ -4399,13 +3662,6 @@ export const nodes: KnowledgeNode[] = [
       "a6978bae-fbeb-4a15-9601-17fb9f85862d",
       "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
     ],
-    accessIds: [
-      "ba39e8c0-5c18-4261-a224-0e6a4a98ee41",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "b34213f2-ad11-4c71-b866-cfdf9cbeade4",
-      "a6978bae-fbeb-4a15-9601-17fb9f85862d",
-      "4adc9f0e-a21e-4723-beef-91d3bdeff2ee",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4420,13 +3676,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#it-support-urgent Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "e8005db2-6481-4335-b76c-d2116802768a",
-      "2aec48e7-22ea-4157-89b2-b0faa8975585",
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
-    ],
-    accessIds: [
       "e8005db2-6481-4335-b76c-d2116802768a",
       "2aec48e7-22ea-4157-89b2-b0faa8975585",
       "c53ffce6-c9f5-4903-9c91-f6f479445605",
@@ -4453,13 +3702,6 @@ export const nodes: KnowledgeNode[] = [
       "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
       "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
     ],
-    accessIds: [
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-      "03478e6e-4525-4e25-8dae-5cc24fa037e9",
-      "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
-      "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4474,13 +3716,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-support Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "36ba4e23-fe3a-4665-97a8-8eafc86d9005",
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-      "20d53805-8d2c-421e-ad40-8f5eabff9970",
-      "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
-    ],
-    accessIds: [
       "25823c60-194a-4e25-bd16-e892944e54c3",
       "36ba4e23-fe3a-4665-97a8-8eafc86d9005",
       "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
@@ -4507,13 +3742,6 @@ export const nodes: KnowledgeNode[] = [
       "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
       "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
     ],
-    accessIds: [
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4528,13 +3756,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the HR Analytics Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "ad706096-7b23-4b4d-911b-508182149dab",
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "20d53805-8d2c-421e-ad40-8f5eabff9970",
-    ],
-    accessIds: [
       "ad706096-7b23-4b4d-911b-508182149dab",
       "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
       "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
@@ -4561,13 +3782,6 @@ export const nodes: KnowledgeNode[] = [
       "06338f9f-fa4c-4a0b-bd22-d8334ecae1c7",
       "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
     ],
-    accessIds: [
-      "3f3bc931-ef74-4cad-a3a8-08556eededc4",
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "06338f9f-fa4c-4a0b-bd22-d8334ecae1c7",
-      "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4582,13 +3796,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#network-security Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "2aec48e7-22ea-4157-89b2-b0faa8975585",
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "03478e6e-4525-4e25-8dae-5cc24fa037e9",
-      "06338f9f-fa4c-4a0b-bd22-d8334ecae1c7",
-      "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
-    ],
-    accessIds: [
       "2aec48e7-22ea-4157-89b2-b0faa8975585",
       "040520c2-520a-4323-b234-46ca668fd989",
       "03478e6e-4525-4e25-8dae-5cc24fa037e9",
@@ -4615,13 +3822,6 @@ export const nodes: KnowledgeNode[] = [
       "1a4b0182-a14c-4be8-b400-055d6a18600b",
       "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
     ],
-    accessIds: [
-      "f16cbbcd-bbd4-4e0e-b544-209889739003",
-      "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4642,13 +3842,6 @@ export const nodes: KnowledgeNode[] = [
       "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
       "5f9efefc-6f44-4b8d-a997-05da362c99f1",
     ],
-    accessIds: [
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "2892aab2-cd80-4f52-87ad-ce396d90d3a3",
-      "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4663,13 +3856,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#it-helpdesk Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "3f3bc931-ef74-4cad-a3a8-08556eededc4",
-      "ad706096-7b23-4b4d-911b-508182149dab",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
-    ],
-    accessIds: [
       "3f3bc931-ef74-4cad-a3a8-08556eededc4",
       "ad706096-7b23-4b4d-911b-508182149dab",
       "53c2851a-5f1d-4560-be8e-64714aa8a03f",
@@ -4698,15 +3884,6 @@ export const nodes: KnowledgeNode[] = [
       "1eb2a4bb-f695-4158-a568-92cd961e5580",
       "bddf14b8-5118-44ec-94c7-ede03cccbd1c",
     ],
-    accessIds: [
-      "03478e6e-4525-4e25-8dae-5cc24fa037e9",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "b330159f-477c-45c5-b8d6-6ff14be289a5",
-      "291e362f-bfb4-4d9b-81f4-dbb5c1e3d3d6",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-      "1eb2a4bb-f695-4158-a568-92cd961e5580",
-      "bddf14b8-5118-44ec-94c7-ede03cccbd1c",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4721,13 +3898,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#data-quality-alerts Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "ad706096-7b23-4b4d-911b-508182149dab",
-      "2aec48e7-22ea-4157-89b2-b0faa8975585",
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-    ],
-    accessIds: [
       "25823c60-194a-4e25-bd16-e892944e54c3",
       "ad706096-7b23-4b4d-911b-508182149dab",
       "2aec48e7-22ea-4157-89b2-b0faa8975585",
@@ -4754,13 +3924,6 @@ export const nodes: KnowledgeNode[] = [
       "c53ffce6-c9f5-4903-9c91-f6f479445605",
       "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
     ],
-    accessIds: [
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "054a19e8-94c2-4912-af3d-c3ea8a04d765",
-      "e8005db2-6481-4335-b76c-d2116802768a",
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4775,13 +3938,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-ops Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "3f3bc931-ef74-4cad-a3a8-08556eededc4",
-      "980136bd-8f52-4219-8b80-5b734e3c7006",
-      "90d5d5cb-34d8-45cb-929a-15ca88f36311",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-    ],
-    accessIds: [
       "3f3bc931-ef74-4cad-a3a8-08556eededc4",
       "980136bd-8f52-4219-8b80-5b734e3c7006",
       "90d5d5cb-34d8-45cb-929a-15ca88f36311",
@@ -4808,13 +3964,6 @@ export const nodes: KnowledgeNode[] = [
       "06338f9f-fa4c-4a0b-bd22-d8334ecae1c7",
       "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
     ],
-    accessIds: [
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-      "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "06338f9f-fa4c-4a0b-bd22-d8334ecae1c7",
-      "c3dc5dec-ce02-490e-bd46-f574a95ffea1",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4829,13 +3978,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Cross-Departmental Systems Review Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "90d5d5cb-34d8-45cb-929a-15ca88f36311",
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-    ],
-    accessIds: [
       "90d5d5cb-34d8-45cb-929a-15ca88f36311",
       "040520c2-520a-4323-b234-46ca668fd989",
       "53c2851a-5f1d-4560-be8e-64714aa8a03f",
@@ -4862,13 +4004,6 @@ export const nodes: KnowledgeNode[] = [
       "53c2851a-5f1d-4560-be8e-64714aa8a03f",
       "1a4b0182-a14c-4be8-b400-055d6a18600b",
     ],
-    accessIds: [
-      "054a19e8-94c2-4912-af3d-c3ea8a04d765",
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4883,13 +4018,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly IT and Payroll Operations sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "f16cbbcd-bbd4-4e0e-b544-209889739003",
-      "c53ffce6-c9f5-4903-9c91-f6f479445605",
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "283fd5b5-4590-44fe-8727-c960d66798fa",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-    ],
-    accessIds: [
       "f16cbbcd-bbd4-4e0e-b544-209889739003",
       "c53ffce6-c9f5-4903-9c91-f6f479445605",
       "040520c2-520a-4323-b234-46ca668fd989",
@@ -4918,15 +4046,6 @@ export const nodes: KnowledgeNode[] = [
       "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
       "885d94dc-648d-47cb-ae84-39906c72d3df",
     ],
-    accessIds: [
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "054a19e8-94c2-4912-af3d-c3ea8a04d765",
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-      "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4941,13 +4060,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#ops-alerts Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "e8005db2-6481-4335-b76c-d2116802768a",
-      "f16cbbcd-bbd4-4e0e-b544-209889739003",
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-    ],
-    accessIds: [
       "e8005db2-6481-4335-b76c-d2116802768a",
       "f16cbbcd-bbd4-4e0e-b544-209889739003",
       "040520c2-520a-4323-b234-46ca668fd989",
@@ -4974,13 +4086,6 @@ export const nodes: KnowledgeNode[] = [
       "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
       "b330159f-477c-45c5-b8d6-6ff14be289a5",
     ],
-    accessIds: [
-      "040520c2-520a-4323-b234-46ca668fd989",
-      "b394fb65-8658-45ee-b7e3-e7199bcedc7a",
-      "03478e6e-4525-4e25-8dae-5cc24fa037e9",
-      "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
-      "b330159f-477c-45c5-b8d6-6ff14be289a5",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -4995,13 +4100,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to HR Operations Manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "e8005db2-6481-4335-b76c-d2116802768a",
-      "36ba4e23-fe3a-4665-97a8-8eafc86d9005",
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-    ],
-    accessIds: [
       "e8005db2-6481-4335-b76c-d2116802768a",
       "36ba4e23-fe3a-4665-97a8-8eafc86d9005",
       "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
@@ -5028,13 +4126,6 @@ export const nodes: KnowledgeNode[] = [
       "097ec728-07d0-494a-b743-d01c1443dd03",
       "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5049,13 +4140,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Sales Team Lead",
     visibility: "PRIVATE",
     ownerIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "af7ef272-4e3e-4810-862e-1f8a17f9223b",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "af7ef272-4e3e-4810-862e-1f8a17f9223b",
       "5ef51db2-10ff-42d8-8477-9d177775fbec",
@@ -5084,15 +4168,6 @@ export const nodes: KnowledgeNode[] = [
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
       "5ee22709-ade9-4066-bf8b-7d459b44156b",
     ],
-    accessIds: [
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "5ee22709-ade9-4066-bf8b-7d459b44156b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5107,13 +4182,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#sales-calls Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-    ],
-    accessIds: [
       "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "097ec728-07d0-494a-b743-d01c1443dd03",
@@ -5140,13 +4208,6 @@ export const nodes: KnowledgeNode[] = [
       "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
       "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
     ],
-    accessIds: [
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5161,13 +4222,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Key Account Monthly Review meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
-    accessIds: [
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "097ec728-07d0-494a-b743-d01c1443dd03",
       "5ef51db2-10ff-42d8-8477-9d177775fbec",
@@ -5194,13 +4248,6 @@ export const nodes: KnowledgeNode[] = [
       "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
       "64f97f7a-d87c-4b34-accd-90824d527665",
     ],
-    accessIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5215,13 +4262,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Regional Sales Managers",
     visibility: "PRIVATE",
     ownerIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "af7ef272-4e3e-4810-862e-1f8a17f9223b",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
       "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
       "af7ef272-4e3e-4810-862e-1f8a17f9223b",
@@ -5248,13 +4288,6 @@ export const nodes: KnowledgeNode[] = [
       "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
       "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
     ],
-    accessIds: [
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5269,13 +4302,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Sales and Operations Alignment meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
       "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
@@ -5302,13 +4328,6 @@ export const nodes: KnowledgeNode[] = [
       "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
       "64f97f7a-d87c-4b34-accd-90824d527665",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5323,13 +4342,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Inside Sales Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-    ],
-    accessIds: [
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "097ec728-07d0-494a-b743-d01c1443dd03",
@@ -5356,13 +4368,6 @@ export const nodes: KnowledgeNode[] = [
       "af7ef272-4e3e-4810-862e-1f8a17f9223b",
       "64f97f7a-d87c-4b34-accd-90824d527665",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "af7ef272-4e3e-4810-862e-1f8a17f9223b",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5377,13 +4382,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#inside-sales Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "f22c801d-75d4-43d3-bf9f-370a70f91570",
       "5ef51db2-10ff-42d8-8477-9d177775fbec",
       "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
@@ -5412,15 +4410,6 @@ export const nodes: KnowledgeNode[] = [
       "aa79070a-f347-4ae9-ad56-2e6e908130a2",
       "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
     ],
-    accessIds: [
-      "af7ef272-4e3e-4810-862e-1f8a17f9223b",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5435,13 +4424,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Regional Sales Sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
-    accessIds: [
       "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
       "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
@@ -5468,13 +4450,6 @@ export const nodes: KnowledgeNode[] = [
       "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
       "64f97f7a-d87c-4b34-accd-90824d527665",
     ],
-    accessIds: [
-      "f22c801d-75d4-43d3-bf9f-370a70f91570",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5489,13 +4464,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to PRODUCTION Capacity Planning Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "5ef51db2-10ff-42d8-8477-9d177775fbec",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-    ],
-    accessIds: [
       "5ef51db2-10ff-42d8-8477-9d177775fbec",
       "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
       "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
@@ -5522,13 +4490,6 @@ export const nodes: KnowledgeNode[] = [
       "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
       "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "d5a70fe7-a1b8-4906-86c3-398bfe67a90d",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5543,13 +4504,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Sales-PRODUCTION Sync Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-    ],
-    accessIds: [
       "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
       "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
@@ -5578,15 +4532,6 @@ export const nodes: KnowledgeNode[] = [
       "0339111f-1a42-4b04-bb39-e22a326a7451",
       "439847d9-152d-408b-b4c2-225b44ea43fd",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e09b8e60-38e5-4d05-afeb-e056ab0e154f",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "64f97f7a-d87c-4b34-accd-90824d527665",
-      "0339111f-1a42-4b04-bb39-e22a326a7451",
-      "439847d9-152d-408b-b4c2-225b44ea43fd",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5601,13 +4546,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#sales-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "097ec728-07d0-494a-b743-d01c1443dd03",
-      "1423ae71-db56-4f8c-9ab1-2cf35fac51c6",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-    ],
-    accessIds: [
       "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
       "097ec728-07d0-494a-b743-d01c1443dd03",
@@ -5634,13 +4572,6 @@ export const nodes: KnowledgeNode[] = [
       "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
       "9f601f55-0736-4006-9335-da27e71c8b57",
     ],
-    accessIds: [
-      "62b1b7c6-2735-4a6c-8a0b-431771e347bf",
-      "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
-      "fccf156a-009b-4eb2-8bb1-a965a9c58adc",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5655,13 +4586,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the payroll processing manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "675be03a-a9a4-4a2f-a310-2612f791f806",
-      "fccf156a-009b-4eb2-8bb1-a965a9c58adc",
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "4df3cdd9-2305-48f2-8650-c506f80ddf85",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-    ],
-    accessIds: [
       "675be03a-a9a4-4a2f-a310-2612f791f806",
       "fccf156a-009b-4eb2-8bb1-a965a9c58adc",
       "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
@@ -5688,13 +4612,6 @@ export const nodes: KnowledgeNode[] = [
       "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
       "87f3bb06-a924-4653-b7e6-a4ccee01c213",
     ],
-    accessIds: [
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "f4773274-b74c-40b1-96b9-f90e3bb6b626",
-      "817a5094-2201-447a-a419-72a3add4cd16",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5709,13 +4626,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#quality-assurance Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "fa6de2cd-fad8-44ce-8a10-de4061f0673d",
-      "e96b83f9-e62d-4ed7-a9b1-c9bd51995720",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-    ],
-    accessIds: [
       "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
       "fa6de2cd-fad8-44ce-8a10-de4061f0673d",
       "e96b83f9-e62d-4ed7-a9b1-c9bd51995720",
@@ -5744,15 +4654,6 @@ export const nodes: KnowledgeNode[] = [
       "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "fccf156a-009b-4eb2-8bb1-a965a9c58adc",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-      "c9e0fad2-8ff2-48de-9c10-cbf03e0def89",
-      "1f0e1893-a3fd-4ef5-95a0-fc2e30403622",
-      "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5773,13 +4674,6 @@ export const nodes: KnowledgeNode[] = [
       "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
       "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
     ],
-    accessIds: [
-      "675be03a-a9a4-4a2f-a310-2612f791f806",
-      "c10f3b54-e321-4512-9164-cbfdd46dbca1",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-      "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
-      "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5794,13 +4688,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the operations manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "7021c5e6-a41c-4eda-8b6a-e723ec729a3b",
-      "f4773274-b74c-40b1-96b9-f90e3bb6b626",
-      "b39f7e62-c656-49a6-9073-be7ee3de3b36",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-      "fa10503d-ea25-43e5-9b4b-1207fdb16801",
-    ],
-    accessIds: [
       "7021c5e6-a41c-4eda-8b6a-e723ec729a3b",
       "f4773274-b74c-40b1-96b9-f90e3bb6b626",
       "b39f7e62-c656-49a6-9073-be7ee3de3b36",
@@ -5828,14 +4715,6 @@ export const nodes: KnowledgeNode[] = [
       "9f601f55-0736-4006-9335-da27e71c8b57",
       "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
     ],
-    accessIds: [
-      "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
-      "5ee22709-ade9-4066-bf8b-7d459b44156b",
-      "e96b83f9-e62d-4ed7-a9b1-c9bd51995720",
-      "c9e0fad2-8ff2-48de-9c10-cbf03e0def89",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-      "120dcc2f-ce43-4ed8-b180-4ea7a87d46b5",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5850,13 +4729,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly customer service operations review",
     visibility: "PRIVATE",
     ownerIds: [
-      "e7c4044a-1371-4d11-9264-74c501d22763",
-      "1f421029-62d3-404b-86cf-bd9578405503",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "06dff0e7-d9e6-43c1-ae12-a19819f31163",
-    ],
-    accessIds: [
       "e7c4044a-1371-4d11-9264-74c501d22763",
       "1f421029-62d3-404b-86cf-bd9578405503",
       "aa79070a-f347-4ae9-ad56-2e6e908130a2",
@@ -5885,15 +4757,6 @@ export const nodes: KnowledgeNode[] = [
       "3aa0837c-4d78-4127-97b1-24fb795c879b",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "4df3cdd9-2305-48f2-8650-c506f80ddf85",
-      "c9e0fad2-8ff2-48de-9c10-cbf03e0def89",
-      "06dff0e7-d9e6-43c1-ae12-a19819f31163",
-      "3aa0837c-4d78-4127-97b1-24fb795c879b",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5908,13 +4771,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Client Success Lead for 'EcoTech Solutions'",
     visibility: "PRIVATE",
     ownerIds: [
-      "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
-      "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
-      "ec975bd1-4285-473a-95e5-117972aed0c1",
-      "7c96a8f5-0384-4bbc-b3a0-45f6ab30dad3",
-      "fa10503d-ea25-43e5-9b4b-1207fdb16801",
-    ],
-    accessIds: [
       "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
       "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
       "ec975bd1-4285-473a-95e5-117972aed0c1",
@@ -5941,13 +4797,6 @@ export const nodes: KnowledgeNode[] = [
       "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
       "bddf14b8-5118-44ec-94c7-ede03cccbd1c",
     ],
-    accessIds: [
-      "d82480af-3859-412e-91ab-db15f52d7304",
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "c10f3b54-e321-4512-9164-cbfdd46dbca1",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "bddf14b8-5118-44ec-94c7-ede03cccbd1c",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -5962,13 +4811,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-processing Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "817a5094-2201-447a-a419-72a3add4cd16",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
-      "fa10503d-ea25-43e5-9b4b-1207fdb16801",
-    ],
-    accessIds: [
       "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
       "817a5094-2201-447a-a419-72a3add4cd16",
       "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
@@ -5995,13 +4837,6 @@ export const nodes: KnowledgeNode[] = [
       "06dff0e7-d9e6-43c1-ae12-a19819f31163",
       "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
     ],
-    accessIds: [
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-      "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
-      "06dff0e7-d9e6-43c1-ae12-a19819f31163",
-      "48a92c91-cbc6-4f9b-834c-ce5f592c3b4e",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6016,13 +4851,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Departmental Planning Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
-      "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
-      "b39f7e62-c656-49a6-9073-be7ee3de3b36",
-      "c9e0fad2-8ff2-48de-9c10-cbf03e0def89",
-      "bddf14b8-5118-44ec-94c7-ede03cccbd1c",
-    ],
-    accessIds: [
       "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
       "2631fb16-83bf-4a21-9c71-d92e4b0a27dc",
       "b39f7e62-c656-49a6-9073-be7ee3de3b36",
@@ -6051,15 +4879,6 @@ export const nodes: KnowledgeNode[] = [
       "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
       "87f3bb06-a924-4653-b7e6-a4ccee01c213",
     ],
-    accessIds: [
-      "aabf0da5-7f9a-4943-a6f1-e75d76ff3f4a",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-      "e5240a40-6155-4595-9df2-e83c8d1fe3b4",
-      "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "7750a1c8-ee1b-456e-9efb-f5d7b6b3eff3",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6074,13 +4893,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-sync Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
-      "d82480af-3859-412e-91ab-db15f52d7304",
-      "1eb2a4bb-f695-4158-a568-92cd961e5580",
-      "e96b83f9-e62d-4ed7-a9b1-c9bd51995720",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
-    accessIds: [
       "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
       "d82480af-3859-412e-91ab-db15f52d7304",
       "1eb2a4bb-f695-4158-a568-92cd961e5580",
@@ -6107,13 +4919,6 @@ export const nodes: KnowledgeNode[] = [
       "ec975bd1-4285-473a-95e5-117972aed0c1",
       "87f3bb06-a924-4653-b7e6-a4ccee01c213",
     ],
-    accessIds: [
-      "7012d377-07aa-4138-ab92-bd4e84a6f3cc",
-      "c10f3b54-e321-4512-9164-cbfdd46dbca1",
-      "191d7caa-552c-438f-bec2-5fd4c2ad2f34",
-      "ec975bd1-4285-473a-95e5-117972aed0c1",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6128,13 +4933,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to HR Operations Team Lead",
     visibility: "PRIVATE",
     ownerIds: [
-      "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
-      "7012d377-07aa-4138-ab92-bd4e84a6f3cc",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "4dfc7437-71e0-4905-b8ab-d1698178226e",
-      "06dff0e7-d9e6-43c1-ae12-a19819f31163",
-    ],
-    accessIds: [
       "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
       "7012d377-07aa-4138-ab92-bd4e84a6f3cc",
       "aa79070a-f347-4ae9-ad56-2e6e908130a2",
@@ -6161,13 +4959,6 @@ export const nodes: KnowledgeNode[] = [
       "3087e571-2e4c-4c21-b835-1208709e1c83",
       "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
     ],
-    accessIds: [
-      "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
-      "f4773274-b74c-40b1-96b9-f90e3bb6b626",
-      "aa79070a-f347-4ae9-ad56-2e6e908130a2",
-      "3087e571-2e4c-4c21-b835-1208709e1c83",
-      "34aa7ef8-2705-49ab-bc55-f6bb8be99226",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6188,13 +4979,6 @@ export const nodes: KnowledgeNode[] = [
       "7c96a8f5-0384-4bbc-b3a0-45f6ab30dad3",
       "9f601f55-0736-4006-9335-da27e71c8b57",
     ],
-    accessIds: [
-      "4df3cdd9-2305-48f2-8650-c506f80ddf85",
-      "4dfc7437-71e0-4905-b8ab-d1698178226e",
-      "b39f7e62-c656-49a6-9073-be7ee3de3b36",
-      "7c96a8f5-0384-4bbc-b3a0-45f6ab30dad3",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6209,13 +4993,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to VP of Customer Operations",
     visibility: "PRIVATE",
     ownerIds: [
-      "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
-      "d82480af-3859-412e-91ab-db15f52d7304",
-      "4df3cdd9-2305-48f2-8650-c506f80ddf85",
-      "1eb2a4bb-f695-4158-a568-92cd961e5580",
-      "817a5094-2201-447a-a419-72a3add4cd16",
-    ],
-    accessIds: [
       "6dc3bc62-6c0d-4687-aeea-83bf6c513c5d",
       "d82480af-3859-412e-91ab-db15f52d7304",
       "4df3cdd9-2305-48f2-8650-c506f80ddf85",
@@ -6244,15 +5021,6 @@ export const nodes: KnowledgeNode[] = [
       "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
       "4d9238d2-e056-4ce8-95b4-263b2c3be040",
     ],
-    accessIds: [
-      "980d7905-adcb-4ef9-9543-e44c4b705b43",
-      "d4d41761-cebb-4e3e-b632-661baf1fa8be",
-      "8d8e42c4-8a7e-4af9-907a-616bc6c80985",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
-      "4d9238d2-e056-4ce8-95b4-263b2c3be040",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6267,13 +5035,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to all Payroll Operations team leads",
     visibility: "PRIVATE",
     ownerIds: [
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
-    ],
-    accessIds: [
       "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
       "1d0964cf-7b1b-44a1-a444-289268722bd1",
       "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
@@ -6302,15 +5063,6 @@ export const nodes: KnowledgeNode[] = [
       "600190a2-4cbb-44c6-bb35-7f7e014d5191",
       "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
     ],
-    accessIds: [
-      "283fd5b5-4590-44fe-8727-c960d66798fa",
-      "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
-      "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-      "600190a2-4cbb-44c6-bb35-7f7e014d5191",
-      "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6331,13 +5083,6 @@ export const nodes: KnowledgeNode[] = [
       "8d8e42c4-8a7e-4af9-907a-616bc6c80985",
       "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
     ],
-    accessIds: [
-      "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
-      "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
-      "439847d9-152d-408b-b4c2-225b44ea43fd",
-      "8d8e42c4-8a7e-4af9-907a-616bc6c80985",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6352,13 +5097,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to IT integration team",
     visibility: "PRIVATE",
     ownerIds: [
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-      "600190a2-4cbb-44c6-bb35-7f7e014d5191",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-    ],
-    accessIds: [
       "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
       "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
       "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
@@ -6387,15 +5125,6 @@ export const nodes: KnowledgeNode[] = [
       "91d21f17-93bd-4435-a984-5feb68184f25",
       "2c45151d-e980-4d4c-8b10-3616aa9fd071",
     ],
-    accessIds: [
-      "ba1b59b3-fed1-44fc-a9ac-402c8c42bb7b",
-      "9f601f55-0736-4006-9335-da27e71c8b57",
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "c66cac34-70f3-4496-94d7-ba591dd5e9f8",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "2c45151d-e980-4d4c-8b10-3616aa9fd071",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6410,13 +5139,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#senior-specialists Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
-      "ca3898cc-6cc0-4de8-9e40-e431acdef4b6",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
-    ],
-    accessIds: [
       "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
       "ca3898cc-6cc0-4de8-9e40-e431acdef4b6",
       "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
@@ -6443,13 +5165,6 @@ export const nodes: KnowledgeNode[] = [
       "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
       "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
     ],
-    accessIds: [
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
-      "d4d41761-cebb-4e3e-b632-661baf1fa8be",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6470,13 +5185,6 @@ export const nodes: KnowledgeNode[] = [
       "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
       "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
     ],
-    accessIds: [
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-      "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6491,15 +5199,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Payroll Compliance Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "aabf0da5-7f9a-4943-a6f1-e75d76ff3f4a",
-      "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-      "8cb88eff-ad70-45f2-8ce4-ec0b74a296bf",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-      "ca3898cc-6cc0-4de8-9e40-e431acdef4b6",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
-    accessIds: [
       "aabf0da5-7f9a-4943-a6f1-e75d76ff3f4a",
       "c8cc6506-b6b7-48b8-8f62-7ac184fce77b",
       "185b0fb0-5517-4bc3-a24c-9412745cdf38",
@@ -6530,15 +5229,6 @@ export const nodes: KnowledgeNode[] = [
       "25823c60-194a-4e25-bd16-e892944e54c3",
       "5f9efefc-6f44-4b8d-a997-05da362c99f1",
     ],
-    accessIds: [
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "2c45151d-e980-4d4c-8b10-3616aa9fd071",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6553,13 +5243,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#data-admin Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7c044d16-c58b-4e01-b79b-12db79045c80",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "8d8e42c4-8a7e-4af9-907a-616bc6c80985",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-    ],
-    accessIds: [
       "7c044d16-c58b-4e01-b79b-12db79045c80",
       "1d0964cf-7b1b-44a1-a444-289268722bd1",
       "8d8e42c4-8a7e-4af9-907a-616bc6c80985",
@@ -6586,13 +5269,6 @@ export const nodes: KnowledgeNode[] = [
       "2c45151d-e980-4d4c-8b10-3616aa9fd071",
       "799775f3-c434-4838-9158-40a03c272dd3",
     ],
-    accessIds: [
-      "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "2c45151d-e980-4d4c-8b10-3616aa9fd071",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6607,13 +5283,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Payroll Processing Review",
     visibility: "PRIVATE",
     ownerIds: [
-      "7c044d16-c58b-4e01-b79b-12db79045c80",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-      "35b98bc7-6b34-4604-8e81-aa022a2258e3",
-      "91d21f17-93bd-4435-a984-5feb68184f25",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
-    accessIds: [
       "7c044d16-c58b-4e01-b79b-12db79045c80",
       "185b0fb0-5517-4bc3-a24c-9412745cdf38",
       "35b98bc7-6b34-4604-8e81-aa022a2258e3",
@@ -6641,13 +5310,6 @@ export const nodes: KnowledgeNode[] = [
       "c298f7fa-6ab5-417a-8fad-43ea300a478f",
       "c66cac34-70f3-4496-94d7-ba591dd5e9f8",
     ],
-    accessIds: [
-      "7c044d16-c58b-4e01-b79b-12db79045c80",
-      "c12447c1-5610-45ad-b841-811c92b63e52",
-      "a54dbd0c-1eae-4c73-a93e-d006380ec905",
-      "c298f7fa-6ab5-417a-8fad-43ea300a478f",
-      "c66cac34-70f3-4496-94d7-ba591dd5e9f8",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6662,13 +5324,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Payroll Operations Manager to Team Lead",
     visibility: "PRIVATE",
     ownerIds: [
-      "35b98bc7-6b34-4604-8e81-aa022a2258e3",
-      "d4d41761-cebb-4e3e-b632-661baf1fa8be",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-      "ca3898cc-6cc0-4de8-9e40-e431acdef4b6",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-    ],
-    accessIds: [
       "35b98bc7-6b34-4604-8e81-aa022a2258e3",
       "d4d41761-cebb-4e3e-b632-661baf1fa8be",
       "885d94dc-648d-47cb-ae84-39906c72d3df",
@@ -6696,13 +5351,6 @@ export const nodes: KnowledgeNode[] = [
       "885d94dc-648d-47cb-ae84-39906c72d3df",
       "600190a2-4cbb-44c6-bb35-7f7e014d5191",
     ],
-    accessIds: [
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-      "439847d9-152d-408b-b4c2-225b44ea43fd",
-      "c298f7fa-6ab5-417a-8fad-43ea300a478f",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-      "600190a2-4cbb-44c6-bb35-7f7e014d5191",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6718,13 +5366,6 @@ export const nodes: KnowledgeNode[] = [
       "Email to Regional Sales Director regarding Client Colruyt Group",
     visibility: "PRIVATE",
     ownerIds: [
-      "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-    ],
-    accessIds: [
       "cf18ee02-924a-4c5d-8c1d-15be7363cb41",
       "1d0964cf-7b1b-44a1-a444-289268722bd1",
       "6bd90762-1728-4fec-8622-c083796f7286",
@@ -6753,15 +5394,6 @@ export const nodes: KnowledgeNode[] = [
       "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
       "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
     ],
-    accessIds: [
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "675be03a-a9a4-4a2f-a310-2612f791f806",
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "1e2c609d-e6b9-4410-a843-cf0f01d9c886",
-      "6be8d7fb-ca3c-4993-a113-eea09e5666fb",
-      "aaaa815b-7679-4c85-bb60-f5fb33f839ea",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6776,13 +5408,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Quality Assurance sync with HRIS Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-      "a54dbd0c-1eae-4c73-a93e-d006380ec905",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "ca3898cc-6cc0-4de8-9e40-e431acdef4b6",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
-    accessIds: [
       "2c705119-f527-44c0-bd82-3e8b00fa23af",
       "a54dbd0c-1eae-4c73-a93e-d006380ec905",
       "6bd90762-1728-4fec-8622-c083796f7286",
@@ -6810,13 +5435,6 @@ export const nodes: KnowledgeNode[] = [
       "2c45151d-e980-4d4c-8b10-3616aa9fd071",
       "799775f3-c434-4838-9158-40a03c272dd3",
     ],
-    accessIds: [
-      "a54dbd0c-1eae-4c73-a93e-d006380ec905",
-      "35b98bc7-6b34-4604-8e81-aa022a2258e3",
-      "6bd90762-1728-4fec-8622-c083796f7286",
-      "2c45151d-e980-4d4c-8b10-3616aa9fd071",
-      "799775f3-c434-4838-9158-40a03c272dd3",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6831,7 +5449,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#cleaning-ops Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -6854,15 +5471,6 @@ export const nodes: KnowledgeNode[] = [
       "2a27716e-52c3-4d21-abfd-d14b74c0f300",
       "53c2851a-5f1d-4560-be8e-64714aa8a03f",
     ],
-    accessIds: [
-      "1d0964cf-7b1b-44a1-a444-289268722bd1",
-      "8cb88eff-ad70-45f2-8ce4-ec0b74a296bf",
-      "85274486-c8b1-4cea-b7a1-5de5df0d87d9",
-      "885d94dc-648d-47cb-ae84-39906c72d3df",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-      "2a27716e-52c3-4d21-abfd-d14b74c0f300",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6877,7 +5485,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Facilities Management Director",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -6892,7 +5499,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Daily Stand-up with Cleaning Team",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -6907,7 +5513,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#shift-changes Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -6926,11 +5531,6 @@ export const nodes: KnowledgeNode[] = [
       "185b0fb0-5517-4bc3-a24c-9412745cdf38",
       "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
     ],
-    accessIds: [
-      "1eeb41ca-822d-455c-a7b7-cd87463aee1b",
-      "185b0fb0-5517-4bc3-a24c-9412745cdf38",
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -6945,7 +5545,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "New Hire Onboarding Session",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -6960,11 +5559,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Daily team alignment meeting for Zone C cleaning staff",
     visibility: "PRIVATE",
     ownerIds: [
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "2aec48e7-22ea-4157-89b2-b0faa8975585",
-    ],
-    accessIds: [
       "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
       "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
       "2aec48e7-22ea-4157-89b2-b0faa8975585",
@@ -6987,11 +5581,6 @@ export const nodes: KnowledgeNode[] = [
       "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
       "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
     ],
-    accessIds: [
-      "d734d67c-c5c7-42a9-8ef5-3a718cf9bf1a",
-      "cfe78df0-15de-47a5-9603-29c38ff9a7dd",
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7006,7 +5595,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#management-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7022,7 +5610,6 @@ export const nodes: KnowledgeNode[] = [
       "Email to Head of Facilities and Payroll Operations Manager",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7037,7 +5624,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#operations-sync Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7052,7 +5638,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly technical troubleshooting sync",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7067,7 +5652,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#cleaning-nightshift Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7082,7 +5666,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Senior Cleaning Technician",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7097,7 +5680,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Cross-departmental audit preparation meeting",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7116,11 +5698,6 @@ export const nodes: KnowledgeNode[] = [
       "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
       "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
     ],
-    accessIds: [
-      "e5e247f4-e738-4e1b-9309-6f7c78c171ce",
-      "f436ddbe-5e1e-40fd-9cf1-93b3a9907cf9",
-      "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7135,7 +5712,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#antwerp-hq-cleaning Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7150,7 +5726,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Q3 Sustainability Alignment Meeting notes",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7165,7 +5740,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Legal Compliance Team",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7180,7 +5754,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#zone-b-cleaning Slack channel",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7195,7 +5768,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Operations Sync Meeting notes",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7210,7 +5782,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to HR Training Coordinator",
     visibility: "PRIVATE",
     ownerIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
-    accessIds: ["e5e247f4-e738-4e1b-9309-6f7c78c171ce"],
     createdAt: "2026-09-30",
   },
   {
@@ -7225,14 +5796,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Payroll accounting Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-      "040520c2-520a-4323-b234-46ca668fd989",
-    ],
-    accessIds: [
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7261,13 +5824,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7282,13 +5838,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Payroll accounting Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7316,13 +5865,6 @@ export const nodes: KnowledgeNode[] = [
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7344,13 +5886,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7365,13 +5900,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Payroll accounting Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
@@ -7399,13 +5927,6 @@ export const nodes: KnowledgeNode[] = [
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7421,13 +5942,6 @@ export const nodes: KnowledgeNode[] = [
       "Email to Junior Payroll Accountants, CC: Payroll team lead",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7454,13 +5968,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7475,13 +5982,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Payroll Accounting Sync Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
@@ -7508,13 +6008,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7535,13 +6028,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7556,13 +6042,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Accounts Payable Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
@@ -7591,15 +6070,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "1fc2d075-c9e1-419d-a9c9-ef2c62fb3905",
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7614,13 +6084,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Monthly Accounting Leadership Sync Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7647,13 +6110,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7668,15 +6124,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the IT Support Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-      "0aee9973-5b5a-4b11-a062-2fa43f7eeaa5",
-      "87f3bb06-a924-4653-b7e6-a4ccee01c213",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7707,15 +6154,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "5f9efefc-6f44-4b8d-a997-05da362c99f1",
-      "ec975bd1-4285-473a-95e5-117972aed0c1",
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7730,13 +6168,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#tax-compliance Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
-    accessIds: [
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
@@ -7765,15 +6196,6 @@ export const nodes: KnowledgeNode[] = [
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "ae73261d-7cb0-4a9d-8434-963b8bb5137c",
-      "8ba97cff-ccc9-4917-941d-4c3bfe59e6d1",
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7794,13 +6216,6 @@ export const nodes: KnowledgeNode[] = [
       "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7815,13 +6230,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to Payroll Support Team",
     visibility: "PRIVATE",
     ownerIds: [
-      "0ce1f556-9593-4aeb-991c-18c23ba6c444",
-      "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
-      "f0c431fc-a479-435c-aa67-e1a5500e76f1",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-      "bbd7ea59-bcfc-40cf-afaf-2254c6cbd10d",
-    ],
-    accessIds: [
       "0ce1f556-9593-4aeb-991c-18c23ba6c444",
       "1d5bd331-7046-42a7-a61f-5f5a2eb01ddc",
       "f0c431fc-a479-435c-aa67-e1a5500e76f1",
@@ -7849,14 +6257,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "e8f98ebc-955a-4231-bfc9-d4e0459e5226",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7877,13 +6277,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7898,13 +6291,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly cross-departmental campaign sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -7934,15 +6320,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "fccf156a-009b-4eb2-8bb1-a965a9c58adc",
-      "2c705119-f527-44c0-bd82-3e8b00fa23af",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -7957,14 +6334,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Product marketing strategy session",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-      "97ef83d4-7f74-4bdf-b178-62b45e3faaf4",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -7992,13 +6361,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8019,13 +6381,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8040,13 +6395,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the event management team",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8075,15 +6423,6 @@ export const nodes: KnowledgeNode[] = [
       "aabf0da5-7f9a-4943-a6f1-e75d76ff3f4a",
       "35b98bc7-6b34-4604-8e81-aa022a2258e3",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-      "aabf0da5-7f9a-4943-a6f1-e75d76ff3f4a",
-      "35b98bc7-6b34-4604-8e81-aa022a2258e3",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8098,13 +6437,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the legal review board",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8131,13 +6463,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8152,15 +6477,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#exec-marketing Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
-      "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "d4c37b49-4207-4a1d-ba8f-100d63a17d1c",
       "cd7d98f8-0a5c-4693-b438-1d7c66135fcf",
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
@@ -8192,15 +6508,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "1a4b0182-a14c-4be8-b400-055d6a18600b",
-      "7012d377-07aa-4138-ab92-bd4e84a6f3cc",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8214,13 +6521,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Event follow-up strategy meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8241,13 +6541,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#content-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8276,15 +6569,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "ad706096-7b23-4b4d-911b-508182149dab",
-      "600190a2-4cbb-44c6-bb35-7f7e014d5191",
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8299,13 +6583,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#marketing-team Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8332,13 +6609,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8353,15 +6623,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Marketing Strategy Meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-      "25823c60-194a-4e25-bd16-e892944e54c3",
-      "53c2851a-5f1d-4560-be8e-64714aa8a03f",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8393,15 +6654,6 @@ export const nodes: KnowledgeNode[] = [
       "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
       "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-      "6567c2e5-d7d8-4b97-af9e-2c9180f57b66",
-      "f5916144-31c2-47e2-a3ec-4fe1b1ef9195",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8416,13 +6668,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Cross-Functional Alignment Meeting Notes",
     visibility: "PRIVATE",
     ownerIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
-    accessIds: [
       "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
       "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
       "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
@@ -8449,13 +6694,6 @@ export const nodes: KnowledgeNode[] = [
       "d19e0b89-6883-4a22-bf05-bbf04800328e",
       "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
     ],
-    accessIds: [
-      "7a7527b3-d8d1-41d5-b42f-0fe2701cd4b0",
-      "fbc77beb-41a7-4ac5-87de-f99a5832cf63",
-      "099b3685-faa2-4a63-97c1-ce65ebd83bc3",
-      "d19e0b89-6883-4a22-bf05-bbf04800328e",
-      "0bb3c74c-3c80-4cee-bb47-b167b947e2a9",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8470,10 +6708,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#document-intake Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8494,10 +6728,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8512,10 +6742,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#delivery-operations Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8538,12 +6764,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "054a19e8-94c2-4912-af3d-c3ea8a04d765",
-      "439847d9-152d-408b-b4c2-225b44ea43fd",
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8558,10 +6778,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Logistics Operations Manager",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8583,11 +6799,6 @@ export const nodes: KnowledgeNode[] = [
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
       "d4d41761-cebb-4e3e-b632-661baf1fa8be",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-      "d4d41761-cebb-4e3e-b632-661baf1fa8be",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8602,10 +6813,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Logistics Team Leader",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8628,12 +6835,6 @@ export const nodes: KnowledgeNode[] = [
       "8d04271c-978f-4e23-89bb-6d3485bc8539",
       "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-      "8d04271c-978f-4e23-89bb-6d3485bc8539",
-      "f8498d8c-6ae5-4e62-8f5c-26f9d12b35c7",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8648,10 +6849,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#payroll-logistics Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8672,10 +6869,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8693,10 +6886,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8711,10 +6900,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly IT sync meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8737,12 +6922,6 @@ export const nodes: KnowledgeNode[] = [
       "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
       "675be03a-a9a4-4a2f-a310-2612f791f806",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-      "04f7d93d-4a03-48b8-b2e2-e776ba0bd966",
-      "675be03a-a9a4-4a2f-a310-2612f791f806",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8757,10 +6936,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Logistics Operations Review meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8783,12 +6958,6 @@ export const nodes: KnowledgeNode[] = [
       "03478e6e-4525-4e25-8dae-5cc24fa037e9",
       "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-      "03478e6e-4525-4e25-8dae-5cc24fa037e9",
-      "fe3a3a63-7c4a-40a9-9133-c118f08cc147",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8803,10 +6972,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Weekly Courier Team meeting",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8827,10 +6992,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8845,12 +7006,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "HR Payroll Hub Team Slack",
     visibility: "PRIVATE",
     ownerIds: [
-      "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
-      "1f421029-62d3-404b-86cf-bd9578405503",
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "d5bc0a2d-89c8-407f-bc8e-ae94c41ffc9b",
       "1f421029-62d3-404b-86cf-bd9578405503",
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
@@ -8874,11 +7029,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "e8005db2-6481-4335-b76c-d2116802768a",
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8893,10 +7043,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "Email to the Head of Records Management",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
@@ -8917,10 +7063,6 @@ export const nodes: KnowledgeNode[] = [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],
-    accessIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
     createdAt: "2026-09-30",
   },
   {
@@ -8935,10 +7077,6 @@ export const nodes: KnowledgeNode[] = [
     sourceDescription: "#logistics-analytics Slack channel",
     visibility: "PRIVATE",
     ownerIds: [
-      "7e7c7d72-f530-452d-b2af-4c3ee2112159",
-      "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
-    ],
-    accessIds: [
       "7e7c7d72-f530-452d-b2af-4c3ee2112159",
       "16742326-b6f8-4b5e-a1b7-8e97dccc1d69",
     ],

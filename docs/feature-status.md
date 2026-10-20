@@ -1,0 +1,104 @@
+# SD Wise feature status
+
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026: lint, typecheck and all 54 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+
+## In short
+
+- **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too.
+- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, the answer and the drafted reply are stitched-together summaries instead of LLM output, and integrations are an in-memory on/off switch.
+- **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and document sources.
+
+## Legend
+
+| Column | Values |
+| --- | --- |
+| Real or mocked | **Real**: runs on real data or services. **Mocked**: fake data or simulated behaviour. **Real logic, mock data**: the code is the real thing, but it runs on fixtures. **Unused**: code exists, the app never calls it. **Not built**: promised in the README or docs, no code. |
+| Works as intended | ✅ yes · 🟡 partly or only for the demo · ❌ no · 🐛 has a bug |
+
+## Knowledge graph
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Facts, edges and people | Mocked | 🟡 | 4,300 facts, 6,216 edges and 313 people, all in code: 30 hand-written demo facts ([fixtures.ts](../src/lib/graph/fixtures.ts)), 3,940 generated from a fixed seed ([bulk-fixtures.ts](../src/lib/graph/bulk-fixtures.ts)), and 330 AI-generated ones moved out of the database ([db-fixtures.ts](../src/lib/graph/db-fixtures.ts)). The `KnowledgeNode` and `KnowledgeEdge` tables exist but are empty and never read. |
+| Who can see each fact | Mocked | 🟡 | Owners and access lists are assigned in the fixtures, not taken from the source (channel members, mail recipients, meeting attendees). |
+| Redaction of locked facts | Real logic, mock data | ✅ | Done on the server, so locked content never reaches the browser. Edges touching a locked fact lose their meaning too. Tested. |
+| Graph view (force layout, zoom slider, fit to screen, legend) | Real | ✅ | Renders every fact; locked ones show as a lock. The legend has no entry for documents, but no fact is a document yet. |
+| Fact and connection inspector | Real | ✅ | Shows content, source, owners and connections for visible facts; owners and a "Request access" button for locked ones. |
+| Facts stored in Postgres with pgvector | Unused | ❌ | Schema, migration and `contentEmbedding vector(1536)` exist, but since `785f062` the app reads only the fixtures. |
+
+## Asking SD Wise
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Search | Mocked | 🟡 | [ai.ts](../src/lib/graph/ai.ts) is a stand-in: keyword overlap (title words count 3, body words 1), then one hop to neighbours. Works for the scripted demo questions, misses paraphrases and synonyms. |
+| Search per [node-finding.md](node-finding.md) | Not built | ❌ | No embedding lookup, in-degree scoring, beam walk, or "nearest visible fact" substitute. |
+| Answer text | Mocked | 🟡 | The summaries of the matching facts you can see, joined together. No LLM writes an answer. |
+| "Others know more" suggestions | Real logic, mock data | ✅ | Owners of the matching locked facts, top 3 by number of facts, with the source ("from an email"). Tested for the Kobe ↔ Filip walkthrough. |
+| Search animation | Mocked | — | Random nodes flash for at least 1.4 s as the "embedding lookup", then the real visit order is replayed. Cosmetic. |
+| Embedding script (`pnpm db:embed`) | Unused | ❌ | Embeds database rows with `openai/text-embedding-3-small`, but the database has no facts and the search doesn't read embeddings. |
+| AI data generation (`pnpm db:seed`) | Unused | ❌ | Writes facts and new people to tables the app no longer reads; its last output was frozen into `db-fixtures.ts`. Running it again changes nothing in the app. |
+
+## Asking people
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Ask a colleague | Real | ✅ | Stored in the `Question` table. The colleague must exist as a `Person` row; `pnpm db:seed:demo` creates one for every fixture person. |
+| Drafted reply for the colleague | Mocked | 🟡 | "Hi {first name}!" followed by summaries of the facts the colleague can see. No LLM. |
+| Inbox: received and sent, answer, decline | Real | ✅ | A question can only be resolved once. |
+| Share an answer with the asker or everyone | Real | ✅ | "Everyone" makes the new fact public. Tested. |
+| Answers become new facts in the asker's graph | Real logic, mock data | ✅ | Rebuilt on every read from answered questions and linked to the facts they were based on; not saved as graph rows. Tested. |
+| "New for you" highlight | Real | ✅ | Cleared when the asker opens the new fact. |
+| Pending count in the sidebar | Real | ✅ | |
+| Notifications (email, Slack, push) | Not built | ❌ | The app sends no email. People only see a question when they open SD Wise. |
+
+## Access requests
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Request access to a locked fact | Real | ✅ | Stored as an `ACCESS` question; a second request for the same fact reuses the pending one. |
+| Approve or decline | Real | 🐛 | Works for fixture facts. Bug: someone else's private answer also shows "Request access", but approving fails with "Not an owner", because `approveAccess` only looks up owners in the fixtures ([service.ts:264](../src/lib/graph/service.ts#L264)). Those requests can only be declined. |
+
+## Integrations
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Integrations page (Slack, Teams, Outlook, Gmail, Teams meetings, Google Meet, Zoom) | Mocked | 🟡 | A fixture list with fact and people counts per source. |
+| Connect | Mocked | ❌ | The dialog shows "Signing in", "Mapping who is in which conversation" and "Extracting facts" on 900 ms timers, then flips a flag. No OAuth, nothing is read. |
+| Disconnect | Mocked | 🟡 | Facts from that source really do drop out of the graph and search. But the switch is shared by every user, lives in server memory, resets on restart, and isn't shared between server instances. |
+| Gmail, Google Meet, Zoom | Mocked | ❌ | They have no facts, so connecting them changes nothing. |
+| Real ingestion and fact extraction | Not built | ❌ | The database enum only knows `slack`, `email` and `google_meet`; Teams, Outlook, Gmail, Teams meetings and Zoom are proposals in [types.ts](../src/lib/graph/types.ts). |
+| Documents and file systems | Not built | ❌ | The README names them as knowledge sources, but there is no integration and no document facts. |
+
+## MCP (Cursor, Claude)
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| MCP server at `/api/mcp` with `ask`, `ask_person`, `request_access`, `list_inbox` | Real | ✅ | Every call runs as the signed-in user, with the same visibility rules. Tested: 401 challenge, forged token, 403 without a person, tool list, no leaked locked content. `ask` uses the same mocked search. |
+| Sign-in for MCP clients (OAuth, consent page, discovery, dynamic registration, CIMD) | Real | ✅ | Better Auth MCP plugin. Outside localhost it needs HTTPS. |
+| Answer inbox questions, write to the graph, per-tool scopes, revoke connected apps | Not built | ❌ | Out of scope for v1 ([mcp-scope.md](mcp-scope.md)). |
+
+## Accounts, settings and admin
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Sign in with email and password | Real | ✅ | Tested. Rate limiting is stored in the database. |
+| Sign up | Not built (on purpose) | — | Accounts only come from `pnpm db:seed:demo`, which also deletes every account except Kobe and Filip. Accounts without a person get a 404 on the graph, inbox and integrations pages. |
+| Demo accounts and demo questions | Real | ✅ | Kobe and Filip, `password123`. `--reset` clears all questions first. |
+| Settings: name, password, sessions, delete account | Real | ✅ | Deleting Kobe or Filip breaks the demo until the next `pnpm db:seed:demo`. |
+| Settings: "Connect your AI" | Real | ✅ | Shows the Cursor and Claude Code config for this deployment's URL. |
+| Admin: users, search, impersonate, ban, sessions, set password, delete | Real | 🟡 | Works, but nobody is an admin unless `ADMIN_EMAILS` lists them, and it's empty in `.env.example`. Add `kobe@sdwise.be` to use it in the demo. There's no "create user". |
+| Plans and entitlements | Unused | — | `getEntitlements` always returns "unlimited" and nothing calls it. Left over from the template. |
+
+## Other
+
+| Feature | Real or mocked | Works as intended | Notes |
+| --- | --- | --- | --- |
+| Demo video page (`/demo-video`) | Real | ✅ | Two static films from `public/demo`. |
+| Marketing films and their sources (`marketing/`) | Real | ✅ | Not part of the app. |
+
+## Biggest gaps
+
+1. **Search and answers:** build the walk from [node-finding.md](node-finding.md) on embeddings, and have an LLM write the answer and the drafted reply from the facts it found.
+2. **Graph in the database:** read facts and edges from Postgres instead of fixtures, and save answers as real facts.
+3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation.
+4. **Small fixes:** approving access to an answer, per-user (or persisted) integration state, and notifications for new questions.

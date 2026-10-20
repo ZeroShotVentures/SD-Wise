@@ -56,7 +56,7 @@ Every person in the graph has an account, all with the password `password123`. C
 
 ### Walkthrough
 
-1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Request access**.
+1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Ask a colleague**.
 2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
 3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
 4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and request access; as **Kobe**, share it.
@@ -72,7 +72,7 @@ SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](
 - **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
 - **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
 
-Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get a Request access link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
+Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get an Ask a colleague link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
 
 The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. Claude, ChatGPT and Copilot Studio connect from the cloud and need a public URL too.
 

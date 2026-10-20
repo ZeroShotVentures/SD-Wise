@@ -107,7 +107,7 @@ export async function ask(me: Person, question: string): Promise<AskResult> {
   if (text) return { ...result, answer: { text, nodeIds } };
   // No fact answers it. Claude answers questions that need none, like "what
   // time is it?", and otherwise says so and points to a colleague. Locked
-  // matches already offer Request access instead.
+  // matches already offer their own Ask a colleague.
   const general = await writeGeneral(question);
   return {
     ...result,

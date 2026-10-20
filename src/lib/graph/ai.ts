@@ -1,12 +1,5 @@
 import { canSee } from "./access";
-import type {
-  AskResult,
-  KnowledgeEdge,
-  KnowledgeNode,
-  KnowledgeSource,
-  Person,
-  SuggestedPerson,
-} from "./types";
+import type { AskResult, KnowledgeEdge, KnowledgeNode } from "./types";
 
 // Stand-in for the AI search. Keyword overlap instead of embeddings, one hop
 // instead of a real traversal. Same inputs and outputs as the real thing.
@@ -71,14 +64,8 @@ export function searchGraph(
   return { hits, visited };
 }
 
-const SOURCE_LABEL: Record<KnowledgeSource, string> = {
-  MESSAGE: "a chat",
-  EMAIL: "an email",
-  MEETING: "a meeting",
-  DOCUMENT: "a document",
-  OTHER: "an answer",
-};
-
+// Locked matches only surface as `moreAvailable`: never their ids, owners,
+// source or count, so the result can't be used to map what others know.
 // The answer's text joins the summaries of the visible hits; `ask` in the
 // service has Claude write the real one from the same facts.
 export function answerFor(
@@ -87,55 +74,44 @@ export function answerFor(
   hits: string[],
   visited: string[],
   nodes: KnowledgeNode[],
-  people: Person[],
 ): AskResult {
   const byId = new Map(nodes.map((n) => [n.id, n]));
-  const hitNodes = hits.flatMap((id) => byId.get(id) ?? []);
-  const known = hitNodes.filter((n) => canSee(n, viewerId));
-  const unknown = hitNodes.filter((n) => !canSee(n, viewerId));
+  const visible = (id: string) => {
+    const node = byId.get(id);
+    return node !== undefined && canSee(node, viewerId);
+  };
+  const known = hits.filter(visible);
 
   const answer = known.length
     ? {
-        text: known.map((n) => n.contentSummary).join(" "),
-        nodeIds: known.map((n) => n.id),
+        text: known
+          .flatMap((id) => byId.get(id)?.contentSummary ?? [])
+          .join(" "),
+        nodeIds: known,
       }
     : null;
 
-  const suggestions = new Map<
-    string,
-    { nodeIds: string[]; sources: Set<string> }
-  >();
-  for (const node of unknown) {
-    for (const ownerId of node.ownerIds) {
-      if (ownerId === viewerId) continue;
-      const entry = suggestions.get(ownerId) ?? {
-        nodeIds: [],
-        sources: new Set<string>(),
-      };
-      entry.nodeIds.push(node.id);
-      entry.sources.add(SOURCE_LABEL[node.source]);
-      suggestions.set(ownerId, entry);
-    }
-  }
+  return {
+    question,
+    visited: visited.filter(visible),
+    hits: known,
+    answer,
+    moreAvailable: known.length < hits.length,
+  };
+}
 
-  const suggested: SuggestedPerson[] = [...suggestions.entries()]
-    .toSorted((a, b) => b[1].nodeIds.length - a[1].nodeIds.length)
-    .slice(0, 3)
-    .flatMap(([id, { nodeIds, sources }]) => {
-      const person = people.find((p) => p.id === id);
-      if (!person) return [];
-      const count =
-        nodeIds.length === 1 ? "something" : `${nodeIds.length} things`;
-      return [
-        {
-          person,
-          nodeIds,
-          reason: `Knows ${count} related from ${[...sources].join(" and ")}`,
-        },
-      ];
-    });
-
-  return { question, visited, hits, answer, people: suggested };
+// The locked nodes behind `moreAvailable`, for routing a request to their
+// owners on the server.
+export function lockedHits(
+  viewerId: string,
+  hits: string[],
+  nodes: KnowledgeNode[],
+) {
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  return hits.flatMap((id) => {
+    const node = byId.get(id);
+    return node && !canSee(node, viewerId) ? [node] : [];
+  });
 }
 
 // What the recipient can draft a reply from: the matched facts they can see,

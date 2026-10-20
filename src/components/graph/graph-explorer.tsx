@@ -1,10 +1,10 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Lock, Maximize, Minus, Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { askGraph, markSeen } from "@/app/(app)/graph/actions";
-import { SOURCES } from "@/lib/graph/meta";
+import { SOURCES, ZOOM } from "@/lib/graph/meta";
 import type { AskResult, GraphView } from "@/lib/graph/types";
 import { AskBar } from "./ask-bar";
 import { AskResultCard } from "./ask-result";
@@ -23,6 +23,34 @@ const EMPTY: Highlight = {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// The slider is logarithmic so each notch zooms by the same factor.
+const ZOOM_RANGE = Math.log(ZOOM.max / ZOOM.min);
+const zoomToSlider = (k: number) => (Math.log(k / ZOOM.min) / ZOOM_RANGE) * 100;
+const sliderToZoom = (value: number) =>
+  ZOOM.min * Math.exp((value / 100) * ZOOM_RANGE);
+
+function ZoomButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className="flex size-9 items-center justify-center transition-colors hover:bg-white/10 hover:text-white"
+    >
+      {children}
+    </button>
+  );
+}
+
 export function GraphExplorer({
   view,
   focusId,
@@ -40,6 +68,7 @@ export function GraphExplorer({
   const [status, setStatus] = useState<string | null>(null);
   const [result, setResult] = useState<AskResult | null>(null);
   const [error, setError] = useState("");
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const visible = view.nodes.filter((n) => !n.locked).length;
 
@@ -53,6 +82,13 @@ export function GraphExplorer({
     },
     [nodeIndex],
   );
+
+  const zoomBy = (factor: number) => {
+    const api = apiRef.current;
+    if (api) api.zoom(api.zoom() * factor, 300);
+  };
+
+  const fitToScreen = () => apiRef.current?.zoomToFit(600, 60);
 
   const selectNode = useCallback(
     (id: string) => {
@@ -159,6 +195,7 @@ export function GraphExplorer({
         onSelectNode={selectNode}
         onSelectEdge={(id) => setSelection({ kind: "edge", id })}
         onBackground={() => setSelection(null)}
+        onZoom={setZoomLevel}
       />
 
       <header className="pointer-events-none absolute top-6 left-6 z-10">
@@ -185,6 +222,34 @@ export function GraphExplorer({
           <Lock className="size-2.5" /> No access
         </li>
       </ul>
+
+      <div
+        className={`absolute top-1/2 z-10 flex -translate-y-1/2 flex-col overflow-hidden rounded-xl bg-black/30 text-white/70 backdrop-blur transition-[right] ${selection ? "right-[26rem]" : "right-6"}`}
+      >
+        <ZoomButton label="Zoom in" onClick={() => zoomBy(ZOOM.step)}>
+          <Plus className="size-4" />
+        </ZoomButton>
+        <div className="flex justify-center py-2">
+          <input
+            type="range"
+            aria-label="Zoom"
+            min={0}
+            max={100}
+            step={0.5}
+            value={zoomToSlider(zoomLevel)}
+            onChange={(e) =>
+              apiRef.current?.zoom(sliderToZoom(Number(e.target.value)))
+            }
+            className="h-32 w-4 cursor-pointer accent-white [direction:rtl] [writing-mode:vertical-lr]"
+          />
+        </div>
+        <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / ZOOM.step)}>
+          <Minus className="size-4" />
+        </ZoomButton>
+        <ZoomButton label="Fit to screen" onClick={fitToScreen}>
+          <Maximize className="size-4" />
+        </ZoomButton>
+      </div>
 
       {result && (
         <AskResultCard

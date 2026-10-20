@@ -23,7 +23,7 @@ export function AskResultCard({
   onSelectNode,
   onClose,
 }: AskResultProps) {
-  const { answer, moreAvailable, askColleague } = result;
+  const { answer, moreAvailable, askColleague, lockedHits } = result;
 
   return (
     <section
@@ -77,7 +77,9 @@ export function AskResultCard({
           </div>
         )}
 
-        {moreAvailable && <RequestMore question={result.question} />}
+        {moreAvailable && (
+          <RequestMore question={result.question} lit={lockedHits.length} />
+        )}
 
         {askColleague && <AskColleague question={result.question} />}
       </div>
@@ -85,9 +87,23 @@ export function AskResultCard({
   );
 }
 
+const withheld = (lit: number) =>
+  lit === 0
+    ? "Some of what they know about this isn't shared with you."
+    : lit === 1
+      ? "The locked fact lit up in red matches this, but isn't shared with you."
+      : `The ${lit} locked facts lit up in red match this, but aren't shared with you.`;
+
 // The request reruns the search on the server, so it carries the original
-// question rather than an edited one.
-export function RequestMore({ question }: { question: string }) {
+// question rather than an edited one. `lit` counts the locked matches lit up
+// on the graph, when there is one.
+export function RequestMore({
+  question,
+  lit = 0,
+}: {
+  question: string;
+  lit?: number;
+}) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
@@ -109,8 +125,8 @@ export function RequestMore({ question }: { question: string }) {
         <KeyRound className="size-3.5" /> Colleagues know more
       </h3>
       <p className="mt-2 text-sm text-ink">
-        Some of what they know about this isn&apos;t shared with you. SD Wise
-        can pass your question on, and they decide whether to share it.
+        {withheld(lit)} SD Wise can pass your question on, and they decide
+        whether to share it.
       </p>
       {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
       {sent ? (

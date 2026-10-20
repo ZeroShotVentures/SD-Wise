@@ -46,7 +46,7 @@ export function createMcpServer(me: Person) {
     {
       _meta: { ui: { resourceUri: ASK_APP_URI } },
       description:
-        "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card automatically, with a Request access button. When the card is shown, don't repeat the answer word for word or draw your own visual of it; just add what the card doesn't say. Without the card, give them a way to request the rest: show `requestUrl` as a link labelled \"Request access\", and offer to send the request with `request_more` if they say yes.",
+        "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. The result is always shown in an answer card with a Request access button, so don't repeat the answer word for word or draw your own visual of it; just add what the card doesn't say.",
       inputSchema: z.object({ question }),
     },
     async (input) => {
@@ -114,7 +114,7 @@ export function createMcpServer(me: Person) {
     {
       _meta: { ui: { resourceUri: INBOX_APP_URI } },
       description:
-        "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show the result in an inbox card automatically. When the card is shown, don't repeat the inbox as a table or draw your own visual of it; just point out in a sentence or two what needs attention. Replying happens in SD Wise itself; the card links there.",
+        "List the questions and access requests sent to you, and the ones you sent, with their status and answers. The result is always shown in an inbox card, so don't repeat the inbox as a table or draw your own visual of it; just point out in a sentence or two what needs attention. Replying happens in SD Wise itself; the card links there.",
     },
     async () => {
       const out = formatInbox(await graph.getInbox(me));

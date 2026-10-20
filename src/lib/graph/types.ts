@@ -115,12 +115,15 @@ export type GraphView = {
   edges: EdgeView[];
 };
 
-// `visited`, `hits` and `answer` only hold nodes the viewer can see.
+// `hits` and `answer` only hold nodes the viewer can see. `lockedHits` are
+// the locked nodes that matched, for lighting them up: ids the graph already
+// shows as locked, never their content or owners.
 export type AskResult = {
   question: string;
   // Order the search touched nodes, for the animation.
   visited: string[];
   hits: string[];
+  lockedHits: string[];
   answer: { text: string; nodeIds: string[] } | null;
   // Private facts match: offer to send the question to whoever knows them.
   moreAvailable: boolean;

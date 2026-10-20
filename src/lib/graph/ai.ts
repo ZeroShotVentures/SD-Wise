@@ -68,10 +68,11 @@ export function searchGraph(
   return { hits, visited: [...visited] };
 }
 
-// Locked matches only set `moreAvailable`: which locked facts matched, even
-// as ids, would let the asker probe their content one question at a time.
-// The answer's text joins the summaries of the visible hits; `ask` in the
-// service has Claude write the real one from the same facts.
+// Locked matches come back as `lockedHits`, ids only, so the graph can light
+// them up next to the Ask a colleague offer. The asker already sees those
+// nodes as locked; never their content or owners. The answer's text joins
+// the summaries of the visible hits; `ask` in the service has Claude write the
+// real one from the same facts.
 export function answerFor(
   question: string,
   viewerId: string,
@@ -85,6 +86,7 @@ export function answerFor(
     return node !== undefined && canSee(node, viewerId);
   };
   const known = hits.filter(visible);
+  const locked = hits.filter((id) => !visible(id));
 
   const answer = known.length
     ? {
@@ -97,10 +99,11 @@ export function answerFor(
 
   return {
     question,
-    visited: visited.filter(visible),
+    visited: visited.filter((id) => visible(id) || locked.includes(id)),
     hits: known,
+    lockedHits: locked,
     answer,
-    moreAvailable: known.length < hits.length,
+    moreAvailable: locked.length > 0,
     askColleague: false,
   };
 }

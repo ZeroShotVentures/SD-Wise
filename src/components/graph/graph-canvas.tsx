@@ -26,6 +26,8 @@ export type Highlight = {
   scanning: string | null;
   visited: ReadonlySet<string>;
   hits: ReadonlySet<string>;
+  // Hits the viewer can't open, lit in red.
+  locked: ReadonlySet<string>;
 };
 
 type GraphCanvasProps = {
@@ -44,6 +46,7 @@ type GraphCanvasProps = {
 };
 
 const YELLOW = "#ffbe00";
+const RED = "#f1002f";
 const LOCKED_FILL = "#2a3640";
 const LOCKED_STROKE = "#56666f";
 const INK = "rgba(8,16,26,0.86)";
@@ -358,6 +361,7 @@ export default function GraphCanvas({
     const isHit = highlight.hits.has(view.id);
     const isVisited = highlight.visited.has(view.id);
     const isScan = highlight.scanning === view.id;
+    const isLockedHit = highlight.locked.has(view.id);
     // What the search touches stays easy to spot at any zoom.
     const r = Math.max(
       radius(node.degree, k),
@@ -374,7 +378,9 @@ export default function GraphCanvas({
       const pulse = 0.5 + 0.5 * Math.sin(t * 3);
       ctx.beginPath();
       ctx.arc(x, y, r + (5 + pulse * 3) / Math.min(k, 1), 0, 2 * Math.PI);
-      ctx.fillStyle = `rgba(255,190,0,${0.18 + pulse * 0.12})`;
+      ctx.fillStyle = isLockedHit
+        ? `rgba(241,0,47,${0.2 + pulse * 0.14})`
+        : `rgba(255,190,0,${0.18 + pulse * 0.12})`;
       ctx.fill();
     }
     if (view.isNew) {
@@ -413,7 +419,7 @@ export default function GraphCanvas({
     if (isVisited || isScan) {
       ctx.beginPath();
       ctx.arc(x, y, r + 2 / k, 0, 2 * Math.PI);
-      ctx.strokeStyle = isScan ? "#ffffff" : YELLOW;
+      ctx.strokeStyle = isScan ? "#ffffff" : isLockedHit ? RED : YELLOW;
       ctx.lineWidth = (isScan ? 2 : 1.4) / k;
       ctx.stroke();
     }

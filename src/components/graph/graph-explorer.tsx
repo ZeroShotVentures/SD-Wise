@@ -20,6 +20,7 @@ const EMPTY: Highlight = {
   scanning: null,
   visited: new Set(),
   hits: new Set(),
+  locked: new Set(),
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -155,8 +156,10 @@ export function GraphExplorer({
     }
     if (id !== run.current) return;
 
-    // Walk the path: entry nodes first, then their neighbours.
-    const hits = new Set(res.hits);
+    // Walk the path: entry nodes first, then their neighbours. Locked matches
+    // light up too, so Ask a colleague points at something on the graph.
+    const locked = new Set(res.lockedHits);
+    const hits = new Set([...res.hits, ...res.lockedHits]);
     setStatus(
       res.visited.length
         ? `Following ${res.visited.length} connections…`
@@ -169,6 +172,7 @@ export function GraphExplorer({
         scanning: res.visited[i] ?? null,
         visited: new Set(seen),
         hits: new Set(seen.filter((n) => hits.has(n))),
+        locked,
       });
       // Sequential on purpose: each step is a frame of the animation.
       // oxlint-disable-next-line no-await-in-loop
@@ -176,7 +180,12 @@ export function GraphExplorer({
     }
     if (id !== run.current) return;
 
-    setHighlight({ scanning: null, visited: new Set(res.visited), hits });
+    setHighlight({
+      scanning: null,
+      visited: new Set(res.visited),
+      hits,
+      locked,
+    });
     const api = apiRef.current;
     if (api && hits.size) {
       const phone = isPhone();

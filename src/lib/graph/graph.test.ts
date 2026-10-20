@@ -87,12 +87,15 @@ describe("ask", () => {
     expect(result.moreAvailable).toBe(false);
   });
 
-  it("tells Kobe there's more on the December cut-off, not who has it", () => {
+  it("lights up the December cut-off for Kobe, not what it says or who has it", () => {
     const result = ask(kobe, "When is the payroll cut-off in December?");
     expect(result.answer).toBeNull();
     expect(result.moreAvailable).toBe(true);
     expect(result.hits).toEqual([]);
-    expect(JSON.stringify(result)).not.toContain("n-cutoff-december");
+    expect(result.lockedHits).toEqual(["n-cutoff-december"]);
+    expect(result.visited).toContain("n-cutoff-december");
+    const cutoff = nodes.find((n) => n.id === "n-cutoff-december");
+    expect(JSON.stringify(result)).not.toContain(cutoff?.title);
     expect(JSON.stringify(result)).not.toContain(filip.id);
   });
 
@@ -100,8 +103,14 @@ describe("ask", () => {
     const result = ask(filip, "Year-end payroll run");
     expect(result.answer?.nodeIds).toEqual(["n-year-end-run", "n-bulk-261"]);
     expect(result.moreAvailable).toBe(true);
-    expect(JSON.stringify(result)).not.toContain('n-bulk-19"');
-    expect(JSON.stringify(result)).not.toContain("n-bulk-1130");
+    expect(result.lockedHits.length).toBeGreaterThan(0);
+    expect(result.lockedHits).not.toContain("n-year-end-run");
+    // Locked neighbours of the hits stay dark.
+    const lockedVisits = result.visited.filter((id) => {
+      const node = nodes.find((n) => n.id === id);
+      return node && !canSee(node, filip.id);
+    });
+    expect(lockedVisits).toEqual(result.lockedHits);
   });
 
   it("routes a request to the owner of the locked match", () => {

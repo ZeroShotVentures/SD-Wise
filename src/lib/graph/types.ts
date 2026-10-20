@@ -81,6 +81,8 @@ export type Query = {
   // Sent by SD Wise to the owner of matching private facts, rather than to a
   // colleague the asker picked.
   routed: boolean;
+  // Shared by the questions one routed ask sent, one per owner.
+  askId: string | null;
   status: QueryStatus;
   answer: string | null;
   shareScope: ShareScope | null;

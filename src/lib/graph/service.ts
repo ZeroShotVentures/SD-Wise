@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@/generated/prisma/client";
@@ -6,7 +7,12 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
-import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
+import {
+  oneCardPerAsk,
+  questionIdOf,
+  type ResolvedQuery,
+  unseenFor,
+} from "./answers";
 import { writeAnswer, writeDraft, writeGeneral } from "./llm";
 import {
   type Db,
@@ -141,9 +147,10 @@ export async function factsFor(me: Person, ids: string[]) {
 // their reply. They answer the asker or everyone, or decline; their facts stay
 // theirs. The search reruns here so the asker never learns which facts or
 // whose. Returns nothing either way, so asking can't confirm that anything
-// matched.
+// matched. The questions share an askId, so the asker sees one.
 export async function askOwners(me: Person, question: string) {
   await limitSends(me);
+  const askId = randomUUID();
   const { nodes, edges } = await readGraph(prisma);
   const { hits } = searchGraph(question, nodes, edges);
   const byOwner = new Map<string, string[]>();
@@ -164,7 +171,7 @@ export async function askOwners(me: Person, question: string) {
         },
       });
       if (existing) return;
-      await send(me, { recipientId, question, nodeIds, routed: true });
+      await send(me, { recipientId, question, nodeIds, routed: true, askId });
     }),
   );
 }
@@ -192,6 +199,7 @@ async function send(
     question: string;
     nodeIds: string[];
     routed: boolean;
+    askId?: string;
   },
 ) {
   const created = await prisma.question.create({
@@ -341,8 +349,7 @@ export async function getInbox(me: Person) {
 
   return {
     received: queries.filter((q) => q.recipientId === me.id).map(toItem),
-    sent: queries
-      .filter((q) => q.askerId === me.id)
+    sent: oneCardPerAsk(queries.filter((q) => q.askerId === me.id))
       .map(toItem)
       .map(hideOwner),
   };

@@ -268,6 +268,9 @@ model Question {
   /// SD Wise sent it to the owner of private facts that match it, so the
   /// asker doesn't learn who that is until they answer.
   routed      Boolean        @default(false)
+  /// Shared by the questions one routed ask sent, one per owner, so the asker
+  /// sees them as one.
+  askId       String?
   status      QuestionStatus @default(PENDING)
   answer      String?
   /// The reply Claude drafted for the recipient. "" when nothing they know

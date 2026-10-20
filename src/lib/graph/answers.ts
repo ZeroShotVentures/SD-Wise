@@ -49,6 +49,23 @@ export function answerGraph(q: ResolvedQuery, facts: KnowledgeNode[]) {
   return { node, edges };
 }
 
+// A routed ask sends one question to every owner of the facts it matched, but
+// the asker asked once. They see the answers, each from whoever answered, or
+// until someone does, the ask once: waiting while anyone still could answer.
+export function oneCardPerAsk<T extends Pick<Query, "id" | "askId" | "status">>(
+  sent: T[],
+) {
+  const asks = new Map<string, T[]>();
+  const askOf = (q: T) => q.askId ?? q.id;
+  for (const q of sent) asks.set(askOf(q), [...(asks.get(askOf(q)) ?? []), q]);
+  return sent.filter((q) => {
+    const ask = asks.get(askOf(q)) ?? [q];
+    if (ask.some((x) => x.status === "ANSWERED"))
+      return q.status === "ANSWERED";
+    return q === (ask.find((x) => x.status === "PENDING") ?? ask[0]);
+  });
+}
+
 // Answers someone got and hasn't looked at yet.
 export function unseenFor(
   personId: string,

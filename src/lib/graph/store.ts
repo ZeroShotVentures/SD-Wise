@@ -89,6 +89,7 @@ export function toQuery(row: QuestionRow): ResolvedQuery {
     question: row.question,
     nodeIds: row.nodeIds,
     routed: row.routed,
+    askId: row.askId,
     status: row.status,
     answer: row.answer,
     shareScope: row.shareScope,

@@ -4,6 +4,7 @@ import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
 import {
   answerGraph,
   answerNodeId,
+  oneCardPerAsk,
   type ResolvedQuery,
   unseenFor,
 } from "./answers";
@@ -34,6 +35,7 @@ const query = (q: Partial<ResolvedQuery>): ResolvedQuery => ({
   question: "When is the payroll cut-off in December?",
   nodeIds: ["n-cutoff-december"],
   routed: false,
+  askId: null,
   status: "ANSWERED",
   answer: "14 December.",
   shareScope: "ASKER",
@@ -214,6 +216,53 @@ describe("answers", () => {
     expect(
       unseenFor(kobe.id, [query({ seenAt: "2026-09-30T12:00:00Z" })]),
     ).toEqual(new Set());
+  });
+});
+
+const sent = (...qs: Partial<ResolvedQuery>[]) =>
+  oneCardPerAsk(qs.map((q) => query({ routed: true, ...q }))).map((q) => q.id);
+
+describe("a routed ask in the asker's Sent tab", () => {
+  it("shows only the answers once an owner answers", () => {
+    expect(
+      sent(
+        { id: "q-bram", askId: "a-1", status: "PENDING", answer: null },
+        { id: "q-filip", askId: "a-1" },
+      ),
+    ).toEqual(["q-filip"]);
+  });
+
+  it("shows every owner who answered", () => {
+    expect(
+      sent({ id: "q-bram", askId: "a-1" }, { id: "q-filip", askId: "a-1" }),
+    ).toEqual(["q-bram", "q-filip"]);
+  });
+
+  it("shows the ask once while it waits, and waiting while anyone could answer", () => {
+    expect(
+      sent(
+        { id: "q-bram", askId: "a-1", status: "DECLINED", answer: null },
+        { id: "q-filip", askId: "a-1", status: "PENDING", answer: null },
+        { id: "q-sofie", askId: "a-1", status: "PENDING", answer: null },
+      ),
+    ).toEqual(["q-filip"]);
+    expect(
+      sent(
+        { id: "q-bram", askId: "a-1", status: "DECLINED", answer: null },
+        { id: "q-filip", askId: "a-1", status: "DECLINED", answer: null },
+      ),
+    ).toEqual(["q-bram"]);
+  });
+
+  it("leaves other questions alone", () => {
+    expect(
+      sent(
+        { id: "q-1", askId: "a-1", status: "PENDING", answer: null },
+        { id: "q-2", askId: "a-2", status: "PENDING", answer: null },
+        { id: "q-3", routed: false, status: "PENDING", answer: null },
+        { id: "q-4", routed: false, status: "PENDING", answer: null },
+      ),
+    ).toEqual(["q-1", "q-2", "q-3", "q-4"]);
   });
 });
 

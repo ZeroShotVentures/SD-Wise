@@ -1,3 +1,4 @@
+import { generateBulk } from "./bulk-fixtures";
 import type {
   EdgeKind,
   Integration,
@@ -11,7 +12,10 @@ import type {
 // Mock company brain for SD Worx. The people are also seeded as Person rows
 // (pnpm db:seed:demo) so questions between them can be stored for real.
 
-export const people: Person[] = [
+const bulk = generateBulk();
+
+// The demo cast first, then the rest of the company.
+const corePeople: Person[] = [
   { id: "p-dario", name: "Dario", role: "Product lead", department: "IT" },
   {
     id: "p-victor",
@@ -69,6 +73,8 @@ export const people: Person[] = [
     department: "PRODUCTION",
   },
 ];
+
+export const people: Person[] = [...corePeople, ...bulk.people];
 
 export const integrations: Integration[] = [
   { id: "i-slack", type: "slack", connected: true, connectedAt: "2026-09-02" },
@@ -524,7 +530,7 @@ const nodeSeeds: NodeSeed[] = [
   },
 ];
 
-export const nodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
+const coreNodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
   id: n.id,
   title: n.title,
   content: n.content,
@@ -537,6 +543,8 @@ export const nodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
   accessIds: [...n.owners],
   createdAt: n.at,
 }));
+
+export const nodes: KnowledgeNode[] = [...coreNodes, ...bulk.nodes];
 
 const edgeSeeds: [string, string, EdgeKind, string][] = [
   [
@@ -635,7 +643,7 @@ const edgeSeeds: [string, string, EdgeKind, string][] = [
   ["n-engine-capacity", "n-deploy-freeze", "RELATES_TO", "Same holiday window"],
 ];
 
-export const edges: KnowledgeEdge[] = edgeSeeds.map(
+const coreEdges: KnowledgeEdge[] = edgeSeeds.map(
   ([sourceId, targetId, kind, description], i) => ({
     id: `e-${i + 1}`,
     sourceId,
@@ -644,3 +652,5 @@ export const edges: KnowledgeEdge[] = edgeSeeds.map(
     description,
   }),
 );
+
+export const edges: KnowledgeEdge[] = [...coreEdges, ...bulk.edges];

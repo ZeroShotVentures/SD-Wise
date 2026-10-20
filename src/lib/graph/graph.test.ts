@@ -58,7 +58,7 @@ const withAnswer = (q: ResolvedQuery) => {
 
 describe("redaction", () => {
   it("never sends locked content to the viewer", () => {
-    const pricing = nodes.find((n) => n.id === "n-kras-pricing");
+    const pricing = nodes.find((n) => n.id === "n-norvik-pricing");
     if (!pricing) throw new Error("fixture");
     const view = toNodeView(pricing, julien.id);
     expect(view).toEqual(expect.objectContaining({ locked: true }));
@@ -71,7 +71,7 @@ describe("redaction", () => {
   });
 
   it("hides the meaning of edges touching a locked node", () => {
-    const edge = edges.find((e) => e.sourceId === "n-kras-pricing");
+    const edge = edges.find((e) => e.sourceId === "n-norvik-pricing");
     if (!edge) throw new Error("fixture");
     const visible = new Set(
       nodes.filter((n) => canSee(n, julien.id)).map((n) => n.id),
@@ -82,7 +82,7 @@ describe("redaction", () => {
 
 describe("ask", () => {
   it("answers from what you own", () => {
-    const result = ask(bram, "What do we charge Kras per payslip?");
+    const result = ask(bram, "What do we charge Norvik per payslip?");
     expect(result.answer?.text).toContain("€4.20");
     expect(result.moreAvailable).toBe(false);
   });
@@ -154,13 +154,13 @@ describe("ask", () => {
   it("drafts nothing from facts the recipient can't see", () => {
     expect(
       draftFacts(
-        "What do we charge Kras?",
+        "What do we charge Norvik?",
         julien.id,
-        ["n-kras-pricing"],
+        ["n-norvik-pricing"],
         nodes,
         edges,
       ).map((n) => n.id),
-    ).not.toContain("n-kras-pricing");
+    ).not.toContain("n-norvik-pricing");
   });
 
   it("links Kobe's and Filip's knowledge in the graph", () => {
@@ -200,10 +200,10 @@ describe("answers", () => {
       query({
         recipientId: julien.id,
         recipient: julien,
-        nodeIds: ["n-kras-pricing", "n-kras-customer"],
+        nodeIds: ["n-norvik-pricing", "n-norvik-customer"],
       }),
     );
-    expect(added.map((e) => e.targetId)).toEqual(["n-kras-customer"]);
+    expect(added.map((e) => e.targetId)).toEqual(["n-norvik-customer"]);
   });
 
   it("are new to the asker until seen", () => {

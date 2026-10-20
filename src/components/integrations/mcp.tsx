@@ -245,7 +245,7 @@ function Hero({ url, tools }: { url: string; tools: number }) {
   }, [url]);
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-navy p-6 text-white sm:p-8">
+    <section className="relative overflow-hidden rounded-3xl bg-navy p-5 text-white sm:p-8">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 -right-24 size-96 rounded-full bg-brand/30 blur-3xl"
@@ -336,7 +336,7 @@ function SectionTitle({
   aside?: React.ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
       <div>
         <h2 className="text-base font-semibold text-navy">{title}</h2>
         <p className="mt-0.5 text-sm text-muted">{description}</p>
@@ -423,7 +423,7 @@ function ClientRow({ client }: { client: McpClient }) {
         </div>
       )}
       {confirming ? (
-        <div className="animate-fade flex items-center gap-2">
+        <div className="animate-fade flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted">
             Access ends within the hour.
           </span>
@@ -478,7 +478,7 @@ function Setup({ url }: { url: string }) {
           role="tablist"
           aria-orientation="vertical"
           aria-label="MCP clients"
-          className="flex gap-1 overflow-x-auto border-b border-line bg-canvas/50 p-2 md:flex-col md:border-r md:border-b-0"
+          className="flex gap-1 overflow-x-auto border-b border-line bg-canvas/50 p-2 [scrollbar-width:none] md:flex-col md:border-r md:border-b-0"
         >
           {all.map((g) => (
             <button
@@ -514,7 +514,7 @@ function Setup({ url }: { url: string }) {
             id="mcp-guide"
             role="tabpanel"
             aria-labelledby={`tab-${guide.id}`}
-            className="animate-fade flex min-w-0 flex-col gap-5 p-6"
+            className="animate-fade flex min-w-0 flex-col gap-5 p-4 sm:p-6"
           >
             <div className="flex items-center gap-3">
               <Logo name={guide.logo} />
@@ -561,7 +561,7 @@ function Setup({ url }: { url: string }) {
                   guide.action.href.startsWith("http") ? "_blank" : undefined
                 }
                 rel="noreferrer"
-                className="group inline-flex items-center gap-2 self-start rounded-lg bg-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-deep"
+                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-navy-deep sm:self-start sm:py-2"
               >
                 <Logo name={guide.logo} size="xs" className="ring-0" />
                 {guide.action.label}
@@ -577,7 +577,7 @@ function Setup({ url }: { url: string }) {
                 {PROMPTS.map((prompt) => (
                   <span
                     key={prompt}
-                    className="inline-flex items-center gap-1 rounded-full bg-canvas py-1 pr-1 pl-3 text-xs text-ink"
+                    className="inline-flex items-center gap-1 rounded-2xl bg-canvas py-1 pr-1 pl-3 text-xs text-ink sm:rounded-full"
                   >
                     “{prompt}”
                     <CopyButton value={prompt} label="Copy prompt" compact />
@@ -619,8 +619,8 @@ function Tools({ tools }: { tools: ToolSummary[] }) {
             key={tool.name}
             className="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-line"
           >
-            <div className="flex items-start justify-between gap-3">
-              <code className="font-mono text-sm font-semibold text-navy">
+            <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
+              <code className="font-mono text-sm font-semibold break-all text-navy">
                 {tool.name}
               </code>
               {tool.appOnly ? (

@@ -50,21 +50,22 @@ export function Inspector({
       : undefined;
 
   return (
-    <aside className="animate-rise absolute top-4 right-4 bottom-4 z-10 flex w-96 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl shadow-black/30">
-      <header className="flex items-center justify-between border-b border-line px-5 py-3">
+    // A bottom sheet on phones, a panel on the right from md up.
+    <aside className="animate-rise absolute inset-x-0 bottom-0 z-30 flex max-h-[65%] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl shadow-black/30 md:inset-x-auto md:top-4 md:right-4 md:bottom-4 md:z-10 md:max-h-none md:w-96 md:rounded-2xl">
+      <header className="flex items-center justify-between border-b border-line px-5 py-1.5 md:py-2">
         <p className="text-xs font-semibold tracking-wider text-muted uppercase">
           {selection.kind === "node" ? "Fact" : "Connection"}
         </p>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1 text-muted hover:bg-canvas hover:text-navy"
+          className="-mr-2 rounded-md p-2 text-muted hover:bg-canvas hover:text-navy"
         >
           <X className="size-4" />
           <span className="sr-only">Close</span>
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto p-5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
         {node && (
           <NodeDetails node={node} view={view} onSelectNode={onSelectNode} />
         )}
@@ -210,7 +211,7 @@ function NodeDetails({
                   <button
                     type="button"
                     onClick={() => onSelectNode(otherId)}
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-canvas"
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-2.5 text-left text-sm hover:bg-canvas md:py-1.5"
                   >
                     <span className="w-20 shrink-0 text-xs text-muted">
                       {edge.locked ? "Hidden" : EDGE_KINDS[edge.kind]}
@@ -360,7 +361,7 @@ function RequestAccessButton({
           }
         })
       }
-      className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50"
+      className="shrink-0 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-dark disabled:opacity-50 md:py-1.5"
     >
       {pending ? "Sending..." : error ? "Try again" : "Request access"}
     </button>

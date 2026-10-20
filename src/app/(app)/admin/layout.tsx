@@ -3,5 +3,9 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="mx-auto max-w-5xl px-8 py-10">{children}</div>;
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10">
+      {children}
+    </div>
+  );
 }

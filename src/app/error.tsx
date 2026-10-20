@@ -14,7 +14,7 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-zinc-950">
+    <div className="flex min-h-dvh items-center justify-center bg-zinc-50 px-6 font-sans dark:bg-zinc-950">
       <div className="max-w-sm space-y-4 text-center">
         <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           Something went wrong

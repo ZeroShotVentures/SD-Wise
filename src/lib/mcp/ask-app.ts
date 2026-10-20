@@ -31,22 +31,22 @@ function render(data) {
       el("p", null,
         "Some of what they know about this isn't shared with you. SD Wise can pass your question on, and they decide whether to share it."),
     );
-    const button = el("button", null, "Request access");
+    const button = el("button", null, "Ask a colleague");
     const status = el("p", "err");
     button.onclick = async () => {
       button.disabled = true;
-      button.textContent = "Requesting…";
+      button.textContent = "Asking…";
       status.textContent = "";
       try {
         const res = await app.callServerTool({ name: "request_more", arguments: { question: data.question } });
         if (res.isError) throw new Error();
-        button.replaceWith(el("p", "ok", "Requested. You'll see it in your SD Wise inbox if it's shared."));
+        button.replaceWith(el("p", "ok", "Asked. You'll see it in your SD Wise inbox if it's shared."));
         await app.updateModelContext({
           content: [{ type: "text", text: "The user already requested access to the rest through SD Wise. Don't offer it again." }],
         }).catch(() => {});
       } catch {
         button.disabled = false;
-        button.textContent = "Request access";
+        button.textContent = "Ask a colleague";
         if (data.requestUrl) {
           await app.openLink({ url: data.requestUrl }).catch(() => {});
           status.textContent = "Opened SD Wise to finish the request.";

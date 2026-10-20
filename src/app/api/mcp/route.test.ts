@@ -149,7 +149,7 @@ describe("/api/mcp", () => {
     );
     const [page] = read.contents;
     expect(page.mimeType).toBe("text/html;profile=mcp-app");
-    expect(page.text).toContain("Request access");
+    expect(page.text).toContain("Ask a colleague");
     expect(page.text).toContain("const App = ");
     expect(page.text).not.toMatch(/export\s*\{/);
   });
@@ -222,7 +222,7 @@ describe("/api/mcp", () => {
     expect(text).not.toContain("€4.20");
     expect(text).not.toContain("p-bram");
     expect(link.text).toMatch(
-      /^\[Request access\]\(http.+\/inbox\/request\?question=What\+does\+Kras/,
+      /^\[Ask a colleague\]\(http.+\/inbox\/request\?question=What\+does\+Kras/,
     );
   });
 });

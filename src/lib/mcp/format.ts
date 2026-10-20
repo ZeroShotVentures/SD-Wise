@@ -4,7 +4,7 @@ const label = (p: Person) => `${p.name} (${p.role})`;
 
 // What an MCP client sees for a question. Locked facts never appear, not even
 // their owners: `moreAvailable` is the only hint. `requestUrl` opens a page
-// with a Request access button, for hosts that can't show the answer card.
+// with an Ask a colleague button, for hosts that can't show the answer card.
 export function formatAsk(
   result: AskResult,
   nodes: NodeView[],

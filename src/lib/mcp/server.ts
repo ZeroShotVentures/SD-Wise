@@ -47,7 +47,12 @@ export function createMcpServer(me: Person) {
     ]);
     const out = formatAsk(result, view.nodes, env.BETTER_AUTH_URL);
     const link = out.requestUrl
-      ? [{ type: "text" as const, text: `[Request access](${out.requestUrl})` }]
+      ? [
+          {
+            type: "text" as const,
+            text: `[Ask a colleague](${out.requestUrl})`,
+          },
+        ]
       : [];
     return {
       content: [...json(out).content, ...link],
@@ -61,7 +66,7 @@ export function createMcpServer(me: Person) {
     return json({ requested: true });
   });
 
-  // Replaced by the answer card's Request access button.
+  // Replaced by the answer card's Ask a colleague button.
   // server.registerTool(
   //   "ask_person",
   //   {

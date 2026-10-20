@@ -9,8 +9,10 @@ import { edges, integrations, nodes } from "./fixtures";
 import { demoQuestions, seedGraph } from "./seed";
 import {
   type Db,
+  integrationStats,
   linkLooseFacts,
   readGraph,
+  readLiveNodes,
   readNodes,
   saveAnswer,
   syncAnswers,
@@ -55,6 +57,14 @@ const node = async (tx: Db, id: string) => {
   if (!found) throw new Error(`No node ${id}`);
   return found;
 };
+
+// Fixture facts start out shared with their owners only.
+const outlookFacts = (personId: string) =>
+  nodes.filter(
+    (n) =>
+      n.integrationId === "i-outlook" &&
+      (n.visibility === "PUBLIC" || n.ownerIds.includes(personId)),
+  ).length;
 
 const answered = (
   tx: Db,
@@ -154,6 +164,38 @@ describe.skipIf(!prisma)("graph in the database", { timeout: 60_000 }, () => {
       expect(
         graph.edges.every((e) => ids.has(e.sourceId) && ids.has(e.targetId)),
       ).toBe(true);
+    }));
+
+  it("drops answers based on a fact from a disconnected source", () =>
+    rolledBack(async (tx) => {
+      const row = await answered(
+        tx,
+        { askerId: "p-kobe", recipientId: "p-filip" },
+        ["n-cutoff-december"],
+      );
+      const answer = await saveAnswer(tx, toQuery(row));
+      const shown = async () =>
+        (await readGraph(tx)).nodes.some((n) => n.id === answer.id);
+      expect(await shown()).toBe(true);
+
+      await tx.integrations.update({
+        where: { id: "i-outlook" },
+        data: { connected: false },
+      });
+      expect(await shown()).toBe(false);
+      expect(await readLiveNodes(tx, [answer.id, "n-cutoff-december"])).toEqual(
+        [],
+      );
+    }));
+
+  it("counts only the facts the viewer can see", () =>
+    rolledBack(async (tx) => {
+      const [bram, kobe] = await Promise.all([
+        integrationStats(tx, "p-bram"),
+        integrationStats(tx, "p-kobe"),
+      ]);
+      expect(bram.get("i-outlook")?.facts ?? 0).toBe(outlookFacts("p-bram"));
+      expect(kobe.get("i-outlook")?.facts ?? 0).toBe(outlookFacts("p-kobe"));
     }));
 
   it("turns an answer into a node, until the question is deleted", () =>

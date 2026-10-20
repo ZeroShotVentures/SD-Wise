@@ -195,14 +195,22 @@ function QuestionReview({ item }: { item: InboxItem }) {
             title={`Only ${askerName}`}
             text={`${askerName} can know it, but it stays private in the graph.`}
           />
-          <ScopeOption
-            checked={scope === "PUBLIC"}
-            onChange={() => setScope("PUBLIC")}
-            icon={<Globe className="size-4" />}
-            title="Everyone"
-            text="It's not a secret anymore. Anyone can find this answer."
-          />
+          {item.canShareAll && (
+            <ScopeOption
+              checked={scope === "PUBLIC"}
+              onChange={() => setScope("PUBLIC")}
+              icon={<Globe className="size-4" />}
+              title="Everyone"
+              text="It's not a secret anymore. Anyone can find this answer."
+            />
+          )}
         </div>
+        {!item.canShareAll && (
+          <p className="mt-2 text-xs text-muted">
+            Only {askerName}: what you know about this includes private facts
+            that aren&apos;t yours to share with everyone.
+          </p>
+        )}
       </fieldset>
 
       {error && <p className="mt-4 text-sm text-worx-red">{error}</p>}

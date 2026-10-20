@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "@/lib/auth-client";
 
+const BANNED_MESSAGE =
+  "This account has been suspended. Contact your administrator.";
+
 type AuthFormProps = {
   callbackURL: string;
 };
@@ -23,7 +26,12 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
     try {
       const res = await signIn.email({ email, password });
       if (res.error) {
-        setError(res.error.message ?? "Sign in failed");
+        // A ban's message can be set per user, so it isn't shown as is.
+        setError(
+          res.error.code === "BANNED_USER"
+            ? BANNED_MESSAGE
+            : (res.error.message ?? "Sign in failed"),
+        );
         setLoading(false);
         return;
       }

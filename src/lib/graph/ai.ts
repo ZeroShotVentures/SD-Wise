@@ -35,6 +35,8 @@ function score(query: string[], node: KnowledgeNode) {
   return total;
 }
 
+const MAX_VISITED = 60;
+
 export function searchGraph(
   question: string,
   nodes: KnowledgeNode[],
@@ -52,21 +54,23 @@ export function searchGraph(
     .slice(0, limit)
     .map((s) => s.node.id);
 
-  // Visit order: entry nodes first, then their neighbours.
-  const visited = [...hits];
+  // Visit order: entry nodes first, then their neighbours, up to MAX_VISITED
+  // so a densely linked hit can't make the walk or the response unbounded.
+  const visited = new Set(hits);
   for (const id of hits) {
     for (const e of edges) {
+      if (visited.size >= MAX_VISITED) break;
       const next =
         e.sourceId === id ? e.targetId : e.targetId === id ? e.sourceId : null;
-      if (next && !visited.includes(next)) visited.push(next);
+      if (next) visited.add(next);
     }
   }
-  return { hits, visited };
+  return { hits, visited: [...visited] };
 }
 
-// Locked matches come back as `lockedHits`, ids only, so the graph can light
-// them up next to the Ask a colleague offer. The asker already sees those
-// nodes as locked; never their content or owners. The answer's text joins the summaries of the visible hits; `ask` in the
+// Locked matches only set `moreAvailable`: which locked facts matched, even
+// as ids, would let the asker probe their content one question at a time.
+// The answer's text joins the summaries of the visible hits; `ask` in the
 // service has Claude write the real one from the same facts.
 export function answerFor(
   question: string,
@@ -81,7 +85,6 @@ export function answerFor(
     return node !== undefined && canSee(node, viewerId);
   };
   const known = hits.filter(visible);
-  const locked = hits.filter((id) => !visible(id));
 
   const answer = known.length
     ? {
@@ -94,11 +97,10 @@ export function answerFor(
 
   return {
     question,
-    visited: visited.filter((id) => visible(id) || locked.includes(id)),
+    visited: visited.filter(visible),
     hits: known,
-    lockedHits: locked,
     answer,
-    moreAvailable: locked.length > 0,
+    moreAvailable: known.length < hits.length,
     askColleague: false,
   };
 }

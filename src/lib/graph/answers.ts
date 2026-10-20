@@ -14,6 +14,14 @@ export const answerNodeId = (questionId: string) =>
 export const questionIdOf = (nodeId: string) =>
   nodeId.startsWith(ANSWER_PREFIX) ? nodeId.slice(ANSWER_PREFIX.length) : null;
 
+// An answer can only go to everyone when nothing it draws on is someone
+// else's private fact: being allowed to read a fact isn't being allowed to
+// publish it.
+export const publishable = (facts: KnowledgeNode[], personId: string) =>
+  facts.every(
+    (n) => n.visibility === "PUBLIC" || n.ownerIds.includes(personId),
+  );
+
 // The node an answered question becomes, linked to the facts it was based on
 // that the recipient can see, and visible to the asker (or everyone). `facts`
 // holds the nodes the question was about.
@@ -21,9 +29,11 @@ export function answerGraph(q: ResolvedQuery, facts: KnowledgeNode[]) {
   const { asker, recipient } = q;
   const id = answerNodeId(q.id);
   const edges: KnowledgeEdge[] = [];
+  const linked: KnowledgeNode[] = [];
   for (const targetId of q.nodeIds) {
     const target = facts.find((n) => n.id === targetId);
     if (!target || !canSee(target, recipient.id)) continue;
+    linked.push(target);
     edges.push({
       id: `e-${id}-${targetId}`,
       sourceId: id,
@@ -41,7 +51,10 @@ export function answerGraph(q: ResolvedQuery, facts: KnowledgeNode[]) {
     source: "OTHER",
     integrationId: null,
     sourceDescription: `Answer from ${recipient.name} to ${asker.name}`,
-    visibility: q.shareScope === "PUBLIC" ? "PUBLIC" : "PRIVATE",
+    visibility:
+      q.shareScope === "PUBLIC" && publishable(linked, recipient.id)
+        ? "PUBLIC"
+        : "PRIVATE",
     ownerIds: [recipient.id],
     accessIds: [recipient.id, asker.id],
     createdAt: q.resolvedAt ?? q.createdAt,

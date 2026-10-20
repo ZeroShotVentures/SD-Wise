@@ -4,6 +4,7 @@ import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
 import {
   answerGraph,
   answerNodeId,
+  publishable,
   type ResolvedQuery,
   unseenFor,
 } from "./answers";
@@ -87,13 +88,13 @@ describe("ask", () => {
     expect(result.moreAvailable).toBe(false);
   });
 
-  it("lights up the December cut-off for Kobe, not what it says or who has it", () => {
+  it("hints at the December cut-off for Kobe without saying which fact, what it says or who has it", () => {
     const result = ask(kobe, "When is the payroll cut-off in December?");
     expect(result.answer).toBeNull();
     expect(result.moreAvailable).toBe(true);
     expect(result.hits).toEqual([]);
-    expect(result.lockedHits).toEqual(["n-cutoff-december"]);
-    expect(result.visited).toContain("n-cutoff-december");
+    expect(result.visited).not.toContain("n-cutoff-december");
+    expect(JSON.stringify(result)).not.toContain("n-cutoff-december");
     const cutoff = nodes.find((n) => n.id === "n-cutoff-december");
     expect(JSON.stringify(result)).not.toContain(cutoff?.title);
     expect(JSON.stringify(result)).not.toContain(filip.id);
@@ -103,14 +104,12 @@ describe("ask", () => {
     const result = ask(filip, "Year-end payroll run");
     expect(result.answer?.nodeIds).toEqual(["n-year-end-run", "n-bulk-261"]);
     expect(result.moreAvailable).toBe(true);
-    expect(result.lockedHits.length).toBeGreaterThan(0);
-    expect(result.lockedHits).not.toContain("n-year-end-run");
-    // Locked neighbours of the hits stay dark.
+    // Locked nodes, matched or not, never show up in the walk.
     const lockedVisits = result.visited.filter((id) => {
       const node = nodes.find((n) => n.id === id);
       return node && !canSee(node, filip.id);
     });
-    expect(lockedVisits).toEqual(result.lockedHits);
+    expect(lockedVisits).toEqual([]);
   });
 
   it("routes a request to the owner of the locked match", () => {
@@ -193,6 +192,26 @@ describe("answers", () => {
   it("are public when shared with everyone", () => {
     const { node } = withAnswer(query({ shareScope: "PUBLIC" }));
     expect(canSee(node, julien.id)).toBe(true);
+  });
+
+  it("stay private when based on a private fact the recipient was only given access to", () => {
+    const shared = nodes.map((n) =>
+      n.id === "n-cutoff-december"
+        ? { ...n, accessIds: [...n.accessIds, kobe.id] }
+        : n,
+    );
+    const q = query({
+      askerId: julien.id,
+      asker: julien,
+      recipientId: kobe.id,
+      recipient: kobe,
+      shareScope: "PUBLIC",
+    });
+    const { node, edges: added } = answerGraph(q, shared);
+    expect(added.map((e) => e.targetId)).toEqual(["n-cutoff-december"]);
+    expect(node.visibility).toBe("PRIVATE");
+    expect(canSee(node, bram.id)).toBe(false);
+    expect(publishable(shared, kobe.id)).toBe(false);
   });
 
   it("only link facts the recipient can see", () => {

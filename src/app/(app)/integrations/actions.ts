@@ -2,20 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requirePerson } from "@/lib/graph/me";
 import * as graph from "@/lib/graph/service";
 import { disconnectMcpClient } from "@/lib/mcp/clients";
-import { requireSession } from "@/lib/session";
+import { requireAdmin, requireSession } from "@/lib/session";
 
 const id = z.string().min(1).max(100);
 
 // Mocked: no OAuth, connecting just flips the flags in the database. Facts
-// from a disconnected source drop out of the graph and search.
+// from a disconnected source drop out of the graph and search, for everyone,
+// so only admins can do it.
 export async function setConnected(input: {
   ids: string[];
   connected: boolean;
 }) {
-  await requirePerson();
+  await requireAdmin();
   const data = z
     .object({ ids: z.array(id).min(1).max(20), connected: z.boolean() })
     .parse(input);

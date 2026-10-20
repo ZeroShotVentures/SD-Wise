@@ -47,7 +47,6 @@ describe("formatAsk", () => {
       question: "Who wins the World Cup?",
       visited: [],
       hits: [],
-      lockedHits: [],
       answer: { text: "I can't help you with that.", nodeIds: [] },
       moreAvailable: false,
       askColleague: true,

@@ -6,7 +6,7 @@ import { requirePerson } from "@/lib/graph/me";
 import { getIntegrations } from "@/lib/graph/service";
 import { getMcpClients } from "@/lib/mcp/clients";
 import { toolSummaries } from "@/lib/mcp/tools";
-import { requireSession } from "@/lib/session";
+import { isAdmin, requireSession } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Integrations" };
 
@@ -15,12 +15,13 @@ export default async function Page({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  await requirePerson();
+  const me = await requirePerson();
   const { user } = await requireSession();
-  const [{ tab }, clients, integrations] = await Promise.all([
+  const [{ tab }, clients, integrations, canManage] = await Promise.all([
     searchParams,
     getMcpClients(user.id),
-    getIntegrations(),
+    getIntegrations(me),
+    isAdmin(user),
   ]);
 
   return (
@@ -31,6 +32,7 @@ export default async function Page({
       <IntegrationsView
         tab={tab === "mcp" ? "mcp" : "sources"}
         integrations={integrations}
+        canManage={canManage}
         mcp={{ url: mcpResource, clients, tools: toolSummaries() }}
       />
     </PageShell>

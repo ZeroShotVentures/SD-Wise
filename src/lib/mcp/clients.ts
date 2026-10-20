@@ -58,7 +58,10 @@ export async function getMcpClients(userId: string): Promise<McpClient[]> {
 // ask again. Access tokens are self-contained JWTs: one already issued keeps
 // working until it expires, at most an hour.
 export async function disconnectMcpClient(userId: string, clientId: string) {
-  const where = { userId, clientId };
+  const where = {
+    userId: { equals: userId },
+    clientId: { equals: clientId },
+  };
   const revoked = new Date();
   await prisma.$transaction([
     prisma.oauthConsent.deleteMany({ where }),

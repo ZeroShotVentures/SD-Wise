@@ -13,10 +13,12 @@ export type Tab = "sources" | "mcp";
 export function IntegrationsView({
   tab: initialTab,
   integrations,
+  canManage,
   mcp,
 }: {
   tab: Tab;
   integrations: IntegrationStats[];
+  canManage: boolean;
   mcp: { url: string; clients: McpClient[]; tools: ToolSummary[] };
 }) {
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -69,7 +71,7 @@ export function IntegrationsView({
 
       <div key={tab} className="animate-rise">
         {tab === "sources" ? (
-          <Sources integrations={integrations} />
+          <Sources integrations={integrations} canManage={canManage} />
         ) : (
           <Mcp {...mcp} />
         )}

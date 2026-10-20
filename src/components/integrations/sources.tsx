@@ -48,10 +48,14 @@ const matches = (integration: IntegrationStats, query: string) => {
     .every((word) => haystack.includes(word));
 };
 
+// Connecting a source changes the graph for everyone, so only admins get the
+// buttons; the server action checks too.
 export function Sources({
   integrations,
+  canManage,
 }: {
   integrations: IntegrationStats[];
+  canManage: boolean;
 }) {
   const [items, setOptimistic] = useOptimistic(
     integrations,
@@ -136,11 +140,15 @@ export function Sources({
       <SuiteHero
         suite="microsoft"
         items={items.filter((i) => INTEGRATIONS[i.type].suite === "microsoft")}
-        onConnect={(pick) => {
-          const [head, ...rest] = pick;
-          if (head)
-            setConnecting({ items: [head, ...rest], suite: "microsoft" });
-        }}
+        onConnect={
+          canManage
+            ? (pick) => {
+                const [head, ...rest] = pick;
+                if (head)
+                  setConnecting({ items: [head, ...rest], suite: "microsoft" });
+              }
+            : undefined
+        }
       />
 
       <div className="flex flex-col gap-3">
@@ -233,11 +241,17 @@ export function Sources({
                   key={integration.id}
                   integration={integration}
                   index={i}
-                  onConnect={() => {
-                    const { suite } = INTEGRATIONS[integration.type];
-                    setConnecting({ items: [integration], suite });
-                  }}
-                  onDisconnect={() => disconnect(integration)}
+                  onConnect={
+                    canManage
+                      ? () => {
+                          const { suite } = INTEGRATIONS[integration.type];
+                          setConnecting({ items: [integration], suite });
+                        }
+                      : undefined
+                  }
+                  onDisconnect={
+                    canManage ? () => disconnect(integration) : undefined
+                  }
                 />
               ))}
             </div>
@@ -251,6 +265,7 @@ export function Sources({
           <span className="font-medium text-navy">Private by default.</span>{" "}
           Every fact is owned by the people who were in the conversation, or who
           can open the file. Nobody else sees it unless an owner shares it.
+          {!canManage && " Only admins can connect or disconnect sources."}
         </span>
       </p>
 
@@ -304,7 +319,7 @@ function SuiteHero({
 }: {
   suite: Suite;
   items: IntegrationStats[];
-  onConnect: (items: IntegrationStats[]) => void;
+  onConnect?: (items: IntegrationStats[]) => void;
 }) {
   const meta = SUITES[suite];
   const remaining = items.filter((i) => !i.connected);
@@ -358,17 +373,19 @@ function SuiteHero({
         <div className="flex shrink-0 items-center gap-4">
           <Ring value={done} total={items.length} />
           {remaining.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => onConnect(remaining)}
-              className="group flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-[#2f2f2f] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-black active:scale-[0.98] @3xl:flex-none"
-            >
-              <Logo name="microsoft" size="xs" className="ring-0" />
-              {done === 0
-                ? "Connect Microsoft 365"
-                : `Connect ${remaining.length} more`}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
+            onConnect && (
+              <button
+                type="button"
+                onClick={() => onConnect(remaining)}
+                className="group flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-[#2f2f2f] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-black active:scale-[0.98] @3xl:flex-none"
+              >
+                <Logo name="microsoft" size="xs" className="ring-0" />
+                {done === 0
+                  ? "Connect Microsoft 365"
+                  : `Connect ${remaining.length} more`}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </button>
+            )
           ) : (
             <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
               <Check className="size-4" /> All apps connected
@@ -384,12 +401,14 @@ function SuiteHero({
             <li key={item.id}>
               <button
                 type="button"
-                disabled={item.connected}
-                onClick={() => onConnect([item])}
+                disabled={item.connected || !onConnect}
+                onClick={() => onConnect?.([item])}
                 title={
                   item.connected
                     ? `${app.label} is connected`
-                    : `Connect ${app.label}`
+                    : onConnect
+                      ? `Connect ${app.label}`
+                      : `${app.label} isn't connected`
                 }
                 className="group flex w-full items-center gap-2.5 rounded-xl bg-white/70 p-2 text-left ring-1 ring-line backdrop-blur transition-all enabled:hover:-translate-y-0.5 enabled:hover:shadow-md enabled:hover:ring-brand/30 disabled:cursor-default"
               >
@@ -416,7 +435,11 @@ function SuiteHero({
                       .replace("Teams meetings", "Meetings")}
                   </span>
                   <span className="block text-[11px] text-muted">
-                    {item.connected ? "Connected" : "Connect"}
+                    {item.connected
+                      ? "Connected"
+                      : onConnect
+                        ? "Connect"
+                        : "Not connected"}
                   </span>
                 </span>
               </button>
@@ -481,8 +504,8 @@ function IntegrationCard({
 }: {
   integration: IntegrationStats;
   index: number;
-  onConnect: () => void;
-  onDisconnect: () => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
 }) {
   const meta = INTEGRATIONS[integration.type];
 
@@ -553,23 +576,27 @@ function IntegrationCard({
               </span>
             )}
           </p>
-          <button
-            type="button"
-            onClick={onDisconnect}
-            className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
-          >
-            Disconnect
-          </button>
+          {onDisconnect && (
+            <button
+              type="button"
+              onClick={onDisconnect}
+              className="shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-red-50 hover:text-worx-red"
+            >
+              Disconnect
+            </button>
+          )}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={onConnect}
-          className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-brand-soft px-3 py-2.5 text-sm font-medium sm:py-2 text-brand transition-colors hover:bg-brand hover:text-white"
-        >
-          Connect
-          <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
-        </button>
+        onConnect && (
+          <button
+            type="button"
+            onClick={onConnect}
+            className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-brand-soft px-3 py-2.5 text-sm font-medium sm:py-2 text-brand transition-colors hover:bg-brand hover:text-white"
+          >
+            Connect
+            <ArrowRight className="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+          </button>
+        )
       )}
     </article>
   );

@@ -1,10 +1,17 @@
+import { cimd } from "@better-auth/cimd";
+import { fetchClientMetadataResource } from "@better-auth/cimd/node";
+import { mcp } from "@better-auth/mcp";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins";
+import { admin, jwt } from "better-auth/plugins";
 import { env } from "@/env";
 import { roleFor } from "./admin-role";
 import { prisma } from "./prisma";
+
+// The MCP server (src/app/api/mcp/route.ts). Access tokens are bound to it.
+export const mcpResource = `${env.BETTER_AUTH_URL}/api/mcp`;
+const mcpScopes = ["openid", "profile", "email", "offline_access"];
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -12,6 +19,9 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  // The JWT plugin's session-to-JWT endpoint isn't used; the OAuth provider
+  // issues the tokens.
+  disabledPaths: ["/token"],
   rateLimit: {
     storage: "database",
   },
@@ -45,5 +55,27 @@ export const auth = betterAuth({
     },
   },
   // nextCookies must stay last so it sees cookies set by the other plugins.
-  plugins: [admin({ impersonationSessionDuration: 60 * 60 }), nextCookies()],
+  plugins: [
+    admin({ impersonationSessionDuration: 60 * 60 }),
+    // Signs the MCP access tokens and serves /jwks to verify them.
+    jwt(),
+    // OAuth provider for MCP clients (Cursor, Claude): they discover it from
+    // /.well-known/oauth-protected-resource, sign the user in and get a token
+    // bound to mcpResource.
+    mcp({
+      loginPage: "/sign-in",
+      consentPage: "/consent",
+      resource: mcpResource,
+      scopes: mcpScopes,
+      // Prisma can't store a resource without allowedScopes.
+      resources: [{ identifier: mcpResource, allowedScopes: mcpScopes }],
+      // Cursor and older Claude Code still register through DCR instead of
+      // Client ID Metadata Documents, and omit application_type.
+      allowDynamicClientRegistration: true,
+      allowUnauthenticatedClientRegistration: true,
+      clientRegistrationDefaultApplicationType: "infer",
+    }),
+    cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" }),
+    nextCookies(),
+  ],
 });

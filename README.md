@@ -47,3 +47,14 @@ Sign in with one of these two accounts:
 2. Sign in as **Filip**. The question is in the inbox with a drafted answer; send it.
 3. Still as **Filip**, ask *"Is there a deploy freeze over the holidays?"*, click **Ask Kobe** and send.
 4. Sign in as **Kobe**. Answer from the inbox, and Filip sees the answer as a new node in his graph.
+
+## Use SD Wise from Cursor or Claude (MCP)
+
+SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](https://better-auth.com/docs/plugins/mcp). Add the URL to your client; it signs you in to SD Wise in the browser and asks you to allow it. It acts as you, so answers follow the same visibility rules as the app.
+
+- **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
+- **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
+
+Tools: `ask`, `ask_person`, `request_access`, `list_inbox`.
+
+The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. claude.ai's custom connectors need a public URL too.

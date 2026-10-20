@@ -4,6 +4,7 @@ import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { Section } from "@/components/settings/section";
 import { secondaryButtonClass } from "@/components/settings/styles";
+import { mcpResource } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { describeUserAgent } from "@/lib/user-agent";
@@ -16,6 +17,9 @@ const dateFormat = new Intl.DateTimeFormat("en", {
   timeStyle: "short",
   timeZone: "UTC",
 });
+
+const codeClass =
+  "overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs dark:bg-zinc-800";
 
 export default async function Page() {
   const { user, session } = await requireSession();
@@ -107,6 +111,28 @@ export default async function Page() {
             </button>
           </form>
         )}
+      </Section>
+
+      <Section
+        title="Connect your AI"
+        description="Use SD Wise from Cursor or Claude over MCP. Your client signs you in here, and it only sees what you can see."
+      >
+        <div className="space-y-3 text-sm">
+          <p className="text-zinc-500 dark:text-zinc-400">
+            Cursor (<code>.cursor/mcp.json</code>)
+          </p>
+          <pre className={codeClass}>
+            {JSON.stringify(
+              { mcpServers: { sdwise: { url: mcpResource } } },
+              null,
+              2,
+            )}
+          </pre>
+          <p className="text-zinc-500 dark:text-zinc-400">Claude Code</p>
+          <pre className={codeClass}>
+            {`claude mcp add --transport http sdwise ${mcpResource}`}
+          </pre>
+        </div>
       </Section>
 
       <Section

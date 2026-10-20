@@ -27,6 +27,11 @@ export function AuthForm({ callbackURL }: AuthFormProps) {
         setLoading(false);
         return;
       }
+      // Signing in during an MCP client's OAuth flow continues that flow.
+      if (res.data && "redirect" in res.data && res.data.url) {
+        window.location.href = res.data.url;
+        return;
+      }
       router.replace(callbackURL);
     } catch {
       setError("Something went wrong");

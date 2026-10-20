@@ -39,7 +39,6 @@ pnpm install
 pnpm db:up            # Postgres with pgvector, in Docker
 pnpm db:deploy        # migrations
 pnpm db:seed:demo     # an account for every person, then the graph
-pnpm db:seed:cocacola # the Coca-Cola onboarding facts, for the walkthrough below
 pnpm dev
 ```
 
@@ -60,8 +59,7 @@ Every person in the graph has an account, all with the password `password123`. C
 2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
 3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
 4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and request access; as **Kobe**, share it.
-
-For the Coca-Cola story, run `pnpm db:seed && pnpm db:seed:cocacola` (`pnpm db:seed` resets the graph without those facts). As **Kobe**, ask *"How is the onboarding of Coca Cola going?"*. The search finds about a dozen facts about the new customer: Kobe sees half of them (the HR system feed and data migration are on track), the rest are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Ask a colleague** sends his question to Filip and Bram. The facts are in `src/lib/graph/cocacola-fixtures.ts`.
+5. As **Kobe**, ask *"How is the onboarding of Coca Cola going?"*. The search finds about a dozen facts about the new customer: Kobe sees half of them (the HR system feed and data migration are on track), the rest are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Ask a colleague** sends his question to Filip and Bram. The facts are in `src/lib/graph/cocacola-fixtures.ts`.
 
 A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can request access from the graph too.
 

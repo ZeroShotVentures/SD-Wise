@@ -1,13 +1,13 @@
-import type { KnowledgeEdge, KnowledgeNode, NodeFixture } from "./types";
+import type { KnowledgeEdge, NodeFixture } from "./types";
 
 // Coca-Cola's Belgian plants, a new payroll customer going live on 1 January
 // 2027: what the company knows about the onboarding, spread over the people
-// who were in each conversation. `pnpm db:seed:cocacola` adds it to the graph
-// for the demo, where Kobe asks "How is the onboarding of Coca Cola going?".
+// who were in each conversation. Part of the company graph in fixtures.ts, for
+// the demo where Kobe asks "How is the onboarding of Coca Cola going?".
 // Kobe sees the technical side (on track), while payroll operations and sales
 // know the go-live is at risk.
 
-const fixtures: NodeFixture[] = [
+export const nodes: NodeFixture[] = [
   {
     id: "n-cocacola-customer",
     title: "Coca-Cola signs a payroll contract",
@@ -136,11 +136,6 @@ const fixtures: NodeFixture[] = [
   },
 ];
 
-// Access starts as the owners, as in fixtures.ts.
-export const cocacolaNodes: KnowledgeNode[] = fixtures.map((node) =>
-  Object.assign(node, { accessIds: [...node.ownerIds] }),
-);
-
 const edgeSeeds: [string, string, KnowledgeEdge["kind"], string][] = [
   [
     "n-cocacola-contract",
@@ -222,7 +217,7 @@ const edgeSeeds: [string, string, KnowledgeEdge["kind"], string][] = [
   ],
 ];
 
-export const cocacolaEdges: KnowledgeEdge[] = edgeSeeds.map(
+export const edges: KnowledgeEdge[] = edgeSeeds.map(
   ([sourceId, targetId, kind, description], i) => ({
     id: `e-cocacola-${i + 1}`,
     sourceId,

@@ -1,4 +1,5 @@
 import { generateBulk } from "./bulk-fixtures";
+import * as cocacola from "./cocacola-fixtures";
 import * as db from "./db-fixtures";
 import type {
   EdgeKind,
@@ -567,6 +568,7 @@ export const nodes: KnowledgeNode[] = [
   ...coreNodes,
   ...bulk.nodes,
   ...db.nodes,
+  ...cocacola.nodes,
 ].map((node) => Object.assign(node, { accessIds: [...node.ownerIds] }));
 
 const edgeSeeds: [string, string, EdgeKind, string][] = [
@@ -680,4 +682,5 @@ export const edges: KnowledgeEdge[] = [
   ...coreEdges,
   ...bulk.edges,
   ...db.edges,
+  ...cocacola.edges,
 ];

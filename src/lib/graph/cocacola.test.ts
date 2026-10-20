@@ -1,23 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { canSee } from "./access";
 import { answerFor, lockedHits, searchGraph } from "./ai";
-import { cocacolaEdges, cocacolaNodes } from "./cocacola-fixtures";
+import * as cocacola from "./cocacola-fixtures";
 import { edges, nodes } from "./fixtures";
 import { looseLinks } from "./links";
 
-// The demo graph: the fixtures plus what `pnpm db:seed:cocacola` adds, with
-// the links both seeds add to join facts cut off from the rest.
-const all = [...nodes, ...cocacolaNodes].toSorted(
+// The graph as `pnpm db:seed` writes it: the fixtures, oldest first, with the
+// links that join facts cut off from the rest.
+const all = nodes.toSorted(
   (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
 );
-const graph = {
-  nodes: all,
-  edges: [
-    ...edges,
-    ...cocacolaEdges,
-    ...looseLinks(all, [...edges, ...cocacolaEdges]),
-  ],
-};
+const graph = { nodes: all, edges: [...edges, ...looseLinks(all, edges)] };
 const question = "How is the onboarding of Coca Cola going?";
 
 describe("Coca-Cola demo", () => {
@@ -25,7 +18,7 @@ describe("Coca-Cola demo", () => {
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
 
   it("only links facts that exist", () => {
-    for (const e of cocacolaEdges) {
+    for (const e of cocacola.edges) {
       expect(byId.has(e.sourceId) && byId.has(e.targetId)).toBe(true);
     }
   });

@@ -1,6 +1,6 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`): lint, typecheck, `next build` and all 57 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) and the MCP inbox card: lint, typecheck, `next build` and all 58 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
 
 ## In short
 
@@ -34,7 +34,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Search per [node-finding.md](node-finding.md) | Not built | ❌ | No embedding lookup, in-degree scoring, beam walk, or "nearest visible fact" substitute. |
 | Answer text | Mocked | 🟡 | The summaries of the matching facts you can see, joined together. No LLM writes an answer. |
 | Only visible facts in the answer | Real logic, mock data | ✅ | `ask` returns only facts you can see. Locked matches never leave the server: no ids, titles, owners, source or count, in the app or over MCP. Tested, including answers that are partly visible. |
-| "There may be more" hint | Real logic, mock data | ✅ | When locked facts also matched, `ask` sets `moreAvailable` and the answer card offers "Request access". It doesn't say who knows. Replaces the old "Others know more" list of owners. Tested for the Kobe ↔ Filip walkthrough. |
+| "Colleagues know more" hint | Real logic, mock data | ✅ | When locked facts also matched, `ask` sets `moreAvailable` and the answer card offers "Request access". It doesn't say who knows. Replaces the old "Others know more" list of owners. Tested for the Kobe ↔ Filip walkthrough. |
 | Search animation | Mocked | — | Random nodes flash for at least 1.4 s as the "embedding lookup", then the visit order is replayed, skipping locked facts. Cosmetic. |
 | Embedding script (`pnpm db:embed`) | Unused | ❌ | Embeds database rows with `openai/text-embedding-3-small`, but the database has no facts and the search doesn't read embeddings. |
 | AI data generation (`pnpm db:seed`) | Unused | ❌ | Writes facts and new people to tables the app no longer reads; its last output was frozen into `db-fixtures.ts`. Running it again changes nothing in the app. |
@@ -77,7 +77,8 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
 | MCP server at `/api/mcp` with `ask`, `request_more`, `list_inbox` | Real | ✅ | Every call runs as the signed-in user, with the same visibility rules. Tested: 401 challenge, forged token, 403 without a person, tool list, no leaked locked content or owners. `ask` uses the same mocked search. `ask_person` is commented out, and `request_access` became `request_more`. |
-| MCP App answer card for `ask` | Real | 🟡 | In hosts that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) (Claude, Claude Desktop), `ask` shows a card with the answer, the "There may be more" hint and a "Request access" button. Built on `@modelcontextprotocol/ext-apps`; the build includes its bundle. Tested over HTTP, not yet clicked through in Claude. |
+| MCP App answer card for `ask` | Real | 🟡 | In hosts that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview) (Claude, Claude Desktop), `ask` shows a card with the answer, the "Colleagues know more" hint and a "Request access" button. Built on `@modelcontextprotocol/ext-apps`; the build includes its bundle. Tested over HTTP, not yet clicked through in Claude. |
+| MCP App inbox card for `list_inbox` | Real | 🟡 | A read-only card with "For you" and "Sent" tabs. Items waiting for you come first, with the drafted reply; each item shows whether it's a question or an access request, its status, who it's from or to, the facts it's about, and the answer. Pending access requests in Sent still show "The owner". Replying happens in the web app: the "Reply in SD Wise" button opens the inbox there. Shares its shell with the answer card ([app-html.ts](../src/lib/mcp/app-html.ts)). Tested over HTTP, not yet clicked through in Claude. |
 | `request_more` only from the card | Real | 🟡 | The tool is marked app-only, so a request needs a click and the model can't send one by itself. Clients without MCP Apps (Cursor, Claude Code in a terminal) can't request access at all. |
 | Sign-in for MCP clients (OAuth, consent page, discovery, dynamic registration, CIMD) | Real | ✅ | Better Auth MCP plugin. Outside localhost it needs HTTPS. |
 | Answer inbox questions, write to the graph, per-tool scopes, revoke connected apps | Not built | ❌ | Out of scope for v1 ([mcp-scope.md](mcp-scope.md)). |

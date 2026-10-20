@@ -118,6 +118,9 @@ describe("/api/mcp", () => {
     expect(
       tools.find((t: { name: string }) => t.name === "request_more"),
     ).toMatchObject({ _meta: { ui: { visibility: ["app"] } } });
+    const ask = tools.find((t: { name: string }) => t.name === "ask");
+    expect(ask.title).toBe("Ask the company brain");
+    expect(ask.annotations.readOnlyHint).toBe(true);
   });
 
   it("serves `ask` with an MCP App card", async () => {

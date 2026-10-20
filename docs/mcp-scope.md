@@ -18,5 +18,5 @@
 ## Out of scope for v1
 
 - Answering inbox questions over MCP; graph-write tools.
-- Custom scopes per tool, a "connected apps" list with revoke in Settings.
+- Custom scopes per tool. (A "connected apps" list with revoke has since been built, on Integrations → MCP.)
 - Replacing the graph fixtures with real data.

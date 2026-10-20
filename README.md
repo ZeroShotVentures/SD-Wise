@@ -22,7 +22,7 @@ That gives one of three results:
 
 - **You can see everything.** You get the full answer.
 - **Someone else holds part of it.** You get what SD Wise can already tell you, plus a suggestion like *"Filip knows something related from an email"*. One click sends Filip your question, and SD Wise has already drafted a reply from what Filip can see. Filip checks it and sends it, or declines.
-- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists, but not what it says or who knows it. You can request access, and an owner approves or declines.
+- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists, but not what it says or who knows it. You can ask SD Wise a question about it: it goes to someone who knows, with a drafted answer, and they answer you or everyone, or decline.
 
 When someone answers you, the answer becomes new knowledge: a new node in your graph, linked to the facts it came from.
 
@@ -58,10 +58,10 @@ Every person in the graph has an account, all with the password `password123`. C
 1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Ask a colleague**.
 2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
 3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
-4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and request access; as **Kobe**, share it.
+4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and click Ask a colleague; as **Kobe**, send the drafted answer.
 5. As **Kobe**, ask *"How is the onboarding of Coca Cola going?"*. The search finds about a dozen facts about the new customer: Kobe sees half of them (the HR system feed and data migration are on track), the rest are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Ask a colleague** sends his question to Filip and Bram. The facts are in `src/lib/graph/cocacola-fixtures.ts`.
 
-A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can request access from the graph too.
+A private fact is visible only to the people who were in the conversation it came from. Everyone else sees a lock, without who knows it, and can ask about it; only the answer is shared, never the fact.
 
 ## Use SD Wise from your AI (MCP)
 
@@ -72,7 +72,7 @@ SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](
 - **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
 - **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
 
-Tools: `ask` (with an MCP App answer card), `request_more` (called by the card only; other clients get an Ask a colleague link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
+Tools: `ask` (with an MCP App answer card), `ask_owners` (called by the card only; other clients get an Ask a colleague link), `list_inbox`. They're defined once in `src/lib/mcp/tools.ts`, which both the server and the Integrations page read.
 
 The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. Claude, ChatGPT and Copilot Studio connect from the cloud and need a public URL too.
 

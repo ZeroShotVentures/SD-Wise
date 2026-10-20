@@ -1,9 +1,8 @@
 import { canSee } from "./access";
 import type { KnowledgeEdge, KnowledgeNode, Person, Query } from "./types";
 
-// An answered question becomes a node in the graph, and an approved access
-// request adds the asker to the node's access list. store.ts writes both when
-// the question is resolved.
+// An answered question becomes a node in the graph, visible to the asker or
+// to everyone. store.ts writes it when the question is answered.
 
 export type ResolvedQuery = Query & { asker: Person; recipient: Person };
 
@@ -50,22 +49,16 @@ export function answerGraph(q: ResolvedQuery, facts: KnowledgeNode[]) {
   return { node, edges };
 }
 
-// Nodes that became visible to someone through an answer they haven't looked
-// at yet.
+// Answers someone got and hasn't looked at yet.
 export function unseenFor(
   personId: string,
-  questions: Pick<
-    Query,
-    "id" | "kind" | "askerId" | "status" | "nodeIds" | "seenAt"
-  >[],
+  questions: Pick<Query, "id" | "askerId" | "status" | "seenAt">[],
 ) {
   const ids = new Set<string>();
   for (const q of questions) {
-    if (q.askerId !== personId || q.status !== "ANSWERED" || q.seenAt) {
-      continue;
+    if (q.askerId === personId && q.status === "ANSWERED" && !q.seenAt) {
+      ids.add(answerNodeId(q.id));
     }
-    if (q.kind === "ACCESS") for (const id of q.nodeIds) ids.add(id);
-    else ids.add(answerNodeId(q.id));
   }
   return ids;
 }

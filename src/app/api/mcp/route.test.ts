@@ -112,11 +112,11 @@ describe("/api/mcp", () => {
     const { tools } = await result(res);
     expect(tools.map((t: { name: string }) => t.name).toSorted()).toEqual([
       "ask",
+      "ask_owners",
       "list_inbox",
-      "request_more",
     ]);
     expect(
-      tools.find((t: { name: string }) => t.name === "request_more"),
+      tools.find((t: { name: string }) => t.name === "ask_owners"),
     ).toMatchObject({ _meta: { ui: { visibility: ["app"] } } });
     const ask = tools.find((t: { name: string }) => t.name === "ask");
     expect(ask.title).toBe("Ask the company brain");

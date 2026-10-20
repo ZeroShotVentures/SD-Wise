@@ -222,7 +222,7 @@ export function ConversationPane({
     kind === "wise"
       ? "App · Answers from your company brain"
       : kind === "request"
-        ? `${request?.kind === "ACCESS" ? "Access request" : "Question"} via SD Wise · ${request?.asker.role}`
+        ? `Question via SD Wise · ${request?.asker.role}`
         : kind === "chat"
           ? MEMBERS[first]?.role
           : kind === "group"

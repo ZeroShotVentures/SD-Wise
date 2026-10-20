@@ -19,7 +19,6 @@ const at = (iso: string) => new Date(iso);
 export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
   {
     id: "q-demo-oauth",
-    kind: "QUESTION",
     askerId: "p-timon",
     recipientId: "p-victor",
     question: "When does the Payroll API switch to OAuth?",
@@ -28,16 +27,15 @@ export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
   },
   {
     id: "q-demo-kras-pricing",
-    kind: "ACCESS",
     askerId: "p-julien",
     recipientId: "p-bram",
-    question: "Can I see what you know about this?",
+    question: "What do we charge Kras per payslip?",
     nodeIds: ["n-kras-pricing"],
+    routed: true,
     createdAt: at("2026-09-29T14:40:00Z"),
   },
   {
     id: "q-demo-renewal",
-    kind: "QUESTION",
     askerId: "p-victor",
     recipientId: "p-dario",
     question: "Did we agree on a renewal discount for Kras?",
@@ -46,7 +44,6 @@ export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
   },
   {
     id: "q-demo-oauth-date",
-    kind: "QUESTION",
     askerId: "p-victor",
     recipientId: "p-kobe",
     question: "Is the OAuth go-live still mid-December?",
@@ -55,7 +52,6 @@ export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
   },
   {
     id: "q-demo-ai-budget",
-    kind: "QUESTION",
     askerId: "p-julien",
     recipientId: "p-kobe",
     question: "Is the AI tooling budget approved?",
@@ -70,7 +66,6 @@ export const demoQuestions: Prisma.QuestionCreateManyInput[] = [
   },
   {
     id: "q-demo-sla",
-    kind: "QUESTION",
     askerId: "p-pieter",
     recipientId: "p-filip",
     question: "Does the two-day payroll SLA also hold in December?",
@@ -105,7 +100,7 @@ export async function seedPeople(db: Db) {
 }
 
 // Replaces the graph with the one a demo starts from. Deletes every question,
-// with the answers and access it added, every fact and edge, and which
+// with the answers it added, every fact and edge, and which
 // sources are connected; then writes the fixture graph, the demo questions
 // and their answers, and links facts cut off from the rest (links.ts). People
 // are only added or updated, so accounts and their sessions stay. Run it in a

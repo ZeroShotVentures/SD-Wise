@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { question, requestMoreInput } from "@/lib/graph/schemas";
+import { askOwnersInput, question } from "@/lib/graph/schemas";
 import { ASK_APP_URI } from "./ask-app";
 import { INBOX_APP_URI } from "./inbox-app";
 
@@ -10,21 +10,21 @@ export const tools = {
   ask: {
     title: "Ask the company brain",
     description:
-      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card with an Ask a colleague button; there, don't repeat the answer word for word or draw your own visual of it, just add what the card doesn't say. If the card isn't shown, give the answer yourself and, when `moreAvailable` is true, show `requestUrl` as an \"Ask a colleague\" link or button (also in any visual you make). It opens SD Wise, where the user clicks to send the request. You can't send it yourself. When SD Wise can't help, `askUrl` is set instead: show it as an \"Ask a colleague\" link or button too, which opens SD Wise to pick who to send the question to.",
+      "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. If `moreAvailable` is true, other people hold relevant information you can't see; SD Wise won't say what or whose. Tell the user that, and if there are facts, that the answer may be incomplete. Hosts that support MCP Apps show the result in an answer card with an Ask a colleague button; there, don't repeat the answer word for word or draw your own visual of it, just add what the card doesn't say. If the card isn't shown, give the answer yourself and, when `moreAvailable` is true, show `requestUrl` as an \"Ask a colleague\" link or button (also in any visual you make). It opens SD Wise, where the user clicks to send the question to whoever knows; they answer it from a drafted reply. You can't send it yourself. When SD Wise can't help, `askUrl` is set instead: show it as an \"Ask a colleague\" link or button too, which opens SD Wise to pick who to send the question to.",
     inputSchema: z.object({
       question: question.describe("The question, in plain language"),
     }),
     annotations: { readOnlyHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: ASK_APP_URI } },
   },
-  // Only the answer card's button calls this, so a request always comes from
-  // the user clicking, never from the model on its own. Hosts without the
-  // card use `requestUrl`, which ends in a button too.
-  request_more: {
-    title: "Request the rest of an answer",
+  // Only the answer card's button calls this, so a question always goes out
+  // because the user clicked, never because the model decided to. Hosts
+  // without the card use `requestUrl`, which ends in a button too.
+  ask_owners: {
+    title: "Ask whoever knows more",
     description:
-      "Forward a question to whoever holds the locked information behind `moreAvailable`. They decide whether to share it; the user never learns who they are.",
-    inputSchema: requestMoreInput,
+      "Send a question to whoever holds the locked information behind `moreAvailable`, with a drafted reply. They decide what to answer; the user doesn't learn who they are until they do.",
+    inputSchema: askOwnersInput,
     annotations: {
       readOnlyHint: false,
       destructiveHint: false,
@@ -36,7 +36,7 @@ export const tools = {
   list_inbox: {
     title: "List your inbox",
     description:
-      "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show the result in an inbox card; there, don't repeat the inbox as a table or draw your own visual of it, just point out in a sentence or two what needs attention. If the card isn't shown, summarize what needs attention yourself. Replying happens in SD Wise itself, in the Inbox.",
+      "List the questions sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show the result in an inbox card; there, don't repeat the inbox as a table or draw your own visual of it, just point out in a sentence or two what needs attention. If the card isn't shown, summarize what needs attention yourself. Replying happens in SD Wise itself, in the Inbox.",
     annotations: { readOnlyHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: INBOX_APP_URI } },
   },

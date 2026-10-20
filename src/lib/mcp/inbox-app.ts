@@ -41,8 +41,7 @@ const date = (iso) =>
 const name = (label) => label.replace(/\\s*\\(.*\\)$/, "");
 const statusLabel = (q) =>
   q.status === "PENDING" ? "Waiting"
-    : q.status === "DECLINED" ? "Declined"
-    : q.kind === "ACCESS" ? "Shared" : "Answered";
+    : q.status === "DECLINED" ? "Declined" : "Answered";
 
 function reply(title, text) {
   const box = el("div", "reply");
@@ -54,7 +53,6 @@ function item(q, side) {
   const node = el("div", "item");
   const meta = el("div", "meta");
   meta.append(
-    el("span", "badge", q.kind === "ACCESS" ? "Access request" : "Question"),
     el("span", "badge " + q.status, statusLabel(q)),
     el("span", "muted", date(q.createdAt)),
   );
@@ -71,9 +69,8 @@ function item(q, side) {
   if (side === "received") {
     if (q.status === "PENDING" && q.suggestedAnswer) node.append(reply("Drafted reply", q.suggestedAnswer));
     if (q.status === "ANSWERED" && q.answer) node.append(reply("Your answer", q.answer));
-  } else if (q.status === "ANSWERED") {
-    if (q.answer) node.append(reply(name(q.to) + " answered", q.answer));
-    else if (q.kind === "ACCESS") node.append(el("p", "muted", "Shared with you. You can see it in SD Wise now."));
+  } else if (q.status === "ANSWERED" && q.answer) {
+    node.append(reply(name(q.to) + " answered", q.answer));
   }
   return node;
 }

@@ -30,7 +30,7 @@ function render(data) {
     more.append(
       el("h3", null, data.answer ? "Colleagues know more" : "Colleagues know about this"),
       el("p", null,
-        "Some of what they know about this isn't shared with you. SD Wise can pass your question on, and they decide whether to share it."),
+        "Some of what they know about this isn't shared with you. SD Wise can send them your question with a drafted answer, and they decide what to tell you."),
     );
     const button = el("button", null, "Ask a colleague");
     const status = el("p", "err");
@@ -39,18 +39,18 @@ function render(data) {
       button.textContent = "Asking…";
       status.textContent = "";
       try {
-        const res = await app.callServerTool({ name: "request_more", arguments: { question: data.question } });
+        const res = await app.callServerTool({ name: "ask_owners", arguments: { question: data.question } });
         if (res.isError) throw new Error();
-        button.replaceWith(el("p", "ok", "Asked. You'll see it in your SD Wise inbox if it's shared."));
+        button.replaceWith(el("p", "ok", "Asked. You'll see their answer in your SD Wise inbox."));
         await app.updateModelContext({
-          content: [{ type: "text", text: "The user already requested access to the rest through SD Wise. Don't offer it again." }],
+          content: [{ type: "text", text: "The user already sent this question to the colleagues who know more through SD Wise. Don't offer it again." }],
         }).catch(() => {});
       } catch {
         button.disabled = false;
         button.textContent = "Ask a colleague";
         if (data.requestUrl) {
           await app.openLink({ url: data.requestUrl }).catch(() => {});
-          status.textContent = "Opened SD Wise to finish the request.";
+          status.textContent = "Opened SD Wise to send the question.";
         } else {
           status.textContent = "Couldn't send. Try again.";
         }

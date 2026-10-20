@@ -11,6 +11,7 @@ import * as graph from "@/lib/graph/service";
 import type { Person } from "@/lib/graph/types";
 import { ASK_APP_URI, askAppHtml } from "./ask-app";
 import { formatAsk, formatInbox } from "./format";
+import { INBOX_APP_URI, inboxAppHtml } from "./inbox-app";
 
 const json = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
@@ -90,13 +91,34 @@ export function createMcpServer(me: Person) {
   //   },
   // );
 
-  server.registerTool(
+  registerAppResource(
+    server,
+    "SD Wise inbox",
+    INBOX_APP_URI,
+    { description: "Shows the questions and access requests in SD Wise." },
+    async () => ({
+      contents: [
+        {
+          uri: INBOX_APP_URI,
+          mimeType: RESOURCE_MIME_TYPE,
+          text: await inboxAppHtml(),
+        },
+      ],
+    }),
+  );
+
+  registerAppTool(
+    server,
     "list_inbox",
     {
+      _meta: { ui: { resourceUri: INBOX_APP_URI } },
       description:
-        "List the questions and access requests sent to you, and the ones you sent, with their status and answers.",
+        "List the questions and access requests sent to you, and the ones you sent, with their status and answers. Hosts that support MCP Apps show them in an inbox card. Replying happens in SD Wise itself; the card links there.",
     },
-    async () => json(formatInbox(await graph.getInbox(me))),
+    async () => {
+      const out = formatInbox(await graph.getInbox(me));
+      return { ...json(out), structuredContent: out };
+    },
   );
 
   return server;

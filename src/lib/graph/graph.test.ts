@@ -171,3 +171,25 @@ describe("access requests", () => {
     expect(canSee(pricingIn(nodes), julien.id)).toBe(false);
   });
 });
+
+describe("bulk fixtures", () => {
+  it("add up to about 10,000 data points", () => {
+    const total = people.length + nodes.length + edges.length;
+    expect(total).toBeGreaterThan(9_900);
+    expect(total).toBeLessThan(10_200);
+  });
+
+  it("only link nodes and people that exist", () => {
+    const ids = new Set(nodes.map((n) => n.id));
+    const known = new Set(people.map((p) => p.id));
+    expect(ids.size).toBe(nodes.length);
+    expect(edges.every((e) => ids.has(e.sourceId) && ids.has(e.targetId))).toBe(
+      true,
+    );
+    expect(
+      nodes.every(
+        (n) => n.ownerIds.length > 0 && n.ownerIds.every((o) => known.has(o)),
+      ),
+    ).toBe(true);
+  });
+});

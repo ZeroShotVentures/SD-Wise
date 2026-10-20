@@ -6,7 +6,7 @@ import ForceGraph, {
   type LinkObject,
   type NodeObject,
 } from "react-force-graph-2d";
-import { SOURCES } from "@/lib/graph/meta";
+import { SOURCES, ZOOM } from "@/lib/graph/meta";
 import type { EdgeView, NodeView } from "@/lib/graph/types";
 
 export type GraphNode = NodeObject<{
@@ -37,6 +37,7 @@ type GraphCanvasProps = {
   onSelectNode: (id: string) => void;
   onSelectEdge: (id: string) => void;
   onBackground: () => void;
+  onZoom: (k: number) => void;
 };
 
 const YELLOW = "#ffbe00";
@@ -71,6 +72,7 @@ export default function GraphCanvas({
   onSelectNode,
   onSelectEdge,
   onBackground,
+  onZoom,
 }: GraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -225,8 +227,8 @@ export default function GraphCanvas({
           backgroundColor="rgba(0,0,0,0)"
           autoPauseRedraw={false}
           cooldownTicks={120}
-          minZoom={0.5}
-          maxZoom={4}
+          minZoom={ZOOM.min}
+          maxZoom={ZOOM.max}
           nodeRelSize={6}
           nodeLabel={() => ""}
           nodeCanvasObject={drawNode}
@@ -257,6 +259,7 @@ export default function GraphCanvas({
           onLinkClick={(link) => onSelectEdge(link.id)}
           onNodeHover={(node) => setHoverId(node?.id ?? null)}
           onBackgroundClick={onBackground}
+          onZoom={({ k }) => onZoom(k)}
         />
       )}
     </div>

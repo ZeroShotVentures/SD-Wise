@@ -55,7 +55,7 @@ export function searchGraph(
     .toSorted((a, b) => b.score - a.score);
   const top = scored[0]?.score ?? 0;
   const hits = scored
-    .filter((s) => s.score >= Math.max(2, top * 0.5))
+    .filter((s) => s.score >= Math.max(2, top * 0.75))
     .slice(0, limit)
     .map((s) => s.node.id);
 

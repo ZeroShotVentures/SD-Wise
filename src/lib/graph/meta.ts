@@ -66,6 +66,8 @@ export const EDGE_KINDS: Record<EdgeKind, string> = {
   ANSWERS: "Answers",
 };
 
+export const ZOOM = { min: 0.05, max: 4, step: 1.5 } as const;
+
 export const dateFormat = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",

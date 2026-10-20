@@ -6,7 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
-import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
+import {
+  publishable,
+  questionIdOf,
+  type ResolvedQuery,
+  unseenFor,
+} from "./answers";
 import { writeAnswer, writeDraft, writeGeneral } from "./llm";
 import {
   type Db,
@@ -14,7 +19,7 @@ import {
   personSelect,
   readGraph,
   readIntegrations,
-  readNodes,
+  readLiveNodes,
   readPeople,
   saveAnswer,
   toQuery,
@@ -101,6 +106,9 @@ const limitSends = (me: Person) => rateLimit(`send:${me.id}`, 10, MINUTE);
 // Drafts written per inbox load. The rest are written on later loads.
 const DRAFTS_PER_LOAD = 5;
 
+// The newest questions an inbox load reads, sent and received together.
+const INBOX_LIMIT = 200;
+
 export async function ask(me: Person, question: string): Promise<AskResult> {
   await limitAsks(me);
   const { nodes, edges } = await readGraph(prisma);
@@ -130,7 +138,7 @@ export async function colleagues(me: Person) {
 
 // Lets a client cite an answer's facts without loading the whole graph.
 export async function factsFor(me: Person, ids: string[]) {
-  const nodes = await readNodes(prisma, ids.map(parseId));
+  const nodes = await readLiveNodes(prisma, ids.map(parseId));
   return nodes
     .filter((n) => canSee(n, me.id))
     .map(({ id, title, source }) => ({ id, title, source }));
@@ -235,20 +243,21 @@ async function send(
   return created;
 }
 
+type Graph = { nodes: KnowledgeNode[]; edges: KnowledgeEdge[] };
+
+const replyFacts = (q: ResolvedQuery, graph: Graph) =>
+  draftFacts(q.question, q.recipientId, q.nodeIds, graph.nodes, graph.edges);
+
+// The draft can draw on any fact the recipient can see, not just the matched
+// ones, so all of those must be publishable for the answer to go to everyone.
+const canShareAll = (q: ResolvedQuery, graph: Graph) =>
+  publishable(replyFacts(q, graph), q.recipientId);
+
 // Claude drafts the recipient's reply once, from what they can see, and it's
 // stored: "" when nothing they know answers it, null until written. A failed
 // call leaves it null, so the next inbox load tries again.
-async function draftReply(
-  q: ResolvedQuery,
-  graph: { nodes: KnowledgeNode[]; edges: KnowledgeEdge[] },
-) {
-  const facts = draftFacts(
-    q.question,
-    q.recipientId,
-    q.nodeIds,
-    graph.nodes,
-    graph.edges,
-  );
+async function draftReply(q: ResolvedQuery, graph: Graph) {
+  const facts = replyFacts(q, graph);
   let draft: string;
   try {
     draft = facts.length
@@ -305,7 +314,11 @@ export async function answerQuery(
       where: { id: queryId },
       include: withPeople,
     });
-    await saveAnswer(tx, toQuery(row));
+    const q = toQuery(row);
+    if (scope === "PUBLIC" && !canShareAll(q, await readGraph(tx))) {
+      throw new Error("Based on private facts that aren't yours to share");
+    }
+    await saveAnswer(tx, q);
   });
 }
 
@@ -324,6 +337,7 @@ export async function getInbox(me: Person) {
     where: { OR: [{ recipientId: me.id }, { askerId: me.id }] },
     include: withPeople,
     orderBy: { createdAt: "desc" },
+    take: INBOX_LIMIT,
   });
 
   const queries = rows.map(toQuery);
@@ -336,16 +350,17 @@ export async function getInbox(me: Person) {
   const undrafted = queries
     .filter((q) => draftable(q) && drafts.get(q.id) === null)
     .slice(0, DRAFTS_PER_LOAD);
-  const draftMissing = async () => {
-    if (undrafted.length === 0) return;
+  const readDraftGraph = async () => {
+    if (!queries.some(draftable)) return null;
     const graph = await readGraph(prisma);
     await Promise.all(
       undrafted.map(async (q) => drafts.set(q.id, await draftReply(q, graph))),
     );
+    return graph;
   };
-  const [nodes] = await Promise.all([
-    readNodes(prisma, [...new Set(queries.flatMap((q) => q.nodeIds))]),
-    draftMissing(),
+  const [nodes, graph] = await Promise.all([
+    readLiveNodes(prisma, [...new Set(queries.flatMap((q) => q.nodeIds))]),
+    readDraftGraph(),
   ]);
   const byId = new Map(nodes.map((n) => [n.id, n]));
 
@@ -356,6 +371,7 @@ export async function getInbox(me: Person) {
       const node = byId.get(id);
       return node && canSee(node, me.id) ? [node.title] : [];
     }),
+    canShareAll: draftable(q) && graph !== null && canShareAll(q, graph),
   });
 
   // A question SD Wise routed mustn't tell the asker whose facts matched it,
@@ -384,10 +400,10 @@ export function pendingCount(me: Person) {
   });
 }
 
-export async function getIntegrations(): Promise<IntegrationStats[]> {
+export async function getIntegrations(me: Person): Promise<IntegrationStats[]> {
   const [integrations, stats] = await Promise.all([
     readIntegrations(prisma),
-    integrationStats(prisma),
+    integrationStats(prisma, me.id),
   ]);
   return integrations.map((integration) => {
     const { facts, people } = stats.get(integration.id) ?? {

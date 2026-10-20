@@ -140,12 +140,14 @@ export function RequestComposer({ item }: { item: InboxItem }) {
             icon={<Lock className="size-3.5" />}
             label={`Only ${name}`}
           />
-          <ScopeChip
-            checked={scope === "PUBLIC"}
-            onChange={() => setScope("PUBLIC")}
-            icon={<Globe className="size-3.5" />}
-            label="Everyone"
-          />
+          {item.canShareAll && (
+            <ScopeChip
+              checked={scope === "PUBLIC"}
+              onChange={() => setScope("PUBLIC")}
+              icon={<Globe className="size-3.5" />}
+              label="Everyone"
+            />
+          )}
         </fieldset>
         <div className="ml-auto flex gap-2">
           <button

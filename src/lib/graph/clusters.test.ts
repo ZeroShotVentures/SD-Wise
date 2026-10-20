@@ -50,7 +50,7 @@ const link = (sourceId: string, targetId: string): EdgeView => ({
 // Two dense groups of eight, joined by a single edge.
 function twoGroups(lockSecond = false) {
   const a = Array.from({ length: 8 }, (_, i) =>
-    fact(`a${i}`, `Kras renewal ${i}`),
+    fact(`a${i}`, `Norvik renewal ${i}`),
   );
   const b = Array.from({ length: 8 }, (_, i) =>
     fact(`b${i}`, `Secret merger ${i}`, lockSecond),
@@ -95,7 +95,7 @@ describe("clusterGraph", () => {
     expect(clusterOf.get("a3")).toBe(clusterOf.get("a5"));
     expect(clusterOf.get("a3")).not.toBe(clusterOf.get("b3"));
     expect(clusters.map((c) => c.label).toSorted()).toEqual([
-      "Kras renewal",
+      "Norvik renewal",
       "Secret merger",
     ]);
     expect([...bridges.values()]).toEqual([1]);

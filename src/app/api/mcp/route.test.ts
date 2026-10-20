@@ -209,7 +209,7 @@ describe("/api/mcp", () => {
           method: "tools/call",
           params: {
             name: "ask",
-            arguments: { question: "What does Kras pay per payslip?" },
+            arguments: { question: "What does Norvik pay per payslip?" },
           },
         },
         asUser,
@@ -222,7 +222,7 @@ describe("/api/mcp", () => {
     expect(text).not.toContain("€4.20");
     expect(text).not.toContain("p-bram");
     expect(link.text).toMatch(
-      /^\[Ask a colleague\]\(http.+\/inbox\/request\?question=What\+does\+Kras/,
+      /^\[Ask a colleague\]\(http.+\/inbox\/request\?question=What\+does\+Norvik/,
     );
   });
 });

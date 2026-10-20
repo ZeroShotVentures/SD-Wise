@@ -1204,8 +1204,8 @@ export function generateBulk() {
   // Links into the hand-written graph.
   const anchors: Record<string, [string, string]> = {
     "client:Delvaux Logistics": [
-      "n-kras-customer",
-      "Same account team as Kras",
+      "n-norvik-customer",
+      "Same account team as Norvik",
     ],
     "system:Payroll Cloud v3": ["n-v3-launch", "Part of the v3 work"],
     "system:Payroll API": ["n-api-oauth", "Uses the same API"],

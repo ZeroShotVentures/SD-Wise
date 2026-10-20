@@ -101,15 +101,24 @@ export function toQuery(row: QuestionRow): ResolvedQuery {
   };
 }
 
-// Facts from connected sources and answers written in SD Wise, with the edges
-// between them. Oldest first: the topic islands depend on the order, so they
-// come out the same on every load.
+// Facts from connected sources, and answers written in SD Wise that weren't
+// based on a fact from a disconnected one: disconnecting a source takes what
+// was learned from it out of the graph too.
+const live = {
+  OR: [{ integrationId: null }, { integration: { connected: true } }],
+  NOT: {
+    outgoingEdges: {
+      some: { kind: "ANSWERS", target: { integration: { connected: false } } },
+    },
+  },
+} satisfies Prisma.KnowledgeNodeWhereInput;
+
+// The live nodes, with the edges between them. Oldest first: the topic
+// islands depend on the order, so they come out the same on every load.
 export async function readGraph(db: Db) {
   const [rows, edges] = await Promise.all([
     db.knowledgeNode.findMany({
-      where: {
-        OR: [{ integrationId: null }, { integration: { connected: true } }],
-      },
+      where: live,
       select: nodeSelect,
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     }),
@@ -128,6 +137,16 @@ export async function readNodes(db: Db, ids: string[]) {
   if (ids.length === 0) return [];
   const rows = await db.knowledgeNode.findMany({
     where: { id: { in: ids } },
+    select: nodeSelect,
+  });
+  return rows.map(toNode);
+}
+
+// Nodes by id, only if they're in the graph (see `live`).
+export async function readLiveNodes(db: Db, ids: string[]) {
+  if (ids.length === 0) return [];
+  const rows = await db.knowledgeNode.findMany({
+    where: { AND: [{ id: { in: ids } }, live] },
     select: nodeSelect,
   });
   return rows.map(toNode);
@@ -153,9 +172,10 @@ export async function readIntegrations(db: Db): Promise<Integration[]> {
   }));
 }
 
-// Facts per source and how many people own them, connected or not. Answers
-// have no source.
-export async function integrationStats(db: Db) {
+// Facts per source that `personId` can see, connected or not, and how many
+// people own them. Facts they can't see aren't counted, so the numbers don't
+// reveal activity in private conversations. Answers have no source.
+export async function integrationStats(db: Db, personId: string) {
   const rows = await db.$queryRaw<
     { integrationId: string; facts: bigint; people: bigint }[]
   >`
@@ -165,6 +185,13 @@ export async function integrationStats(db: Db) {
     FROM "KnowledgeNode" n
     LEFT JOIN "NodeAccess" a ON a."nodeId" = n.id AND a.owner
     WHERE n."integrationId" IS NOT NULL
+      AND (
+        n.visibility = 'PUBLIC'
+        OR EXISTS (
+          SELECT 1 FROM "NodeAccess" m
+          WHERE m."nodeId" = n.id AND m."personId" = ${personId}
+        )
+      )
     GROUP BY n."integrationId"
   `;
   return new Map(

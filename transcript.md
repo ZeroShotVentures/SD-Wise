@@ -152,9 +152,9 @@ _Automatische woord-voor-woord transcriptie (Whisper large-v3-turbo). Namen en v
 [07:23] Als je deze info vraagt, dan is dit een Slack-bericht.  
 [07:26] Deze fact komt eruit. Deze truth.  
 [07:29] En als je heel die database zet, waar is de graf dan?  
-[07:32] Hoeveel betaalt Kras?  
+[07:32] Hoeveel betaalt Norvik?  
 [07:34] Good luck to you. Je vind het niet.  
-[07:36] Zit je in Kust Kras of niet? Moet je die channel lezen.  
+[07:36] Zit je in Kust Norvik of niet? Moet je die channel lezen.  
 [07:38] Je kan niet weten hoeveel ze betalen.  
 [07:40] Met vier upsells en je hebt geen idee.  
 [07:42] De graf? Ik zou het zeggen.  
@@ -499,7 +499,7 @@ _Automatische woord-voor-woord transcriptie (Whisper large-v3-turbo). Namen en v
 [22:49] Het antwoord.  
 [22:50] Een nieuwe fact he, ik vind dat ik een notification...  
 [22:52] Enkel hetgeen wat je inrekt is, dat jij je versie van alle facts ziet interessant.  
-[22:55] Nee, ik moet een notification krijgen die zegt, daar je wilt weten hoe lang de kras die al bezig is.  
+[22:55] Nee, ik moet een notification krijgen die zegt, daar je wilt weten hoe lang de norvik die al bezig is.  
 [23:00] Met een suggested antwoord.  
 [23:02] En ik lauw dat.  
 [23:03] En dan is dat...  

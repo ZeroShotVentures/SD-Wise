@@ -11,11 +11,11 @@ if (!julien) throw new Error("fixture");
 
 describe("formatAsk", () => {
   it("only hints at locked facts, never what, whose or where from", () => {
-    const question = "What does Kras pay per payslip?";
+    const question = "What does Norvik pay per payslip?";
     const { hits, visited } = searchGraph(question, nodes, edges);
     const result = answerFor(question, julien.id, hits, visited, nodes);
     const views = nodes.map((n) => toNodeView(n, julien.id));
-    const pricing = nodes.find((n) => n.id === "n-kras-pricing");
+    const pricing = nodes.find((n) => n.id === "n-norvik-pricing");
     if (!pricing) throw new Error("fixture");
     expect(hits).toContain(pricing.id);
 
@@ -23,7 +23,7 @@ describe("formatAsk", () => {
     const text = JSON.stringify(out);
     expect(out.moreAvailable).toBe(true);
     expect(out.requestUrl).toBe(
-      "https://sdwise.be/inbox/request?question=What+does+Kras+pay+per+payslip%3F",
+      "https://sdwise.be/inbox/request?question=What+does+Norvik+pay+per+payslip%3F",
     );
     expect(text).not.toContain(pricing.id);
     expect(text).not.toContain(pricing.content);
@@ -33,7 +33,7 @@ describe("formatAsk", () => {
   });
 
   it("has no request link when there's nothing more", () => {
-    const question = "What does Kras pay per payslip?";
+    const question = "What does Norvik pay per payslip?";
     const bram = people.find((p) => p.id === "p-bram");
     if (!bram) throw new Error("fixture");
     const { hits, visited } = searchGraph(question, nodes, edges);
@@ -47,7 +47,6 @@ describe("formatAsk", () => {
       question: "Who wins the World Cup?",
       visited: [],
       hits: [],
-      lockedHits: [],
       answer: { text: "I can't help you with that.", nodeIds: [] },
       moreAvailable: false,
       askColleague: true,

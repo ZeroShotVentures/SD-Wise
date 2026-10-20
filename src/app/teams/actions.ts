@@ -6,11 +6,7 @@ import * as graph from "@/lib/graph/service";
 
 export async function askWise(input: string) {
   const me = await requirePerson();
-  // The chat has no graph to light up.
-  const { lockedHits: _, ...result } = await graph.ask(
-    me,
-    question.parse(input),
-  );
+  const result = await graph.ask(me, question.parse(input));
   const facts = result.answer
     ? await graph.factsFor(me, result.answer.nodeIds)
     : [];

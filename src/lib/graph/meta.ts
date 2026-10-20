@@ -1,50 +1,166 @@
 import type { EdgeKind, IntegrationKind, KnowledgeSource } from "./types";
 
+export type IntegrationCategory = "Chat" | "Email" | "Meetings" | "Documents";
+
+export const CATEGORIES: IntegrationCategory[] = [
+  "Chat",
+  "Email",
+  "Meetings",
+  "Documents",
+];
+
+export type Suite = "microsoft" | "google";
+
+// One sign-in covers every app in a suite: Microsoft Entra ID consents to
+// Microsoft Graph permissions, Google to Workspace scopes.
+export const SUITES: Record<
+  Suite,
+  { label: string; logo: string; provider: string; api: string }
+> = {
+  microsoft: {
+    label: "Microsoft 365",
+    logo: "microsoft",
+    provider: "Microsoft",
+    api: "Microsoft Graph",
+  },
+  google: {
+    label: "Google Workspace",
+    logo: "google",
+    provider: "Google",
+    api: "Google Workspace",
+  },
+};
+
+// `logo` names a file in public/logos. `scopes` are the read-only
+// permissions the provider asks the user to grant.
 export const INTEGRATIONS: Record<
   IntegrationKind,
-  { label: string; category: string; description: string; mark: string }
+  {
+    label: string;
+    category: IntegrationCategory;
+    description: string;
+    logo: string;
+    suite?: Suite;
+    provider: string;
+    scopes: string[];
+    // Logos of the file types an integration reads, e.g. Word in SharePoint.
+    includes?: string[];
+  }
 > = {
-  slack: {
-    label: "Slack",
-    category: "Chat",
-    description: "Channels and direct messages you're part of.",
-    mark: "#4a154b",
-  },
   teams: {
     label: "Microsoft Teams",
     category: "Chat",
     description: "Team channels and one-on-one chats.",
-    mark: "#5059c9",
+    logo: "teams",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["Chat.Read", "ChannelMessage.Read.All", "Team.ReadBasic.All"],
+  },
+  slack: {
+    label: "Slack",
+    category: "Chat",
+    description: "Channels and direct messages you're part of.",
+    logo: "slack",
+    provider: "Slack",
+    scopes: ["channels:history", "groups:history", "im:history", "users:read"],
   },
   outlook: {
     label: "Outlook",
     category: "Email",
     description: "Email threads, read with the same rights as your mailbox.",
-    mark: "#0a64d6",
+    logo: "outlook",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["Mail.Read", "User.ReadBasic.All"],
   },
   gmail: {
     label: "Gmail",
     category: "Email",
     description: "Email threads from Google Workspace.",
-    mark: "#ea4335",
+    logo: "gmail",
+    suite: "google",
+    provider: "Google",
+    scopes: ["gmail.readonly"],
   },
   teams_meetings: {
     label: "Teams meetings",
     category: "Meetings",
     description: "Transcripts of recorded Teams meetings.",
-    mark: "#464eb8",
+    logo: "teams",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["OnlineMeetings.Read", "OnlineMeetingTranscript.Read.All"],
   },
   google_meet: {
     label: "Google Meet",
     category: "Meetings",
     description: "Transcripts of Google Meet calls.",
-    mark: "#00897b",
+    logo: "google-meet",
+    suite: "google",
+    provider: "Google",
+    scopes: ["meetings.space.readonly"],
   },
   zoom: {
     label: "Zoom",
     category: "Meetings",
     description: "Cloud recording transcripts from Zoom.",
-    mark: "#2d8cff",
+    logo: "zoom",
+    provider: "Zoom",
+    scopes: ["cloud_recording:read"],
+  },
+  sharepoint: {
+    label: "SharePoint",
+    category: "Documents",
+    description: "Team sites, pages and the files stored in them.",
+    logo: "sharepoint",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["Sites.Read.All"],
+    includes: ["word", "excel", "powerpoint"],
+  },
+  onedrive: {
+    label: "OneDrive",
+    category: "Documents",
+    description: "Files you own and files shared with you.",
+    logo: "onedrive",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["Files.Read.All"],
+    includes: ["word", "excel", "powerpoint"],
+  },
+  onenote: {
+    label: "OneNote",
+    category: "Documents",
+    description: "Notebooks you and your team keep.",
+    logo: "onenote",
+    suite: "microsoft",
+    provider: "Microsoft",
+    scopes: ["Notes.Read.All"],
+  },
+  google_drive: {
+    label: "Google Drive",
+    category: "Documents",
+    description: "Docs, Sheets and Slides shared with you.",
+    logo: "google-drive",
+    suite: "google",
+    provider: "Google",
+    scopes: ["drive.readonly"],
+  },
+  notion: {
+    label: "Notion",
+    category: "Documents",
+    description: "Pages and databases in your workspace.",
+    logo: "notion",
+    provider: "Notion",
+    scopes: ["read_content"],
+  },
+  confluence: {
+    label: "Confluence",
+    category: "Documents",
+    description: "Spaces and pages your team writes.",
+    logo: "confluence",
+    provider: "Atlassian",
+    scopes: ["read:confluence-content.all"],
   },
 };
 

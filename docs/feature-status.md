@@ -1,12 +1,12 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card) and [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph): lint, typecheck, `next build` and all 67 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`), [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card), [PR #22](https://github.com/ZeroShotVentures/SD-Wise/pull/22) (semantic zoom for the graph) and [PR #20](https://github.com/ZeroShotVentures/SD-Wise/pull/20) (integrations page revamp, Microsoft 365, MCP tab): lint, typecheck, `next build` and all 70 tests pass. Statuses come from reading the code and the tests; the Integrations page from PR #20 was also clicked through in a browser, the rest of this list wasn't.
 
 ## In short
 
-- **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too.
-- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, and integrations are an in-memory on/off switch. Claude does write the answer and the drafted reply, from whatever that search finds.
-- **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and document sources.
+- **Real:** everything between people. Questions, answers, access requests, the inbox, and answers turning into new facts are stored in Postgres and work across accounts. Sign-in, settings, admin and the MCP server are real too, including the MCP tab on the Integrations page and revoking AI clients there.
+- **Mocked:** the company brain itself. All facts, edges and permissions are fixtures in code. The search uses keywords instead of embeddings, and integrations (now with real logos, Microsoft 365 as one suite, and a Documents category) are an in-memory on/off switch. Claude does write the answer and the drafted reply, from whatever that search finds.
+- **Not built:** real integrations and fact extraction, the embedding search in [node-finding.md](node-finding.md), notifications, and facts from documents (the document sources can be "connected" but bring nothing).
 
 ## Legend
 
@@ -64,16 +64,20 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 ## Integrations
 
+The **Sources** tab of the Integrations page. Everything here is mocked; the **MCP** tab is real and listed under MCP below.
+
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
-| Integrations page (Slack, Teams, Outlook, Gmail, Teams meetings, Google Meet, Zoom) | Mocked | 🟡 | A fixture list with fact and people counts per source. |
-| Connect | Mocked | ❌ | The dialog shows "Signing in", "Mapping who is in which conversation" and "Extracting facts" on 900 ms timers, then flips a flag. No OAuth, nothing is read. |
-| Disconnect | Mocked | 🟡 | Facts from that source really do drop out of the graph and search. But the switch is shared by every user, lives in server memory, resets on restart, and isn't shared between server instances. |
-| Gmail, Google Meet, Zoom | Mocked | ❌ | They have no facts, so connecting them changes nothing. |
-| Real ingestion and fact extraction | Not built | ❌ | The database enum only knows `slack`, `email` and `google_meet`; Teams, Outlook, Gmail, Teams meetings and Zoom are proposals in [types.ts](../src/lib/graph/types.ts). |
-| Documents and file systems | Not built | ❌ | The README names them as knowledge sources, but there is no integration and no document facts. |
+| Integrations page: 13 sources in Chat, Email, Meetings and Documents | Mocked | 🟡 | Slack, Microsoft Teams, Outlook, Gmail, Teams meetings, Google Meet, Zoom, SharePoint, OneDrive, OneNote, Google Drive, Notion and Confluence, from a fixture list with fact and people counts per source. Real brand logos in `public/logos` (Iconify `logos`, `vscode-icons` and `simple-icons` sets). Search (`/` to focus), filter chips with counts, empty state. |
+| Microsoft 365 suite | Mocked | 🟡 | One card for Teams, Teams meetings, Outlook, SharePoint, OneDrive and OneNote with a progress ring. "Connect N more" picks apps and runs one "Sign in with Microsoft", listing the read-only Microsoft Graph permissions it would ask for (`Mail.Read`, `Sites.Read.All`, …). No real Entra ID app, no OAuth. |
+| Connect | Mocked | ❌ | The dialog shows sign-in, mapping and extraction steps on 650 ms timers (one step per app for a suite), then flips the flags. No OAuth, nothing is read. |
+| Disconnect | Mocked | 🟡 | Immediate, with an Undo toast. Facts from that source really do drop out of the graph and search. But the switch is shared by every user, lives in server memory, resets on restart, and isn't shared between server instances. Undo resets the "since" date to today. |
+| Gmail, Google Meet, Zoom and every Documents source | Mocked | ❌ | They have no facts, so connecting them changes nothing; their cards say "Indexing" forever. |
+| Real ingestion and fact extraction | Not built | ❌ | The database enum only knows `slack`, `email` and `google_meet`; every other kind is a proposal in [types.ts](../src/lib/graph/types.ts). |
+| Documents and file systems | Not built | ❌ | SharePoint, OneDrive, OneNote, Google Drive, Notion and Confluence exist as sources on the page only. There are no document facts. |
+| Phone layout | Not built | 🟡 | The page works from about 1024 px wide. Below that the app shell's fixed sidebar squeezes every page. |
 
-## MCP (Cursor, Claude)
+## MCP (Claude, ChatGPT, Copilot, Cursor, VS Code)
 
 | Feature | Real or mocked | Works as intended | Notes |
 | --- | --- | --- | --- |
@@ -82,7 +86,12 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | MCP App inbox card for `list_inbox` | Real | 🟡 | A read-only card with "For you" and "Sent" tabs. Items waiting for you come first, with the drafted reply; each item shows whether it's a question or an access request, its status, who it's from or to, the facts it's about, and the answer. Pending access requests in Sent still show "The owner". Replying happens in the web app: the "Reply in SD Wise" button opens the inbox there. Shares its shell with the answer card ([app-html.ts](../src/lib/mcp/app-html.ts)). Tested over HTTP, not yet clicked through in Claude. |
 | Request access from any MCP client | Real | 🟡 | `ask` returns a `requestUrl` that opens `/inbox/request`, where one click sends the request; opening the link sends nothing. The card opens it if its own button fails, and Claude may call `request_more`. But the tool descriptions say the result is always shown in a card and no longer tell Claude to show the link, so in hosts without cards (Claude Cowork, Claude Code, Cursor) users likely see neither the answer card nor a way to request access. |
 | Sign-in for MCP clients (OAuth, consent page, discovery, dynamic registration, CIMD) | Real | ✅ | Better Auth MCP plugin. Outside localhost it needs HTTPS. |
-| Answer inbox questions, write to the graph, per-tool scopes, revoke connected apps | Not built | ❌ | Out of scope for v1 ([mcp-scope.md](mcp-scope.md)). |
+| Integrations → MCP tab: server URL and status | Real | ✅ | The URL with a copy button, and a live check of `/.well-known/oauth-protected-resource/api/mcp`. |
+| Integrations → MCP tab: your AI clients | Real | ✅ | Clients you allowed, from Better Auth's OAuth consents, with their logo, when you allowed them, when they last got a token, and what they can see in plain words. Clicked through with two clients registered over real OAuth. |
+| Disconnect an AI client | Real | 🟡 | Deletes the consent and revokes the client's refresh tokens; a refresh afterwards fails with `invalid_grant`. Access tokens are JWTs, so one already issued keeps working until it expires, at most an hour. The confirm says so. |
+| Setup guides for Claude, ChatGPT, Copilot Studio, Claude Code, Cursor, VS Code, Windsurf | Real | 🟡 | Steps, copyable config and one-click install links for Cursor and VS Code. Claude, ChatGPT and Copilot Studio get a warning on localhost, since they connect from the cloud. The ChatGPT and Copilot Studio menu paths are written from their docs and may drift. Only the Claude Code and Cursor flows were exercised (over OAuth, not in the apps themselves). |
+| Tool list on the MCP tab | Real | ✅ | Read from [tools.ts](../src/lib/mcp/tools.ts), the same definitions the server registers, with inputs, a read-only or "only from the answer card" badge. Tools also carry titles and read-only hints for clients. |
+| Answer inbox questions, write to the graph, per-tool scopes | Not built | ❌ | Out of scope for v1 ([mcp-scope.md](mcp-scope.md)). |
 
 ## Accounts, settings and admin
 
@@ -92,7 +101,7 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 | Sign up | Not built (on purpose) | — | Accounts only come from `pnpm db:seed:demo`, which also deletes every account except Kobe and Filip. Accounts without a person get a 404 on the graph, inbox and integrations pages. |
 | Demo accounts and demo questions | Real | ✅ | Kobe and Filip, `password123`. `--reset` clears all questions first. |
 | Settings: name, password, sessions, delete account | Real | ✅ | Deleting Kobe or Filip breaks the demo until the next `pnpm db:seed:demo`. |
-| Settings: "Connect your AI" | Real | ✅ | Shows the Cursor and Claude Code config for this deployment's URL. |
+| Settings: "Connect your AI" | Real | ✅ | Links to Integrations → MCP, which has the setup for every client. |
 | Admin: users, search, impersonate, ban, sessions, set password, delete | Real | 🟡 | Works, but nobody is an admin unless `ADMIN_EMAILS` lists them, and it's empty in `.env.example`. Add `kobe@sdwise.be` to use it in the demo. There's no "create user". |
 | Plans and entitlements | Unused | — | `getEntitlements` always returns "unlimited" and nothing calls it. Left over from the template. |
 
@@ -107,6 +116,6 @@ What works, what is mocked, and what isn't built yet. Checked against `main` at 
 
 1. **Search:** build the walk from [node-finding.md](node-finding.md) on embeddings. Claude writes the answer and the drafted reply, but only from what the keyword search finds.
 2. **Graph in the database:** read facts and edges from Postgres instead of fixtures, and save answers as real facts.
-3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation.
+3. **Integrations:** real OAuth and ingestion for at least one source, with access taken from who was in the conversation. Microsoft 365 through Microsoft Graph is the natural first one: the suite flow and its permission list are already on the page.
 4. **Privacy:** stop the inspector from showing owners of locked facts, hide who asked from owners until they share, let owners mark facts as never hinted, and rate-limit questions that only produce a hint.
 5. **Small fixes:** a way to ask a colleague again, per-user (or persisted) integration state, and notifications for new questions.

@@ -95,6 +95,22 @@ export const integrations: Integration[] = [
   { id: "i-meet", type: "google_meet", connected: false, connectedAt: null },
   { id: "i-gmail", type: "gmail", connected: false, connectedAt: null },
   { id: "i-zoom", type: "zoom", connected: false, connectedAt: null },
+  {
+    id: "i-sharepoint",
+    type: "sharepoint",
+    connected: false,
+    connectedAt: null,
+  },
+  { id: "i-onedrive", type: "onedrive", connected: false, connectedAt: null },
+  { id: "i-onenote", type: "onenote", connected: false, connectedAt: null },
+  { id: "i-drive", type: "google_drive", connected: false, connectedAt: null },
+  { id: "i-notion", type: "notion", connected: false, connectedAt: null },
+  {
+    id: "i-confluence",
+    type: "confluence",
+    connected: false,
+    connectedAt: null,
+  },
 ];
 
 type NodeSeed = {

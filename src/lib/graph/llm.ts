@@ -30,6 +30,25 @@ const DRAFT_SYSTEM = `You are SD Wise, the company brain of SD Worx. A colleague
 - The colleague may not be allowed to see these facts, so share only what answers the question.
 ${RULES}`;
 
+// For questions no fact answers that need no company knowledge either, like
+// the time or what SD Wise can do. Anything about the company stays NO_ANSWER,
+// so Claude can't make up company facts.
+const GENERAL_SYSTEM = `You are SD Wise, the company brain of SD Worx. An employee asks a question, and none of the company knowledge they can see answers it.
+
+- Answer only if the question needs no knowledge of SD Worx, its people, customers, plans or policies: the date or time, a greeting, simple maths, or what you can do (answer questions from the company's chats, emails and meetings, and point to colleagues who know more).
+- Lead with the answer, in 1 or 2 sentences. Plain text, no markdown.
+- Otherwise, reply with exactly ${NO_ANSWER}.`;
+
+// SD Worx is in Belgium, so the time is Brussels time.
+function now() {
+  const time = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "full",
+    timeStyle: "short",
+    timeZone: "Europe/Brussels",
+  }).format(new Date());
+  return `${time} (Brussels time)`;
+}
+
 function promptFor(question: string, facts: KnowledgeNode[], extra = "") {
   const list = facts
     .map(
@@ -70,6 +89,15 @@ async function write(kind: string, system: string, prompt: string) {
 // null when the facts don't answer the question.
 export function writeAnswer(question: string, facts: KnowledgeNode[]) {
   return write("answer", ANSWER_SYSTEM, promptFor(question, facts));
+}
+
+// null when the question needs company knowledge.
+export function writeGeneral(question: string) {
+  return write(
+    "general answer",
+    GENERAL_SYSTEM,
+    `It is ${now()}.\n\nQuestion: ${question}`,
+  );
 }
 
 // The recipient's reply to `asker`, from facts the recipient can see. null

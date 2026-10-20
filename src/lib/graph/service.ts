@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerFor, draftFacts, lockedHits, searchGraph } from "./ai";
 import { questionIdOf, type ResolvedQuery, unseenFor } from "./answers";
-import { writeAnswer, writeDraft } from "./llm";
+import { writeAnswer, writeDraft, writeGeneral } from "./llm";
 import {
   type Db,
   grantAccess,
@@ -100,15 +100,16 @@ export async function ask(me: Person, question: string): Promise<AskResult> {
   const { nodes, edges } = await readGraph(prisma);
   const { hits, visited } = searchGraph(question, nodes, edges);
   const result = answerFor(question, me.id, hits, visited, nodes);
-  if (!result.answer) return result;
   // answerFor only puts facts `me` can see in the answer.
-  const facts = result.answer.nodeIds.flatMap(
-    (id) => nodes.find((n) => n.id === id) ?? [],
-  );
-  const text = await writeAnswer(question, facts);
+  const nodeIds = result.answer?.nodeIds ?? [];
+  const facts = nodeIds.flatMap((id) => nodes.find((n) => n.id === id) ?? []);
+  const text = facts.length ? await writeAnswer(question, facts) : null;
+  if (text) return { ...result, answer: { text, nodeIds } };
+  // No fact answers it, but questions like "what time is it?" need none.
+  const general = await writeGeneral(question);
   return {
     ...result,
-    answer: text ? { text, nodeIds: result.answer.nodeIds } : null,
+    answer: general ? { text: general, nodeIds: [] } : null,
   };
 }
 

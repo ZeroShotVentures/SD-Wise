@@ -188,6 +188,15 @@ export async function ask(me: Person, question: string): Promise<AskResult> {
   };
 }
 
+// Lets a client cite an answer's facts without loading the whole graph.
+export async function factsFor(me: Person, ids: string[]) {
+  const { nodes } = await loadGraph();
+  const wanted = new Set(ids);
+  return nodes
+    .filter((n) => wanted.has(n.id) && canSee(n, me.id))
+    .map(({ id, title, source }) => ({ id, title, source }));
+}
+
 // Asks the owners of locked facts matching the question to share them. The
 // search reruns here so the asker never learns which facts or whose. One
 // request per owner, carrying the asker's question as context. Returns

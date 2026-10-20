@@ -50,28 +50,11 @@ Sign in with one of these two accounts:
 
 ## Use SD Wise from Cursor or Claude (MCP)
 
-SD Wise exposes an MCP server at `/api/mcp` (streamable HTTP). It acts as the user who owns the token, so answers follow the same visibility rules as the app.
+SD Wise is an MCP server at `/api/mcp`, protected by Better Auth's [MCP plugin](https://better-auth.com/docs/plugins/mcp). Add the URL to your client; it signs you in to SD Wise in the browser and asks you to allow it. It acts as you, so answers follow the same visibility rules as the app.
 
-1. Sign in, open **Settings → Connect your AI** and create a token. It is shown once.
-2. Add it to your client:
+- **Cursor** (`.cursor/mcp.json`): `{ "mcpServers": { "sdwise": { "url": "http://localhost:3000/api/mcp" } } }`
+- **Claude Code**: `claude mcp add --transport http sdwise http://localhost:3000/api/mcp`
 
-   - **Cursor** (`.cursor/mcp.json`):
+Tools: `ask`, `ask_person`, `request_access`, `list_inbox`.
 
-     ```json
-     {
-       "mcpServers": {
-         "sdwise": {
-           "url": "http://localhost:3000/api/mcp",
-           "headers": { "Authorization": "Bearer sdw_..." }
-         }
-       }
-     }
-     ```
-
-   - **Claude Code**:
-
-     ```sh
-     claude mcp add --transport http sdwise http://localhost:3000/api/mcp --header "Authorization: Bearer sdw_..."
-     ```
-
-Tools: `ask`, `ask_person`, `request_access`, `list_inbox`. Clients that need a public HTTPS URL (or a tunnel such as ngrok for local testing) must use `BETTER_AUTH_URL` as the base.
+The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, so use the deployed URL or a tunnel. claude.ai's custom connectors need a public URL too.

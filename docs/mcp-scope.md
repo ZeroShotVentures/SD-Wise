@@ -1,41 +1,22 @@
 # SD Wise MCP v1 scope
 
-**Goal:** a remote MCP server at `/api/mcp` that can be added to Cursor or Claude with a URL and a token. Every call runs as the token's owner, so existing visibility rules apply.
+**Goal:** a remote MCP server at `/api/mcp` that people add to Cursor or Claude with just a URL. Every call runs as the signed-in user, so existing visibility rules apply.
 
 ## In scope
 
-1. **Endpoint:** `src/app/api/mcp/route.ts`, streamable HTTP, built on `mcp-handler` and `@modelcontextprotocol/sdk`.
-2. **Auth:** one personal access token per user, sent as `Authorization: Bearer <token>`.
-   - New `McpToken` table: hashed token, `userId`, label, `lastUsedAt`.
-   - Minted from a "Connect your AI" card on `/settings`; shown once, revocable.
-   - Token resolves to a `userId`, then to a `Person` via `personFor`. No tool takes a person id.
-3. **Tools:**
-   - `ask(question)` -> `graph.ask`: visible facts, locked facts with owner, "who knows more".
-   - `ask_person(recipientId, question, nodeIds?)` -> `graph.askPerson`.
-   - `request_access(nodeId, ownerId)` -> `graph.requestAccess`.
-   - `list_inbox()` -> read-only incoming questions and answers.
-4. **Shared validation:** move the zod schemas out of `src/app/(app)/graph/actions.ts` so actions and MCP tools share them.
-5. **Tests (vitest):** 401 without or with an invalid/revoked token; locked node content never appears in tool output; the caller is always the token's owner.
-6. **Docs:** README section with client config.
-   - Cursor: `{"mcpServers":{"sdwise":{"url":"https://<host>/api/mcp","headers":{"Authorization":"Bearer sdw_..."}}}}`
-   - Claude Code: `claude mcp add --transport http sdwise https://<host>/api/mcp --header "Authorization: Bearer sdw_..."`
+1. **Auth: Better Auth's MCP plugin** (`@better-auth/mcp`), so SD Wise is the OAuth server for MCP clients.
+   - `jwt()` signs access tokens; `mcp()` is the OAuth 2.1 provider, with tokens bound to `BETTER_AUTH_URL/api/mcp`; `cimd()` lets MCP 2026-07-28 clients identify with Client ID Metadata Documents.
+   - Dynamic client registration is enabled as a fallback, since Cursor and older Claude Code still use it.
+   - The sign-in page continues the OAuth flow; a new `/consent` page asks the user to allow the client.
+   - `/.well-known/*` forwards to Better Auth for discovery (protected resource and authorization server metadata).
+   - Migration `20261020120000_mcp_oauth` adds the OAuth Provider tables and `jwks`.
+2. **Endpoint:** `src/app/api/mcp/route.ts`, `@modelcontextprotocol/server` v2 (stateless), wrapped in `requireMcpAuth`. The token's `sub` resolves to a `Person` via `personFor`; accounts without one get a 403. 2025-protocol clients are served statelessly as well.
+3. **Tools:** `ask`, `ask_person`, `request_access`, `list_inbox`. None take a person id.
+4. **Shared validation:** zod schemas in `src/lib/graph/schemas.ts`, used by the Server Actions and the tools.
+5. **Tests:** 401 challenge without or with a forged token, 403 for users without a person, tool listing, `ask` runs as the token's user and never returns locked content.
 
 ## Out of scope for v1
 
-- OAuth (needed for claude.ai connector UI); later via better-auth's OAuth/MCP plugin.
 - Answering inbox questions over MCP; graph-write tools.
-- Per-tool scopes and extra rate limiting.
+- Custom scopes per tool, a "connected apps" list with revoke in Settings.
 - Replacing the graph fixtures with real data.
-
-## Order of work
-
-1. `McpToken` model and token helpers.
-2. Route and `ask`.
-3. Remaining tools.
-4. Settings card.
-5. Tests and docs.
-
-## Open choices
-
-- Needs a public HTTPS URL; locally use `pnpm dev` plus a tunnel.
-- Own `McpToken` table rather than better-auth's `apiKey` plugin, to avoid another plugin.

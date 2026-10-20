@@ -1,5 +1,6 @@
 import "server-only";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
 import {
   askPersonInput,
   question,
@@ -13,9 +14,9 @@ const json = (value: unknown) => ({
   content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
 });
 
-// Every tool acts as `me`, the owner of the bearer token. Nothing in a tool's
-// input can name another identity, and all visibility rules stay in the
-// graph service.
+// Every tool acts as `me`, the user the access token was issued to. Nothing
+// in a tool's input can name another identity, and all visibility rules stay
+// in the graph service.
 export function createMcpServer(me: Person) {
   const server = new McpServer({ name: "sd-wise", version: "0.1.0" });
 
@@ -24,7 +25,7 @@ export function createMcpServer(me: Person) {
     {
       description:
         "Ask the SD Wise company brain a question. Answers only with what you are allowed to see. Facts you can't see come back as locked facts with their owners, plus people who know more.",
-      inputSchema: { question },
+      inputSchema: z.object({ question }),
     },
     async (input) => {
       const [result, view] = await Promise.all([
@@ -40,7 +41,7 @@ export function createMcpServer(me: Person) {
     {
       description:
         "Send a question to a colleague. They get it in their inbox with a drafted reply. Use ids from `ask` (peopleWhoKnowMore and nodeIds).",
-      inputSchema: askPersonInput.shape,
+      inputSchema: askPersonInput,
     },
     async (input) => {
       const data = askPersonInput.parse(input);
@@ -54,7 +55,7 @@ export function createMcpServer(me: Person) {
     {
       description:
         "Ask the owner of a locked fact for access. Use a locked fact id and one of its owner ids from `ask`.",
-      inputSchema: requestAccessInput.shape,
+      inputSchema: requestAccessInput,
     },
     async (input) => {
       const data = requestAccessInput.parse(input);

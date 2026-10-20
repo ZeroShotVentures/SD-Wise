@@ -1,32 +1,26 @@
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { authenticate } from "@/lib/mcp/auth";
+import { requireMcpAuth } from "@better-auth/mcp";
+import { createMcpHandler } from "@modelcontextprotocol/server";
+import { auth, mcpResource } from "@/lib/auth";
+import { personFor } from "@/lib/graph/service";
 import { createMcpServer } from "@/lib/mcp/server";
 
-// Stateless MCP over streamable HTTP: a fresh server per request, acting as
-// the token's owner. Create a token in Settings.
-export async function POST(request: Request) {
-  const me = await authenticate(request);
-  if (!me) {
-    return Response.json(
-      { error: "Missing or invalid token" },
-      { status: 401, headers: { "WWW-Authenticate": "Bearer" } },
-    );
-  }
-
-  const server = createMcpServer(me);
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-    enableJsonResponse: true,
-  });
-  await server.connect(transport);
-  return transport.handleRequest(request);
-}
-
-const notAllowed = () =>
-  Response.json(
-    { error: "Method not allowed" },
-    { status: 405, headers: { Allow: "POST" } },
-  );
-
-export const GET = notAllowed;
-export const DELETE = notAllowed;
+// Stateless MCP over streamable HTTP. requireMcpAuth verifies the OAuth access
+// token Better Auth issued (signature, issuer, audience, expiry) and answers
+// unauthenticated requests with the challenge MCP clients use to sign in.
+export const POST = requireMcpAuth(
+  auth,
+  async (request, claims) => {
+    const me = claims.sub ? await personFor(claims.sub) : null;
+    if (!me) {
+      return Response.json(
+        { error: "This account has no place in the graph" },
+        { status: 403 },
+      );
+    }
+    // Clients still on the 2025 protocol are served statelessly too.
+    return createMcpHandler(() => createMcpServer(me), {
+      legacy: "stateless",
+    }).fetch(request);
+  },
+  { resource: mcpResource },
+);

@@ -1,6 +1,6 @@
 # SD Wise feature status
 
-What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) and the MCP inbox card: lint, typecheck, `next build` and all 58 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
+What works, what is mocked, and what isn't built yet. Checked against `main` at `d36c84c` on 20 Oct 2026, then updated for [PR #18](https://github.com/ZeroShotVentures/SD-Wise/pull/18) (hiding locked facts and their owners from `ask`) and [PR #21](https://github.com/ZeroShotVentures/SD-Wise/pull/21) (MCP inbox card): lint, typecheck, `next build` and all 58 tests pass. Statuses come from reading the code and the tests; nobody clicked through every flow in a browser for this list.
 
 ## In short
 

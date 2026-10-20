@@ -1,4 +1,5 @@
 import { generateBulk } from "./bulk-fixtures";
+import * as db from "./db-fixtures";
 import type {
   EdgeKind,
   Integration,
@@ -74,7 +75,7 @@ const corePeople: Person[] = [
   },
 ];
 
-export const people: Person[] = [...corePeople, ...bulk.people];
+export const people: Person[] = [...corePeople, ...bulk.people, ...db.people];
 
 export const integrations: Integration[] = [
   { id: "i-slack", type: "slack", connected: true, connectedAt: "2026-09-02" },
@@ -544,7 +545,11 @@ const coreNodes: KnowledgeNode[] = nodeSeeds.map((n) => ({
   createdAt: n.at,
 }));
 
-export const nodes: KnowledgeNode[] = [...coreNodes, ...bulk.nodes];
+export const nodes: KnowledgeNode[] = [
+  ...coreNodes,
+  ...bulk.nodes,
+  ...db.nodes,
+];
 
 const edgeSeeds: [string, string, EdgeKind, string][] = [
   [
@@ -653,4 +658,8 @@ const coreEdges: KnowledgeEdge[] = edgeSeeds.map(
   }),
 );
 
-export const edges: KnowledgeEdge[] = [...coreEdges, ...bulk.edges];
+export const edges: KnowledgeEdge[] = [
+  ...coreEdges,
+  ...bulk.edges,
+  ...db.edges,
+];

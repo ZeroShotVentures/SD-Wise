@@ -10,6 +10,8 @@ const SCOPE_LABEL: Record<string, string> = {
   offline_access: "Stay connected until you revoke it",
 };
 
+const UNSAFE_PROTOCOLS = new Set(["javascript:", "data:", "vbscript:"]);
+
 type ConsentFormProps = {
   clientName: string;
   email: string;
@@ -25,8 +27,11 @@ export function ConsentForm({ clientName, email, scopes }: ConsentFormProps) {
     setLoading(true);
     try {
       const res = await oauth2.consent({ accept });
-      if (res.data?.url) {
-        window.location.href = res.data.url;
+      const url = res.data?.url && new URL(res.data.url, window.location.href);
+      // The client's registered redirect_uri, which may be a native app
+      // scheme (cursor://), so only script-running schemes are refused.
+      if (url && !UNSAFE_PROTOCOLS.has(url.protocol)) {
+        window.location.assign(url);
         return;
       }
       setError(res.error?.message ?? "Something went wrong");

@@ -2,13 +2,15 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { afterAll, describe, expect, it } from "vitest";
 import { PrismaClient } from "@/generated/prisma/client";
-import { canSee } from "./access";
+import { canSee, toEdgeView, toNodeView } from "./access";
 import { answerNodeId } from "./answers";
+import { clusterGraph } from "./clusters";
 import { edges, integrations, nodes } from "./fixtures";
-import { seedGraph } from "./seed";
+import { demoQuestions, seedGraph } from "./seed";
 import {
   type Db,
   grantAccess,
+  linkLooseFacts,
   readGraph,
   readNodes,
   saveAnswer,
@@ -18,9 +20,8 @@ import {
 } from "./store";
 
 // Runs against the Postgres in TEST_DATABASE_URL (CI sets it), which must be
-// on this machine. Every test starts from the fixture graph without any
-// questions, in a transaction that is rolled back, so the database is left as
-// it was.
+// on this machine. Every test starts from the graph a demo starts from, in a
+// transaction that is rolled back, so the database is left as it was.
 const url = process.env.TEST_DATABASE_URL;
 if (url && !["localhost", "127.0.0.1"].includes(new URL(url).hostname)) {
   throw new Error("TEST_DATABASE_URL must point at a database on localhost");
@@ -40,8 +41,6 @@ async function rolledBack(test: (tx: Db) => Promise<void>) {
     await prisma.$transaction(
       async (tx) => {
         await seedGraph(tx);
-        // Takes the answers and access they added with them.
-        await tx.question.deleteMany();
         await test(tx);
         throw ROLLBACK;
       },
@@ -77,29 +76,58 @@ const answered = (
   });
 
 describe.skipIf(!prisma)("graph in the database", () => {
-  it("holds the fixture graph, and seeding again changes nothing", () =>
+  it("puts the graph back to how a demo starts, and leaves accounts alone", () =>
     rolledBack(async (tx) => {
-      await Promise.all(
-        integrations.map(({ id, connected }) =>
-          tx.integrations.update({ where: { id }, data: { connected } }),
-        ),
-      );
-      const again = await seedGraph(tx);
-      expect(again.added).toEqual({
-        integrations: 0,
-        people: 0,
-        nodes: 0,
-        access: 0,
-        edges: 0,
+      // What testing leaves behind: an answer, shared access, a disconnected
+      // source. The account has to survive.
+      const now = new Date();
+      const user = await tx.user.upsert({
+        where: { personId: "p-kobe" },
+        create: {
+          id: "u-test-kobe",
+          name: "Kobe Verdonck",
+          email: "kobe-test@sdwise.be",
+          emailVerified: true,
+          createdAt: now,
+          updatedAt: now,
+          personId: "p-kobe",
+        },
+        update: {},
       });
-      expect(again.updated).toEqual({ people: 0, nodes: 0 });
+      const asked = await answered(
+        tx,
+        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-filip" },
+        ["n-cutoff-december"],
+      );
+      await saveAnswer(tx, toQuery(asked));
+      const shared = await answered(
+        tx,
+        { kind: "ACCESS", askerId: "p-julien", recipientId: "p-bram" },
+        ["n-kras-pricing"],
+      );
+      await grantAccess(tx, shared);
+      await tx.integrations.update({
+        where: { id: "i-slack" },
+        data: { connected: false },
+      });
 
+      const { deleted } = await seedGraph(tx);
+      expect(deleted.questions).toBe(demoQuestions.length + 2);
+      const left = await tx.question.findMany({ select: { id: true } });
+      expect(left.map((q) => q.id).toSorted()).toEqual(
+        demoQuestions.map((q) => q.id).toSorted(),
+      );
+      expect(await readNodes(tx, [answerNodeId(asked.id)])).toEqual([]);
       const pricing = nodes.find((n) => n.id === "n-kras-pricing");
       expect(await node(tx, "n-kras-pricing")).toEqual({
         ...pricing,
         createdAt: new Date(pricing?.createdAt ?? "").toISOString(),
       });
+      expect(await tx.user.findUnique({ where: { id: user.id } })).not.toBe(
+        null,
+      );
 
+      // Every source is back as it was, so every fixture fact and edge shows.
       const connected = new Set(
         integrations.filter((i) => i.connected).map((i) => i.id),
       );
@@ -107,13 +135,10 @@ describe.skipIf(!prisma)("graph in the database", () => {
         (n) => n.integrationId && connected.has(n.integrationId),
       );
       const graph = await readGraph(tx);
-      const fixtureIds = graph.nodes
-        .map((n) => n.id)
-        .filter((id) => !id.startsWith("n-answer-"));
-      expect(fixtureIds.toSorted()).toEqual(live.map((n) => n.id).toSorted());
-      expect(graph.edges.filter((e) => e.kind !== "ANSWERS").length).toBe(
-        edges.filter((e) => fixtureIds.includes(e.sourceId)).length,
-      );
+      const shown = new Set(graph.nodes.map((n) => n.id));
+      expect(live.every((n) => shown.has(n.id))).toBe(true);
+      const drawn = new Set(graph.edges.map((e) => e.id));
+      expect(edges.every((e) => drawn.has(e.id))).toBe(true);
     }));
 
   it("drops facts from a disconnected source, and their edges", () =>
@@ -179,6 +204,36 @@ describe.skipIf(!prisma)("graph in the database", () => {
 
       await tx.question.delete({ where: { id: row.id } });
       expect(canSee(await node(tx, "n-kras-pricing"), "p-julien")).toBe(false);
+    }));
+
+  it("links facts cut off from the graph, so every fact is on a topic", () =>
+    rolledBack(async (tx) => {
+      await linkLooseFacts(tx);
+      expect(await linkLooseFacts(tx)).toBe(0);
+      const graph = await readGraph(tx);
+      const { clusterOf } = clusterGraph(
+        graph.nodes.map((n) => toNodeView(n, "p-kobe")),
+        graph.edges.map((e) => toEdgeView(e, new Set())),
+      );
+      expect(clusterOf.size).toBe(graph.nodes.length);
+    }));
+
+  it("links an answer based on nothing the recipient could see", () =>
+    rolledBack(async (tx) => {
+      await linkLooseFacts(tx);
+      // Julien can't see the Kras pricing, so his answer has no fact to link.
+      const row = await answered(
+        tx,
+        { kind: "QUESTION", askerId: "p-kobe", recipientId: "p-julien" },
+        ["n-kras-pricing"],
+      );
+      await saveAnswer(tx, toQuery(row));
+      const id = answerNodeId(row.id);
+      const links = await tx.knowledgeEdge.findMany({
+        where: { OR: [{ sourceId: id }, { targetId: id }] },
+      });
+      expect(links).toHaveLength(1);
+      expect(links[0]?.kind).toBe("RELATES_TO");
     }));
 
   it("writes each earlier answer once", () =>

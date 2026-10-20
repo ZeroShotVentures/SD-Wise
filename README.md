@@ -38,16 +38,15 @@ Every fact, and who is allowed to see it, is stored in the database. SD Wise onl
 pnpm install
 pnpm db:up            # Postgres with pgvector, in Docker
 pnpm db:deploy        # migrations
-pnpm db:seed          # the company graph: people, facts, access, edges
-pnpm db:seed:demo     # an account for every person, and the demo questions
+pnpm db:seed:demo     # an account for every person, then the graph
 pnpm dev
 ```
 
-`pnpm db:seed` writes the graph from `src/lib/graph/fixtures.ts` and is safe to re-run; `pnpm db:seed:demo` needs it first. `pnpm db:seed:demo --reset` clears every question, and the answers and access they added, before a demo.
+Before a demo, `pnpm db:seed` puts the graph back to how a demo starts: it deletes every question, answer and shared access from testing, reconnects the sources, and writes the graph from `src/lib/graph/fixtures.ts` with the six demo questions. Accounts, passwords and sessions stay.
 
 ### Accounts
 
-Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus demo questions) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
+Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus the graph) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
 
 | User | Email | Password | Role |
 | --- | --- | --- | --- |

@@ -17,7 +17,9 @@ detail depending on how far you zoom in.
 - **Layout** (`src/lib/graph/layout.ts`): islands are discs sized by fact count.
   Topics that share many edges are packed next to each other. Facts start
   spread out on their island and the force simulation tidies them from there.
-  Facts with no edges get their own "Not connected yet" island.
+  Every fact in the database is linked into the graph (`links.ts`), so every
+  fact sits on a topic. A "Not connected yet" island only appears for facts
+  whose links all lead into a disconnected source.
 - **Interaction:** click an island to zoom into it (`4-dive.jpg`). Hover a fact
   to highlight its neighbours (`5-hover.jpg`). Search results still trace
   their path across topics (`6-search.jpg`).

@@ -1,6 +1,6 @@
 import { Lightbulb, Network } from "lucide-react";
 import Link from "next/link";
-import { RequestMore } from "@/components/graph/ask-result";
+import { AskColleague, RequestMore } from "@/components/graph/ask-result";
 import { SOURCES } from "@/lib/graph/meta";
 import type { WiseReply } from "./data";
 
@@ -11,10 +11,12 @@ export function WiseCard({ reply }: { reply: WiseReply }) {
       <div className="flex flex-col gap-4 p-4">
         {reply.text && (
           <div>
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
-              <Lightbulb className="size-3.5" /> From what you know
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed">{reply.text}</p>
+            {reply.facts.length > 0 && (
+              <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
+                <Lightbulb className="size-3.5" /> From what you know
+              </h3>
+            )}
+            <p className="text-sm leading-relaxed">{reply.text}</p>
             {reply.facts.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {reply.facts.map((fact) => (
@@ -36,11 +38,7 @@ export function WiseCard({ reply }: { reply: WiseReply }) {
 
         {reply.moreAvailable && <RequestMore question={reply.question} />}
 
-        {!reply.text && !reply.moreAvailable && (
-          <p className="text-sm text-[#616161]">
-            Nobody in the company brain seems to know this yet. Try other words.
-          </p>
-        )}
+        {reply.askColleague && <AskColleague question={reply.question} />}
       </div>
       <Link
         href="/graph"

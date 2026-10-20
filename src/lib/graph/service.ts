@@ -105,12 +105,21 @@ export async function ask(me: Person, question: string): Promise<AskResult> {
   const facts = nodeIds.flatMap((id) => nodes.find((n) => n.id === id) ?? []);
   const text = facts.length ? await writeAnswer(question, facts) : null;
   if (text) return { ...result, answer: { text, nodeIds } };
-  // No fact answers it, but questions like "what time is it?" need none.
+  // No fact answers it. Claude answers questions that need none, like "what
+  // time is it?", and otherwise says so and points to a colleague. Locked
+  // matches already offer Request access instead.
   const general = await writeGeneral(question);
   return {
     ...result,
-    answer: general ? { text: general, nodeIds: [] } : null,
+    answer: { text: general.text, nodeIds: [] },
+    askColleague: !general.answered && !result.moreAvailable,
   };
+}
+
+// Everyone `me` can send a question to.
+export async function colleagues(me: Person) {
+  const people = await readPeople(prisma);
+  return people.filter((p) => p.id !== me.id);
 }
 
 // Lets a client cite an answer's facts without loading the whole graph.

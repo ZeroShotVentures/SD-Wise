@@ -97,6 +97,7 @@ export function answerFor(
     hits: known,
     answer,
     moreAvailable: known.length < hits.length,
+    askColleague: false,
   };
 }
 

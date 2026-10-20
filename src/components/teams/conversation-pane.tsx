@@ -141,6 +141,7 @@ export function ConversationPane({
           text: result.answer?.text ?? null,
           facts: result.facts,
           moreAvailable: result.moreAvailable,
+          askColleague: result.askColleague,
         },
       });
     } catch {

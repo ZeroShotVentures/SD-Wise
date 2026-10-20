@@ -41,4 +41,20 @@ describe("formatAsk", () => {
     const views = nodes.map((n) => toNodeView(n, bram.id));
     expect(formatAsk(result, views, "https://sdwise.be").requestUrl).toBeNull();
   });
+
+  it("links to asking a colleague when SD Wise can't help", () => {
+    const result = {
+      question: "Who wins the World Cup?",
+      visited: [],
+      hits: [],
+      answer: { text: "I can't help you with that.", nodeIds: [] },
+      moreAvailable: false,
+      askColleague: true,
+    };
+    const out = formatAsk(result, [], "https://sdwise.be");
+    expect(out.requestUrl).toBeNull();
+    expect(out.askUrl).toBe(
+      "https://sdwise.be/inbox/ask?question=Who+wins+the+World+Cup%3F",
+    );
+  });
 });

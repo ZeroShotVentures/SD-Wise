@@ -1,11 +1,11 @@
 "use client";
 
-import { Check, KeyRound, Lightbulb, Send, X } from "lucide-react";
+import { Check, KeyRound, Lightbulb, Send, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { requestMore } from "@/app/(app)/graph/actions";
+import { askPerson, colleagues, requestMore } from "@/app/(app)/graph/actions";
 import { SOURCES } from "@/lib/graph/meta";
-import type { AskResult, GraphView } from "@/lib/graph/types";
+import type { AskResult, GraphView, Person } from "@/lib/graph/types";
 
 type AskResultProps = {
   result: AskResult;
@@ -23,7 +23,7 @@ export function AskResultCard({
   onSelectNode,
   onClose,
 }: AskResultProps) {
-  const { answer, moreAvailable } = result;
+  const { answer, moreAvailable, askColleague } = result;
 
   return (
     <section
@@ -48,12 +48,12 @@ export function AskResultCard({
       <div className="flex min-h-0 flex-col gap-5 overflow-y-auto overscroll-contain p-4 sm:p-5">
         {answer && (
           <div>
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
-              <Lightbulb className="size-3.5" /> From what you know
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-ink">
-              {answer.text}
-            </p>
+            {answer.nodeIds.length > 0 && (
+              <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
+                <Lightbulb className="size-3.5" /> From what you know
+              </h3>
+            )}
+            <p className="text-sm leading-relaxed text-ink">{answer.text}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {answer.nodeIds.map((id) => {
                 const node = view.nodes.find((n) => n.id === id);
@@ -79,16 +79,7 @@ export function AskResultCard({
 
         {moreAvailable && <RequestMore question={result.question} />}
 
-        {!answer && !moreAvailable && (
-          <div className="rounded-xl bg-canvas p-4 text-sm text-muted">
-            Nobody in the graph seems to know this yet. Try other words, or
-            connect more sources in{" "}
-            <Link href="/integrations" className="font-medium text-brand">
-              Integrations
-            </Link>
-            .
-          </div>
-        )}
+        {askColleague && <AskColleague question={result.question} />}
       </div>
     </section>
   );
@@ -142,6 +133,97 @@ export function RequestMore({ question }: { question: string }) {
         >
           <Send className="size-3" />
           {pending ? "Requesting..." : "Request access"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// For questions nothing in the graph answers: the asker picks who to send it
+// to, and they get it in their inbox with a drafted reply.
+export function AskColleague({ question }: { question: string }) {
+  const [people, setPeople] = useState<Person[] | null>(null);
+  const [recipientId, setRecipientId] = useState("");
+  const [sentTo, setSentTo] = useState<Person | null>(null);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  const open = () =>
+    startTransition(async () => {
+      setError("");
+      try {
+        const list = await colleagues();
+        setPeople(list);
+        setRecipientId(list[0]?.id ?? "");
+      } catch {
+        setError("Couldn't load your colleagues. Try again.");
+      }
+    });
+
+  const send = () =>
+    startTransition(async () => {
+      setError("");
+      try {
+        await askPerson({ recipientId, question, nodeIds: [] });
+        setSentTo(people?.find((p) => p.id === recipientId) ?? null);
+      } catch {
+        setError("Couldn't send. Try again.");
+      }
+    });
+
+  const button =
+    "inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-medium text-white hover:bg-brand-dark disabled:opacity-50 sm:py-1.5";
+
+  return (
+    <div className="rounded-xl border border-line p-4">
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-brand uppercase">
+        <UserRound className="size-3.5" /> Ask a colleague
+      </h3>
+      {error && <p className="mt-2 text-xs text-worx-red">{error}</p>}
+      {sentTo ? (
+        <p className="mt-3 text-xs text-muted">
+          <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
+            <Check className="size-3.5" /> Sent to {sentTo.name}.
+          </span>{" "}
+          You&apos;ll see the answer in{" "}
+          <Link href="/inbox?tab=sent" className="font-medium text-brand">
+            Inbox → Sent
+          </Link>
+          .
+        </p>
+      ) : people ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <select
+            value={recipientId}
+            onChange={(e) => setRecipientId(e.target.value)}
+            aria-label="Colleague"
+            className="min-w-0 flex-1 rounded-lg border border-line bg-white px-2 py-1.5 text-sm text-ink"
+          >
+            {people.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} · {p.role}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={send}
+            disabled={pending || !recipientId}
+            className={button}
+          >
+            <Send className="size-3" />
+            {pending ? "Sending..." : "Send question"}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={open}
+          disabled={pending}
+          className={`mt-3 ${button}`}
+        >
+          <UserRound className="size-3" />
+          {pending ? "Loading..." : "Ask a colleague"}
         </button>
       )}
     </div>

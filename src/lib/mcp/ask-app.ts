@@ -18,7 +18,8 @@ function render(data) {
   const card = el("div", "card");
   if (data.answer) {
     const known = el("div");
-    known.append(el("h3", null, "From what you can see"), el("p", null, data.answer));
+    if (data.facts.length) known.append(el("h3", null, "From what you can see"));
+    known.append(el("p", null, data.answer));
     const facts = el("div", "facts");
     for (const f of data.facts) facts.append(el("span", "fact", f.title));
     known.append(facts);
@@ -58,8 +59,12 @@ function render(data) {
     more.append(button, status);
     card.append(more);
   }
-  if (!data.answer && !data.moreAvailable) {
-    card.append(el("p", null, "Nobody in SD Wise seems to know this yet."));
+  if (data.askUrl) {
+    const ask = el("div", "more");
+    const button = el("button", null, "Ask a colleague");
+    button.onclick = () => app.openLink({ url: data.askUrl }).catch(() => {});
+    ask.append(button);
+    card.append(ask);
   }
   root.append(card);
 }

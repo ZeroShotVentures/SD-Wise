@@ -48,7 +48,9 @@ export function createMcpServer(me: Person) {
     const out = formatAsk(result, view.nodes, env.BETTER_AUTH_URL);
     const link = out.requestUrl
       ? [{ type: "text" as const, text: `[Request access](${out.requestUrl})` }]
-      : [];
+      : out.askUrl
+        ? [{ type: "text" as const, text: `[Ask a colleague](${out.askUrl})` }]
+        : [];
     return {
       content: [...json(out).content, ...link],
       structuredContent: out,

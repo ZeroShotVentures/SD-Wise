@@ -32,6 +32,19 @@ Every fact, and who is allowed to see it, is stored in the database. SD Wise onl
 
 ## How to test
 
+### Run it locally
+
+```sh
+pnpm install
+pnpm db:up            # Postgres with pgvector, in Docker
+pnpm db:deploy        # migrations
+pnpm db:seed          # the company graph: people, facts, access, edges
+pnpm db:seed:demo     # an account for every person, and the demo questions
+pnpm dev
+```
+
+`pnpm db:seed` writes the graph from `src/lib/graph/fixtures.ts` and is safe to re-run; `pnpm db:seed:demo` needs it first. `pnpm db:seed:demo --reset` clears every question, and the answers and access they added, before a demo.
+
 ### Accounts
 
 Every person in the graph has an account, all with the password `password123`. Create them with `pnpm db:seed:demo` (accounts plus demo questions) or `pnpm db:seed:accounts` (accounts only). The walkthrough uses these two; [docs/accounts.md](docs/accounts.md) lists everyone.
@@ -65,4 +78,4 @@ The URL is `BETTER_AUTH_URL` + `/api/mcp`. Outside localhost it must be HTTPS, s
 
 ## Sources
 
-**Integrations → Sources** connects Microsoft 365 (Teams, Teams meetings, Outlook, SharePoint, OneDrive, OneNote) with one sign-in, plus Slack, Google Workspace, Zoom, Notion and Confluence. Sources are still mocked: connecting flips a flag in memory and facts come from the fixtures. Logos in `public/logos` come from the [Iconify](https://iconify.design) `logos`, `vscode-icons` and `simple-icons` sets.
+**Integrations → Sources** connects Microsoft 365 (Teams, Teams meetings, Outlook, SharePoint, OneDrive, OneNote) with one sign-in, plus Slack, Google Workspace, Zoom, Notion and Confluence. Sources are still mocked: connecting flips a flag in the database, for everyone, and the facts are the seeded graph. Logos in `public/logos` come from the [Iconify](https://iconify.design) `logos`, `vscode-icons` and `simple-icons` sets.

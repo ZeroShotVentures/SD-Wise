@@ -1,6 +1,7 @@
-// The knowledge graph prisma/seed.ts generated into the database, moved here
-// so the database no longer holds any of it. People who owned no fact were
-// left out: everyone in the graph knows something.
+// The knowledge graph an earlier, AI-generating prisma/seed.ts wrote to the
+// database, frozen here. `pnpm db:seed` now writes it back with the rest.
+// People who owned no fact were left out: everyone in the graph knows
+// something.
 import type { KnowledgeEdge, NodeFixture, Person } from "./types";
 
 export const people: Person[] = [

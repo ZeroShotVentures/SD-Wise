@@ -11,8 +11,8 @@ import type {
   Visibility,
 } from "./types";
 
-// Mock company brain for SD Worx. The people are also seeded as Person rows
-// (pnpm db:seed:demo) so questions between them can be stored for real.
+// Mock company brain for SD Worx. `pnpm db:seed` writes it to the database
+// (seed.ts), which is what the app reads; tests use it as plain data.
 
 const bulk = generateBulk();
 

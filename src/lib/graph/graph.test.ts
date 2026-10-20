@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canSee, toEdgeView, toNodeView } from "./access";
-import { answerFor, draftAnswer, searchGraph } from "./ai";
+import { answerFor, draftAnswer, lockedHits, searchGraph } from "./ai";
 import {
   answerNodeId,
   applyAnswers,
@@ -25,7 +25,7 @@ const pricingIn = (list: typeof nodes) =>
 
 const ask = (me: typeof kobe, question: string, graph = { nodes, edges }) => {
   const { hits, visited } = searchGraph(question, graph.nodes, graph.edges);
-  return answerFor(question, me.id, hits, visited, graph.nodes, people);
+  return answerFor(question, me.id, hits, visited, graph.nodes);
 };
 
 const query = (q: Partial<ResolvedQuery>): ResolvedQuery => ({
@@ -70,13 +70,31 @@ describe("ask", () => {
   it("answers from what you own", () => {
     const result = ask(bram, "What do we charge Kras per payslip?");
     expect(result.answer?.text).toContain("€4.20");
-    expect(result.people).toEqual([]);
+    expect(result.moreAvailable).toBe(false);
   });
 
-  it("points Kobe to Filip for the December cut-off", () => {
+  it("tells Kobe there's more on the December cut-off, not who has it", () => {
     const result = ask(kobe, "When is the payroll cut-off in December?");
     expect(result.answer).toBeNull();
-    expect(result.people[0]?.person.id).toBe(filip.id);
+    expect(result.moreAvailable).toBe(true);
+    expect(result.hits).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("n-cutoff-december");
+    expect(JSON.stringify(result)).not.toContain(filip.id);
+  });
+
+  it("answers from what Filip sees and hints at the rest", () => {
+    const result = ask(filip, "Year-end payroll run");
+    expect(result.answer?.nodeIds).toEqual(["n-year-end-run", "n-bulk-261"]);
+    expect(result.moreAvailable).toBe(true);
+    expect(JSON.stringify(result)).not.toContain('n-bulk-19"');
+    expect(JSON.stringify(result)).not.toContain("n-bulk-1130");
+  });
+
+  it("routes a request to the owner of the locked match", () => {
+    const question = "When is the payroll cut-off in December?";
+    const { hits } = searchGraph(question, nodes, edges);
+    const owners = lockedHits(kobe.id, hits, nodes).map((n) => n.ownerIds[0]);
+    expect(owners).toContain(filip.id);
   });
 
   it("drafts Filip's reply from what he knows", () => {
@@ -94,7 +112,8 @@ describe("ask", () => {
   it("points Filip to Kobe for the deploy freeze", () => {
     const result = ask(filip, "Is there a deploy freeze over the holidays?");
     expect(result.answer).toBeNull();
-    expect(result.people[0]?.person.id).toBe(kobe.id);
+    expect(result.moreAvailable).toBe(true);
+    expect(JSON.stringify(result)).not.toContain(kobe.id);
   });
 
   it("drafts Kobe's reply from what he knows", () => {

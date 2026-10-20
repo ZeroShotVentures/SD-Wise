@@ -11,3 +11,4 @@ export const askPersonInput = z.object({
 });
 
 export const requestAccessInput = z.object({ nodeId: id, ownerId: id });
+export const requestMoreInput = z.object({ question });

@@ -10,6 +10,10 @@ const eback=x=>{const c=1.70158,c3=c+1;return 1+c3*Math.pow(x-1,3)+c*Math.pow(x-
 const lerp=(a,b,k)=>a+(b-a)*k;
 let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
 
+// static, hardcoded markup only: never pass user input or fetched data
+function setHTML(el,html){const r=document.createRange();r.selectNodeContents(el);el.replaceChildren(r.createContextualFragment(html));}
+const caret=h=>{const c=document.createElement('span');c.style.cssText=`display:inline-block;width:3px;height:${h}px;background:#e0003a;vertical-align:-5px;margin-left:3px`;return c;};
+
 // logo svg (recreated from the SD Wise logo), mode 'dark' = white wordmark
 function logoSVG(mode, id){
   const txt = mode==='dark' ? '#ffffff' : '#596273';

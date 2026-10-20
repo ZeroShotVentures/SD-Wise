@@ -224,6 +224,10 @@ const eback=x=>{const c=1.70158,c3=c+1;return 1+c3*Math.pow(x-1,3)+c*Math.pow(x-
 const lerp=(a,b,k)=>a+(b-a)*k;
 let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646};
 
+// static, hardcoded markup only: never pass user input or fetched data
+function setHTML(el,html){const r=document.createRange();r.selectNodeContents(el);el.replaceChildren(r.createContextualFragment(html));}
+const caret=h=>{const c=document.createElement('span');c.style.cssText=`display:inline-block;width:3px;height:${h}px;background:#e0003a;vertical-align:-5px;margin-left:3px`;return c;};
+
 // logo svg (recreated from the SD Wise logo), mode 'dark' = white wordmark
 function logoSVG(mode, id){
   const txt = mode==='dark' ? '#ffffff' : '#596273';
@@ -300,12 +304,12 @@ const swarm=[];
     const ang=rnd()*Math.PI*2, r=560+rnd()*700;
     swarm.push({x:Math.cos(ang)*r*1.35,y:Math.sin(ang)*r*.75,ts:-1.2+ (i/78)*5.2 + rnd()*.3,rot:(rnd()-.5)*30,rz:(rnd()-.5)*10,sp:1500+rnd()*900});
   }
-  st.innerHTML=h;
-  $('s1words').innerHTML=`
+  setHTML(st,h);
+  setHTML($('s1words'),`
    <div class="abs h" id="w1" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Chats.</div>
    <div class="abs h" id="w2" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Emails.</div>
    <div class="abs h" id="w3" style="left:0;right:0;top:470px;text-align:center;font-size:140px">Meetings.</div>
-   <div class="abs h" id="w4" style="left:0;right:0;top:380px;text-align:center;font-size:140px;text-shadow:0 10px 60px rgba(0,0,0,.6)"><span class="ln">Knowledge, lost in</span><span class="ln"><span class="grad">conversations.</span></span></div>`;
+   <div class="abs h" id="w4" style="left:0;right:0;top:380px;text-align:center;font-size:140px;text-shadow:0 10px 60px rgba(0,0,0,.6)"><span class="ln">Knowledge, lost in</span><span class="ln"><span class="grad">conversations.</span></span></div>`);
 })();
 function wordPop(el,t,a,b){
   const k=e5(P(t,a,a+.35)), o=ei(P(t,b-.18,b));
@@ -333,7 +337,7 @@ function S1(t){
 }
 
 // ---------- S2 logo sting ----------
-$('s2logo').innerHTML=logoSVG('dark','lg2');
+setHTML($('s2logo'),logoSVG('dark','lg2'));
 function S2(t){
   const L=$('lg2'); const b=['b1','b2','b3'];
   b.forEach((c,i)=>{
@@ -352,20 +356,20 @@ function S2(t){
 
 // ---------- S3 capture ----------
 (function(){
-  $('s3msgs').innerHTML=[
+  setHTML($('s3msgs'),[
    ['LJ','#e0003a','Lotte','Heads-up: <span class="hl" id="hl0">v3 launch moves to March</span>. Pilot customers first.'],
    ['PC','#596273','Pieter','Noted. And Kras? <span class="hl" id="hl1">They keep their custom rate</span>, agreed on the call.'],
    ['SP','#f5ab00','Sofie','Also for HR: <span class="hl" id="hl2">double holiday pay is 92%</span> of the monthly wage.']
   ].map((m,i)=>`<div id="s3m${i}" style="display:flex;gap:16px;padding:22px 0;border-bottom:1px solid ${i<2?'var(--line)':'transparent'}">
     <div class="av" style="width:50px;height:50px;background:${m[1]};font-size:17px">${m[0]}</div>
     <div><div style="font-size:19px;font-weight:600">${m[2]} <span class="mono" style="font-size:13px;color:#9aa3ad;font-weight:400;margin-left:6px">09:4${i+1}</span></div>
-    <div style="font-size:21px;line-height:1.5;color:#3b4650;margin-top:4px">${m[3]}</div></div></div>`).join('');
-  $('s3mini').innerHTML=`<div style="width:170px;height:59px">${logoSVG('light','lg3')}</div>`;
-  $('s3chips').innerHTML=[
+    <div style="font-size:21px;line-height:1.5;color:#3b4650;margin-top:4px">${m[3]}</div></div></div>`).join(''));
+  setHTML($('s3mini'),`<div style="width:170px;height:59px">${logoSVG('light','lg3')}</div>`);
+  setHTML($('s3chips'),[
    ['Launch','v3 → March','#006dd8','CHAT'],['Kras','Custom rate kept','#e0003a','CHAT'],['Holiday pay','92% of wage','#f5ab00','CHAT']
   ].map((c,i)=>`<div class="chip" id="s3c${i}"><div style="flex:1"><div class="k">${c[0]}</div><div style="margin-top:4px">${c[1]}</div></div><div class="d" style="width:12px;height:12px;border-radius:50%;background:${c[2]}"></div></div>`).join('')+
   `<div id="s3own" style="margin-top:22px;padding-top:22px;border-top:1px solid var(--line)"><div class="k mono" style="font-size:12px;letter-spacing:.14em;color:#9aa3ad">OWNED BY</div>
-   <div style="display:flex;margin-top:12px">${PEOPLE.slice(0,3).map((p,i)=>`<div class="av" style="width:46px;height:46px;background:${p[1]};font-size:15px;border:3px solid #fff;margin-left:${i?-12:0}px">${p[0]}</div>`).join('')}</div></div>`;
+   <div style="display:flex;margin-top:12px">${PEOPLE.slice(0,3).map((p,i)=>`<div class="av" style="width:46px;height:46px;background:${p[1]};font-size:15px;border:3px solid #fff;margin-left:${i?-12:0}px">${p[0]}</div>`).join('')}</div></div>`);
 })();
 function S3(t){
   const T=5.6;
@@ -407,7 +411,7 @@ const EDGES=[['a','c','Updates'],['c','b','Depends on'],['e','c','Answers'],['c'
   const g=$('s4graph'); const svg=$('s4svg'); let h='', s='';
   EDGES.forEach((e,i)=>{s+=`<line id="e${i}" stroke="#c3cbd4" stroke-width="2.2" stroke-dasharray="6 7"/>`;});
   s+=`<circle id="s4ring" cx="1240" cy="600" r="10" fill="none" stroke="#e0003a" stroke-width="2"/><circle id="s4ring2" cx="1240" cy="600" r="10" fill="none" stroke="#f5ab00" stroke-width="2"/>`;
-  svg.innerHTML=s;
+  setHTML(svg,s);
   EDGES.forEach((e,i)=>{ if(e[2]) h+=`<div class="elab" id="el${i}">${e[2].toUpperCase()}</div>`;});
   NODES.forEach((n,i)=>{h+=`<div class="node" id="n${n.id}" style="${n.big?'font-size:24px;padding:18px 26px 18px 20px;border:2px solid #1d2830':''}"><div class="d" style="background:${n.c}"></div><div>${n.t}<span class="s">${n.s}</span></div></div>`;});
   g.insertAdjacentHTML('beforeend',h);
@@ -454,8 +458,7 @@ function S5(t){
   lines($('s5h'),t,T+.4,20.2);
   fadeEl($('s5bar'),t,T+.5,20.25,{dy:50,s:.94});
   const n=Math.floor(P(t,T+1.0,T+2.3)*Q.length);
-  const cur=(Math.floor(t*3)%2===0||t<T+2.4)?'<span style="display:inline-block;width:3px;height:32px;background:#e0003a;vertical-align:-5px;margin-left:3px"></span>':'';
-  $('s5q').innerHTML=Q.slice(0,n)+cur;
+  $('s5q').replaceChildren(Q.slice(0,n),...((Math.floor(t*3)%2===0||t<T+2.4)?[caret(32)]:[]));
   fadeEl($('s5ans'),t,T+2.55,20.3,{dy:60,s:.95,blur:14});
   fadeEl($('s5ppl'),t,T+3.1,20.35,{dy:60,s:.95,blur:14});
   const pk=P(t,T+4.0,T+4.3); $('s5btn').style.transform=`scale(${1-Math.sin(pk*Math.PI)*.08})`;
@@ -501,7 +504,7 @@ const HUB=[1330,540];
     for(let j=0;j<2;j++) s+=`<circle id="dt${i}_${j}" r="5" fill="${j?'#f5ab00':'#e0003a'}"/>`;
   });
   s+=`<circle id="hubring" cx="${HUB[0]}" cy="${HUB[1]}" r="100" fill="none" stroke="rgba(245,171,0,.5)" stroke-width="2"/>`;
-  $('s7svg').innerHTML=s; $('s7tiles').innerHTML=h;
+  setHTML($('s7svg'),s); setHTML($('s7tiles'),h);
 })();
 function S7(t){
   const T=24.7;
@@ -530,7 +533,7 @@ function S7(t){
   let s='';
   for(let i=0;i<64;i++) s+=`<line id="ry${i}" stroke="${i%3==0?'rgba(245,171,0,.55)':(i%3==1?'rgba(224,0,58,.5)':'rgba(255,255,255,.35)')}" stroke-width="${1+ (i%4==0?1.5:0)}" stroke-linecap="round"/>`;
   s+=`<circle id="r8a" cx="960" cy="540" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/><circle id="r8b" cx="960" cy="540" fill="none" stroke="rgba(245,171,0,.25)" stroke-width="1.5"/>`;
-  $('s8svg').innerHTML=s;
+  setHTML($('s8svg'),s);
 })();
 const GLY='ABCDEFGHJKLMNPRSTUVWXYZ0123456789#%&?';
 function scramble(str,k,sd){
@@ -552,15 +555,15 @@ function S8(t){
   $('r8b').setAttribute('r',60+e5(P(t,T+.3,T+2))*380);
   const k1=P(t,T+.2,T+.85), k2=P(t,T+.9,T+1.55);
   const t1=$('s8t1'), t2=$('s8t2');
-  t1.innerHTML=scramble('Every question',k1,1); t2.innerHTML=`<span class="grad">${scramble('makes it smarter.',k2,2)}</span>`;
+  t1.textContent=scramble('Every question',k1,1); t2.replaceChildren(Object.assign(document.createElement('span'),{className:'grad',textContent:scramble('makes it smarter.',k2,2)}));
   t1.style.opacity=cl(k1*4)*(1-P(t,29.4,29.8)); t2.style.opacity=cl(k2*4)*(1-P(t,29.4,29.8));
   t1.style.filter=`blur(${(1-e5(k1))*8 + P(t,29.4,29.8)*16}px)`; t2.style.filter=`blur(${(1-e5(k2))*8+P(t,29.4,29.8)*16}px)`;
   const s=1+(t-T)*.03; t1.style.transform=`scale(${s})`; t2.style.transform=`scale(${s})`;
 }
 
 // ---------- S9 end ----------
-$('s9logo').innerHTML=logoSVG('dark','lg9');
-(function(){let h='';for(let i=0;i<30;i++){h+=`<div class="abs" id="pt${i}" style="width:${2+rnd()*4}px;height:${2+rnd()*4}px;border-radius:50%;background:rgba(255,255,255,${.15+rnd()*.3})"></div>`}$('s9parts').innerHTML=h;})();
+setHTML($('s9logo'),logoSVG('dark','lg9'));
+(function(){let h='';for(let i=0;i<30;i++){h+=`<div class="abs" id="pt${i}" style="width:${2+rnd()*4}px;height:${2+rnd()*4}px;border-radius:50%;background:rgba(255,255,255,${.15+rnd()*.3})"></div>`}setHTML($('s9parts'),h);})();
 const PTS=[...Array(30)].map(()=>({x:rnd()*1920,y:rnd()*1080,v:10+rnd()*25}));
 function S9(t){
   const T=29.8;

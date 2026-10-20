@@ -231,7 +231,7 @@
 const SC={h0:[0,4.0],h1:[3.8,9.8],h2:[9.6,15.2],h3:[15.0,19.8],h4:[19.6,24.8],h5:[24.6,30.0],h6:[29.8,35.0],h7:[34.8,39.8],h8:[39.6,46.0],h9:[45.8,50.6],h10:[50.4,56.0],h11:[55.8,62.0]};
 const WIPE={h1:'wipe',h2:'wipe',h3:'wipe',h4:'fade',h5:'wipe',h6:'wipe',h7:'wipe',h8:'wipe',h9:'fade',h10:'wipe',h11:'wipe'};
 const DURATION=62.0;
-$('h7mark').innerHTML=markSVG(32,'#7d86a0');
+setHTML($('h7mark'),markSVG(32,'#7d86a0'));
 function sceneVis(t){
   let z=1;
   for(const k in SC){
@@ -265,10 +265,10 @@ const SRC=[
       <div class="mono" id="h1p${i}" style="font-size:14px;color:#9aa3ad">${[34,22,44][i]}%</div></div>`;
     s+=`<path id="h1l${i}" d="M${c.x+360} ${c.y+60} C ${c.x+470} ${c.y+60}, 1420 540, 1500 540" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2" stroke-dasharray="4 8"/>`;
   });
-  $('h1cards').innerHTML=h; $('h1svg').innerHTML=s;
-  $('h1brain').innerHTML=markSVG(110);
+  setHTML($('h1cards'),h); setHTML($('h1svg'),s);
+  setHTML($('h1brain'),markSVG(110));
   let f='';for(let i=0;i<54;i++){const c=['#e0003a','#f5ab00','#9aa2bb','#22c493','#006dd8'][i%5];f+=`<div class="abs" id="fr${i}" style="width:12px;height:12px;border-radius:50%;background:${c};box-shadow:0 0 12px ${c}"></div>`;}
-  $('h1frags').innerHTML=f;
+  setHTML($('h1frags'),f);
 })();
 const FR=[...Array(54)].map((_,i)=>({src:i%3,d:rnd()*.9,ox:(rnd()-.5)*60,oy:(rnd()-.5)*40,bend:(rnd()-.5)*220}));
 function H1(t){
@@ -305,7 +305,7 @@ const FACTS=[
 ];
 const RL={pub:'PUBLIC',pri:'PRIVATE',res:'RESTRICTED'};
 const AVC={LJ:'#e0003a',PC:'#596273',SP:'#f5ab00',HR:'#1d2830',AM:'#22c493'};
-$('h2rows').innerHTML=FACTS.map((f,i)=>`<div class="row" id="h2r${i}"><div class="fid">${f[0]}</div><div style="font-weight:600">${f[1]}</div><div style="color:var(--muted);font-size:18px">${f[2]}</div><div style="display:flex">${f[3].map((o,j)=>`<div class="av" style="width:36px;height:36px;font-size:12px;background:${AVC[o]};border:2px solid #fff;margin-left:${j?-10:0}px">${o}</div>`).join('')}</div><div><span class="badge ${f[4]}">${f[4]!=='pub'?'🔒 ':''}${RL[f[4]]}</span></div></div>`).join('');
+setHTML($('h2rows'),FACTS.map((f,i)=>`<div class="row" id="h2r${i}"><div class="fid">${f[0]}</div><div style="font-weight:600">${f[1]}</div><div style="color:var(--muted);font-size:18px">${f[2]}</div><div style="display:flex">${f[3].map((o,j)=>`<div class="av" style="width:36px;height:36px;font-size:12px;background:${AVC[o]};border:2px solid #fff;margin-left:${j?-10:0}px">${o}</div>`).join('')}</div><div><span class="badge ${f[4]}">${f[4]!=='pub'?'🔒 ':''}${RL[f[4]]}</span></div></div>`).join(''));
 function H2(t){
   const T=9.6;
   chapIn('h2chap',t,T); lines($('h2h'),t,T+.45,14.75); fadeEl($('h2sub'),t,T+.7,14.8,{dy:20});
@@ -317,7 +317,7 @@ function H2(t){
 
 // ---------- rail ----------
 const AG=[['01','Connect'],['02','Rights'],['03','Decide'],['04','Answer'],['05','Request']];
-$('rail').innerHTML=AG.map((a,i)=>`${i?'<div class="rl" id="rl'+i+'"></div>':''}<div class="ri" id="ri${i}"><div class="num" id="rn${i}">${a[0]}</div>${a[1]}</div>`).join('');
+setHTML($('rail'),AG.map((a,i)=>`${i?'<div class="rl" id="rl'+i+'"></div>':''}<div class="ri" id="ri${i}"><div class="num" id="rn${i}">${a[0]}</div>${a[1]}</div>`).join(''));
 function railActive(i,done){ // i active index
   AG.forEach((_,j)=>{const r=$('ri'+j),n=$('rn'+j);
     const act=j===i, dn=done.includes(j);
@@ -325,7 +325,7 @@ function railActive(i,done){ // i active index
     r.style.color=act?'#fff':(dn?'rgba(255,255,255,.85)':'rgba(255,255,255,.5)');
     r.style.borderColor=act?'transparent':'rgba(255,255,255,.12)';
     n.style.background=act?'rgba(255,255,255,.25)':(dn?'#22c493':'rgba(255,255,255,.1)');
-    n.innerHTML=dn&&!act?'✓':AG[j][0];
+    n.textContent=dn&&!act?'✓':AG[j][0];
     r.style.transform=`scale(${act?1.06:1})`;
   });
 }
@@ -360,7 +360,7 @@ function H3(t){
   const q=$('h3q'); const k=e5(P(t,T+.6,T+1.2)); const out=ei(P(t,18.6,19.0));
   q.style.opacity=k*(1-out); q.style.transform=`translateX(-50%) translateY(${(1-k)*30-out*30}px) scale(${lerp(.94,1,k)})`;
   const n=Math.floor(P(t,T+1.0,T+2.3)*Q3.length);
-  $('h3qt').innerHTML=Q3.slice(0,n)+((t<T+2.4||Math.floor(t*3)%2)?'<span style="display:inline-block;width:3px;height:30px;background:#e0003a;vertical-align:-5px;margin-left:3px"></span>':'');
+  $('h3qt').replaceChildren(Q3.slice(0,n),...((t<T+2.4||Math.floor(t*3)%2)?[caret(30)]:[]));
 }
 
 // ---------- H4 connect ----------
@@ -377,7 +377,7 @@ const QP=[1420,560];
     s+=`<line id="gl${i}" x1="${QP[0]}" y1="${QP[1]}" x2="${g[0]}" y2="${g[1]}" stroke="${g[4]===2?'#f5ab00':'#ffffff'}" stroke-width="2.5" stroke-dasharray="5 7"/>`;
   });
   s+=`<circle id="h4ring" cx="${QP[0]}" cy="${QP[1]}" fill="none" stroke="rgba(245,171,0,.6)" stroke-width="2"/>`;
-  $('h4nodes').innerHTML=h; $('h4svg').innerHTML=s;
+  setHTML($('h4nodes'),h); setHTML($('h4svg'),s);
 })();
 function H4(t){
   const T=19.6;
@@ -400,7 +400,7 @@ function H4(t){
 
 // ---------- H5 rights ----------
 const RF=[['F-0412','v3 launch → March','pub',0,0],['F-0413','Pilot customers first','pub',0,1],['F-0977','Kras custom rate','pri',1,0],['F-0980','Kras renewal: Jan','pri',1,1]];
-$('h5facts').innerHTML=RF.map((f,i)=>`<div class="fc" id="rf${i}" style="left:0;top:0;width:490px;padding:18px 22px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[2]}" id="rb${i}">${f[2]==='pri'?'🔒 OWNER: PIETER':'✓ PUBLIC'}</span></div><div class="t" style="font-size:22px">${f[1]}</div></div>`).join('');
+setHTML($('h5facts'),RF.map((f,i)=>`<div class="fc" id="rf${i}" style="left:0;top:0;width:490px;padding:18px 22px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[2]}" id="rb${i}">${f[2]==='pri'?'🔒 OWNER: PIETER':'✓ PUBLIC'}</span></div><div class="t" style="font-size:22px">${f[1]}</div></div>`).join(''));
 function H5(t){
   const T=24.6;
   chapIn('h5chap',t,T); lines($('h5h'),t,T+.45,29.55); fadeEl($('h5sub'),t,T+.7,29.6,{dy:20});
@@ -422,11 +422,11 @@ const TR={root:[1460,260],A:[1150,620],B:[1460,620],C:[1770,620]};
 (function(){
   const br=[['A','All accessible','→ Answer (Agent 04)','#22c493'],['B','Needs access','→ Answer + ask owner (05)','#f5ab00'],['C','Not authorized','→ Say no','#e0003a']];
   let s=''; ['A','B','C'].forEach((k,i)=>{s+=`<path id="tp${i}" d="M${TR.root[0]} ${TR.root[1]+50} C ${TR.root[0]} 420, ${TR[k][0]} 380, ${TR[k][0]} ${TR[k][1]-70}" fill="none" stroke="${br[i][3]}" stroke-width="3" stroke-linecap="round"/>`;});
-  $('h6svg').innerHTML=s;
+  setHTML($('h6svg'),s);
   let h=`<div class="card abs pill" id="troot" style="left:${TR.root[0]-190}px;top:${TR.root[1]-44}px;width:380px;height:88px;display:flex;align-items:center;justify-content:center;gap:14px;font-size:24px;font-weight:600"><span class="mono" style="font-size:14px;color:#9aa3ad">IN:</span> 2 accessible · 2 locked</div>`;
   br.forEach((b,i)=>{const [x,y]=TR[b[0]]; h+=`<div class="card abs" id="tb${i}" style="left:${x-145}px;top:${y-70}px;width:290px;padding:22px 22px;border-top:6px solid ${b[3]}"><div class="mono" style="font-size:14px;letter-spacing:.14em;color:${b[3]}">OPTION ${b[0]}</div><div style="font-size:26px;font-weight:700;margin-top:8px;letter-spacing:-.02em">${b[1]}</div><div style="font-size:18px;color:var(--muted);margin-top:6px">${b[2]}</div></div>`;});
   h+=`<div class="abs mono" id="tsel" style="left:1030px;top:860px;width:860px;text-align:center;font-size:16px;letter-spacing:.12em;color:#fff;padding:16px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18)">DECISION → A + B: ANSWER NOW, ASK PIETER FOR THE REST</div>`;
-  $('h6nodes').innerHTML=h;
+  setHTML($('h6nodes'),h);
 })();
 function H6(t){
   const T=29.8;
@@ -467,7 +467,7 @@ function H8(t){
 
 // ---------- H9 option C ----------
 (function(){
-  $('h9steps').innerHTML=[['01','Found F-1102','#9aa3ad'],['02','RESTRICTED · HR only','#e0003a'],['03','Option C','#e0003a']].map((s,i)=>`<div id="hs${i}" class="mono pill" style="padding:10px 16px;font-size:15px;letter-spacing:.08em;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;display:flex;gap:10px;align-items:center"><span style="color:${s[2]}">${s[0]}</span>${s[1]}</div>`).join('');
+  setHTML($('h9steps'),[['01','Found F-1102','#9aa3ad'],['02','RESTRICTED · HR only','#e0003a'],['03','Option C','#e0003a']].map((s,i)=>`<div id="hs${i}" class="mono pill" style="padding:10px 16px;font-size:15px;letter-spacing:.08em;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;display:flex;gap:10px;align-items:center"><span style="color:${s[2]}">${s[0]}</span>${s[1]}</div>`).join(''));
 })();
 function H9(t){
   const T=45.8;
@@ -480,7 +480,7 @@ function H9(t){
 
 // ---------- H10 grounded ----------
 const GF=[['F-0412','v3 launch → March','PUBLIC','pub',1060,560],['F-0413','Pilot customers first','PUBLIC','pub',1300,720],['F-0977','Kras custom rate','SHARED BY PIETER','pri',1540,880]];
-$('h10facts').innerHTML=GF.map((f,i)=>`<div class="fc" id="gf${i}" style="left:${f[4]-150}px;top:${f[5]-45}px;width:330px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[3]}" style="font-size:11px;padding:3px 7px">✓ ${f[2]}</span></div><div class="t">${f[1]}</div></div>`).join('');
+setHTML($('h10facts'),GF.map((f,i)=>`<div class="fc" id="gf${i}" style="left:${f[4]-150}px;top:${f[5]-45}px;width:330px"><div style="display:flex;justify-content:space-between;align-items:center"><span class="fid">${f[0]}</span><span class="badge ${f[3]}" style="font-size:11px;padding:3px 7px">✓ ${f[2]}</span></div><div class="t">${f[1]}</div></div>`).join(''));
 function H10(t){
   const T=50.4;
   chapIn('h10chap',t,T); lines($('h10h'),t,T+.45,55.55); fadeEl($('h10sub'),t,T+.8,55.6,{dy:20});
@@ -496,7 +496,7 @@ function H10(t){
     const x1=r.left+r.width/2, y1=r.bottom+4, x2=f[4], y2=f[5]-48;
     if(lk>0) s+=`<path d="M${x1} ${y1} C ${x1} ${y1+90}, ${x2} ${y2-90}, ${lerp(x1,x2,lk)} ${lerp(y1,y2,lk)}" fill="none" stroke="#f5ab00" stroke-width="2.5" stroke-dasharray="5 6" opacity="${1-ei(P(t,55.6,56))}"/>`;
   });
-  $('h10svg').innerHTML=s;
+  setHTML($('h10svg'),s);
   const xk=e5(P(t,T+3.2,T+3.6)); $('g3x').style.width=(xk*100)+'%';
   const rj=$('h10rej'); const g3=$('g3').getBoundingClientRect();
   rj.style.left=(g3.left)+'px'; rj.style.top=(A.bottom+16)+'px';
@@ -504,7 +504,7 @@ function H10(t){
 }
 
 // ---------- H11 end ----------
-$('h11logo').innerHTML=logoSVG('dark','lg11');
+setHTML($('h11logo'),logoSVG('dark','lg11'));
 function H11(t){
   const T=55.8; const L=$('lg11');
   ['b1','b2','b3'].forEach((c,i)=>{const k=e5(P(t,T+.3+i*.07,T+.85+i*.07)); const el=L.querySelector('.'+c); el.style.transform=`translate(${(1-k)*-160}px,${(1-k)*-700}px)`; el.style.opacity=k; el.style.filter=`blur(${(1-k)*6}px)`;});

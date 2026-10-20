@@ -102,7 +102,7 @@ function render() {
 
   const tabs = el("div", "tabs");
   for (const [id, label, count] of [
-    ["received", "For you", waitingForMe.length],
+    ["received", "Received", waitingForMe.length],
     ["sent", "Sent", waitingOnOthers.length],
   ]) {
     const button = el("button", "tab", label);

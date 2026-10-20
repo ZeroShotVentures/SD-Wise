@@ -67,7 +67,7 @@ export function AskBar({ busy, narrow, status, onAsk }: AskBarProps) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Ask the company brain anything…"
-          aria-label="Ask the graph"
+          aria-label="Your question"
           enterKeyHint="search"
           className="min-w-0 flex-1 bg-transparent py-2 text-base text-navy outline-none placeholder:text-muted sm:text-sm"
         />

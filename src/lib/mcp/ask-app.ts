@@ -30,18 +30,18 @@ function render(data) {
     more.append(
       el("h3", null, data.answer ? "Colleagues know more" : "Colleagues know about this"),
       el("p", null,
-        "Some of what they know about this isn't shared with you. SD Wise can send them your question with a drafted answer, and they decide what to tell you."),
+        "Colleagues know more about this than you can see. Ask, and the people who know get your question with a reply already drafted."),
     );
     const button = el("button", null, "Ask a colleague");
     const status = el("p", "err");
     button.onclick = async () => {
       button.disabled = true;
-      button.textContent = "Asking…";
+      button.textContent = "Sending…";
       status.textContent = "";
       try {
         const res = await app.callServerTool({ name: "ask_owners", arguments: { question: data.question } });
         if (res.isError) throw new Error();
-        button.replaceWith(el("p", "ok", "Asked. You'll see their answer in your SD Wise inbox."));
+        button.replaceWith(el("p", "ok", "Sent. Their answer shows up in your SD Wise inbox."));
         await app.updateModelContext({
           content: [{ type: "text", text: "The user already sent this question to the colleagues who know more through SD Wise. Don't offer it again." }],
         }).catch(() => {});
@@ -63,7 +63,7 @@ function render(data) {
     const ask = el("div", "more");
     const button = el("button", null, "Ask a colleague");
     button.onclick = () => app.openLink({ url: data.askUrl }).catch(() => {});
-    ask.append(button);
+    ask.append(el("p", null, "Send your question to someone who might know."), button);
     card.append(ask);
   }
   root.append(card);

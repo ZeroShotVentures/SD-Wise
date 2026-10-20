@@ -26,7 +26,7 @@ export default async function Page({
   return (
     <PageShell
       title="Integrations"
-      description="Connect the places where your company talks and writes, and bring SD Wise into the AI tools you already use."
+      description="Connect where your company talks and writes, and use SD Wise from your AI tools."
     >
       <IntegrationsView
         tab={tab === "mcp" ? "mcp" : "sources"}

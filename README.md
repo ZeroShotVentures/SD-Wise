@@ -16,13 +16,15 @@ You ask SD Wise a question. It then does three things.
 
 1. **Find.** It searches all company knowledge, including the private parts, and connects every fact that helps answer the question.
 2. **Check.** It sorts those facts into what you're allowed to see and what you aren't.
-3. **Answer.** It answers with what you can see. For the rest, it tells you who knows more.
+3. **Answer.** It answers with what you can see. For the rest, it offers to ask the colleagues who know, without telling you who they are.
 
 That gives one of three results:
 
 - **You can see everything.** You get the full answer.
-- **Someone else holds part of it.** You get what SD Wise can already tell you, plus a suggestion like *"Filip knows something related from an email"*. One click sends Filip your question, and SD Wise has already drafted a reply from what Filip can see. Filip checks it and sends it, or declines.
-- **It's not for you.** You don't see it. In your graph it shows up as a locked fact: you know it exists, but not what it says or who knows it. You can ask SD Wise a question about it: it goes to someone who knows, with a drafted answer, and they answer you or everyone, or decline.
+- **Colleagues know more.** You get what you can see, and the locked facts that match light up in red on your graph. **Ask a colleague** sends your question to the people who know, with a reply drafted from what they can see. They answer you, or everyone, or decline. You see who once they answer.
+- **Nobody has written it down.** You pick a colleague to ask. SD Wise drafts their reply the same way.
+
+A fact you can't see shows up in your graph as a locked fact: you know it exists, but not what it says or who knows it.
 
 When someone answers you, the answer becomes new knowledge: a new node in your graph, linked to the facts it came from.
 
@@ -56,8 +58,8 @@ Every person in the graph has an account, all with the password `password123`. C
 ### Walkthrough
 
 1. Sign in as **Kobe**. Ask *"When is the payroll cut-off in December?"*. Filip knows, but Kobe wasn't there, so the answer says colleagues know more. Click **Ask a colleague**.
-2. Sign in as **Filip**. Kobe's request is in the inbox with his question; click **Share with Kobe**.
-3. Sign in as **Kobe**. The cut-off fact is unlocked in his graph, marked *New for you*.
+2. Sign in as **Filip**. Kobe's question is in the inbox with a drafted answer; click **Send to Kobe**.
+3. Sign in as **Kobe**. Filip's answer is in **Inbox → Sent** and in his graph, marked *New for you*.
 4. The other way round: as **Filip**, ask *"Is there a deploy freeze over the holidays?"* and click Ask a colleague; as **Kobe**, send the drafted answer.
 5. As **Kobe**, ask *"How is the onboarding of Coca Cola going?"*. The search finds about a dozen facts about the new customer: Kobe sees half of them (the HR system feed and data migration are on track), the rest are locked (payroll operations and sales know the go-live is at risk). The answer comes from what Kobe knows; **Ask a colleague** sends his question to Filip and Bram. The facts are in `src/lib/graph/cocacola-fixtures.ts`.
 

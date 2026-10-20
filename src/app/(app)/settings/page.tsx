@@ -113,13 +113,13 @@ export default async function Page() {
 
       <Section
         title="Connect your AI"
-        description="Use SD Wise from Claude, ChatGPT, Copilot, Cursor or VS Code over MCP. Your client signs you in here, and it only sees what you can see."
+        description="Use SD Wise from Claude, ChatGPT, Copilot, Cursor or VS Code. It only sees what you can see."
       >
         <Link
           href="/integrations?tab=mcp"
           className={`inline-block text-center ${secondaryButtonClass}`}
         >
-          Set up MCP and manage your AI clients
+          Set up and manage your AI clients
         </Link>
       </Section>
 

@@ -97,16 +97,16 @@ function NodeDetails({
           </span>
           <h2 className="mt-3 font-semibold">You don&apos;t have access</h2>
           <p className="mt-1 text-sm text-white/70">
-            This was said in {source.label.toLowerCase()} on{" "}
-            {sourceLabel(node, view)},{" "}
-            {dateFormat.format(new Date(node.createdAt))}. Only the people who
-            were there can see it.
+            Only its owners can see it.
+          </p>
+          <p className="mt-3 text-xs text-white/50">
+            {source.label} · {sourceLabel(node, view)} ·{" "}
+            {dateFormat.format(new Date(node.createdAt))}
           </p>
         </div>
         <p className="text-xs text-muted">
-          Ask SD Wise a question about it. When this matches, Ask a colleague
-          sends your question to someone who was there, and they decide what to
-          tell you. You only see who once they answer.
+          Want to know more? Ask a question about it, then Ask a colleague.
+          Someone who knows answers you, and you see who once they do.
         </p>
       </div>
     );
@@ -193,7 +193,7 @@ function NodeDetails({
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-2.5 text-left text-sm hover:bg-canvas md:py-1.5"
                   >
                     <span className="w-20 shrink-0 text-xs text-muted">
-                      {edge.locked ? "Hidden" : EDGE_KINDS[edge.kind]}
+                      {edge.locked ? "Locked" : EDGE_KINDS[edge.kind]}
                     </span>
                     <span className="flex-1 truncate">
                       {other && !other.locked ? (
@@ -240,7 +240,7 @@ function EdgeDetails({
             You can&apos;t see this connection
           </h2>
           <p className="mt-1 text-sm text-white/70">
-            At least one side is a fact you don&apos;t have access to.
+            One end is a locked fact.
           </p>
         </div>
       ) : (

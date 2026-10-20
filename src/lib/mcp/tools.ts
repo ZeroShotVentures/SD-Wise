@@ -42,6 +42,16 @@ export const tools = {
   },
 };
 
+// What each tool does, in a line, for people reading the Integrations page.
+// The descriptions above are written for the model.
+const summaries: Record<keyof typeof tools, string> = {
+  ask: "Answers a question from what you can see. When colleagues know more, the answer card lets you ask them.",
+  ask_owners:
+    "Sends your question, with a drafted reply, to whoever holds the locked facts. You learn who once they answer.",
+  list_inbox:
+    "Shows questions for you and the ones you sent. You reply in SD Wise.",
+};
+
 export type ToolSummary = {
   name: string;
   title: string;
@@ -74,7 +84,7 @@ export function toolSummaries(): ToolSummary[] {
     return {
       name,
       title: tool.title,
-      description: tool.description,
+      description: summaries[name as keyof typeof tools],
       readOnly: tool.annotations.readOnlyHint,
       appOnly: !!ui?.visibility && !ui.visibility.includes("model"),
       params: Object.entries(properties).map(([param, value]) => ({

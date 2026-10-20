@@ -70,9 +70,7 @@ export function InboxView({
 
       {tab === "received" ? (
         <div className="mt-6 flex flex-col gap-4">
-          {pending.length === 0 && (
-            <Empty text="You're all caught up. Nobody is waiting on you." />
-          )}
+          {pending.length === 0 && <Empty text="You're all caught up." />}
           {pending.map((item) => (
             <QuestionReview key={item.id} item={item} />
           ))}
@@ -90,7 +88,7 @@ export function InboxView({
       ) : (
         <div className="mt-6 flex flex-col gap-4">
           {sent.length === 0 && (
-            <Empty text="Questions you ask colleagues from the graph show up here." />
+            <Empty text="Questions you send to colleagues show up here." />
           )}
           {sent.map((item) => (
             <Resolved key={item.id} item={item} perspective="sent" />
@@ -155,7 +153,7 @@ function QuestionReview({ item }: { item: InboxItem }) {
     <Card>
       <Asker
         item={item}
-        verb={item.routed ? "asked SD Wise about what you know" : "asked you"}
+        verb={item.routed ? "asked about something you know" : "asked you"}
       />
       <p className="mt-4 flex items-start gap-2 text-base font-medium text-navy sm:text-lg">
         <MessageCircleQuestion className="mt-0.5 size-5 shrink-0 text-brand sm:mt-1" />
@@ -167,7 +165,7 @@ function QuestionReview({ item }: { item: InboxItem }) {
           <Sparkles className="size-3.5" />
           {item.suggestedAnswer
             ? "Drafted from what you know"
-            : "Nothing you know matches, write an answer"}
+            : "Nothing you know matches. Write your own answer."}
         </p>
         <textarea
           value={answer}
@@ -185,7 +183,7 @@ function QuestionReview({ item }: { item: InboxItem }) {
 
       <fieldset className="mt-5">
         <legend className="text-xs font-semibold tracking-wider text-muted uppercase">
-          Who can know this afterwards
+          Who can see your answer
         </legend>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <ScopeOption
@@ -193,14 +191,14 @@ function QuestionReview({ item }: { item: InboxItem }) {
             onChange={() => setScope("ASKER")}
             icon={<Lock className="size-4" />}
             title={`Only ${askerName}`}
-            text={`${askerName} can know it, but it stays private in the graph.`}
+            text={`It stays private. Only ${askerName} can see it.`}
           />
           <ScopeOption
             checked={scope === "PUBLIC"}
             onChange={() => setScope("PUBLIC")}
             icon={<Globe className="size-4" />}
             title="Everyone"
-            text="It's not a secret anymore. Anyone can find this answer."
+            text="Anyone in the company can find it."
           />
         </div>
       </fieldset>

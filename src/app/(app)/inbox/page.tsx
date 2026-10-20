@@ -18,7 +18,7 @@ export default async function Page({
   return (
     <PageShell
       title="Inbox"
-      description="Questions colleagues think you can answer, and the ones you asked."
+      description="Questions for you, and the ones you sent."
     >
       <InboxView
         received={inbox.received}
